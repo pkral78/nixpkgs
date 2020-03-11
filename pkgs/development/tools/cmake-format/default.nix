@@ -10,12 +10,12 @@
 
 buildPythonApplication rec {
   pname = "cmake-format";
-  version = "0.6.4";
+  version = "0.6.9";
 
   src = fetchPypi {
     inherit version;
     pname = "cmake_format";
-    sha256 = "0n03vaa8b51c0lzdcy8ygivsg07d1n26576rfzwqzx4izy0rclj9";
+    sha256 = "082d7949gsk5v72ap7k4p3vgmc126a0bfm195xpi4lb6khpbzy5j";
   };
 
   propagatedBuildInputs = [ autopep8 flake8 jinja2 pylint pyyaml ];

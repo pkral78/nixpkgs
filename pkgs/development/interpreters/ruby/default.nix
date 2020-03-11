@@ -12,7 +12,7 @@ let
   opString = lib.optionalString;
   patchSet = import ./rvm-patchsets.nix { inherit fetchFromGitHub; };
   config = import ./config.nix { inherit fetchFromSavannah; };
-  rubygems = import ./rubygems { inherit stdenv lib fetchurl; };
+  rubygems = import ./rubygems { inherit stdenv lib fetchurl fetchpatch; };
 
   # Contains the ruby version heuristics
   rubyVersion = import ./ruby-version.nix { inherit lib; };
@@ -26,7 +26,6 @@ let
   generic = { version, sha256 }: let
     ver = version;
     tag = ver.gitTag;
-    atLeast25 = lib.versionAtLeast ver.majMin "2.5";
     atLeast27 = lib.versionAtLeast ver.majMin "2.7";
     baseruby = self.override {
       useRailsExpress = false;
@@ -49,7 +48,7 @@ let
       # puts a reference to the C compiler in the binary.
       # This might be required by some gems at runtime,
       # but we allow to strip it out for smaller closure size.
-      , removeReferencesTo, removeReferenceToCC ? false
+      , removeReferencesTo, removeReferenceToCC ? true
       , autoreconfHook, bison, autoconf
       , buildEnv, bundler, bundix
       , libiconv, libobjc, libunwind, Foundation
@@ -77,14 +76,13 @@ let
         nativeBuildInputs = [ autoreconfHook bison ]
           ++ (op docSupport groff)
           ++ op (stdenv.buildPlatform != stdenv.hostPlatform) buildPackages.ruby;
-        buildInputs =
-             (op fiddleSupport libffi)
+        buildInputs = [ autoconf ]
+          ++ (op fiddleSupport libffi)
           ++ (ops cursesSupport [ ncurses readline ])
           ++ (op zlibSupport zlib)
           ++ (op opensslSupport openssl)
           ++ (op gdbmSupport gdbm)
           ++ (op yamlSupport libyaml)
-          ++ (op atLeast25 autoconf)
           # Looks like ruby fails to build on darwin without readline even if curses
           # support is not enabled, so add readline to the build inputs if curses
           # support is disabled (if it's enabled, we already have it) and we're
@@ -106,15 +104,10 @@ let
           cp -r ${rubygems}/test/rubygems $sourceRoot/test
         '';
 
-        postPatch = if atLeast25 then ''
+        postPatch = ''
           sed -i configure.ac -e '/config.guess/d'
           cp --remove-destination ${config}/config.guess tool/
           cp --remove-destination ${config}/config.sub tool/
-        ''
-        else opString useRailsExpress ''
-          sed -i configure.in -e '/config.guess/d'
-          cp ${config}/config.guess tool/
-          cp ${config}/config.sub tool/
         '';
 
         # Force the revision.h generation. Somehow `revision.tmp` is an empty
@@ -151,7 +144,7 @@ let
           export GEM_HOME="$out/${passthru.gemPath}"
         '';
 
-        installFlags = stdenv.lib.optionalString docSupport "install-doc";
+        installFlags = stdenv.lib.optional docSupport "install-doc";
         # Bundler tries to create this directory
         postInstall = ''
           # Remove unnecessary groff reference from runtime closure, since it's big
@@ -230,14 +223,6 @@ let
     ) args; in self;
 
 in {
-  ruby_2_4 = generic {
-    version = rubyVersion "2" "4" "9" "";
-    sha256 = {
-      src = "1bn6n5b920qy3lsx99jr8495jkc3sg89swgb96d5fgd579g6p6zr";
-      git = "066kb1iki7mx7qkm10xhj5b6v8s47wg68v43l3nc36y2hyim1w2c";
-    };
-  };
-
   ruby_2_5 = generic {
     version = rubyVersion "2" "5" "7" "";
     sha256 = {

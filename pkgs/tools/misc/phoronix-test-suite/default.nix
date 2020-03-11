@@ -2,11 +2,11 @@
 
 stdenv.mkDerivation rec {
   pname = "phoronix-test-suite";
-  version = "9.2.0";
+  version = "9.4.0";
 
   src = fetchurl {
     url = "https://phoronix-test-suite.com/releases/${pname}-${version}.tar.gz";
-    sha256 = "04r4zm550kp44pzl5xgj8abncrd1rxcfs7hqm38an1lz7shiisfi";
+    sha256 = "108h3zs7p9vmb56dwlw7wicv9z4kxbndl82075sx4c12rzrmssi9";
   };
 
   buildInputs = [ php ];
@@ -21,7 +21,7 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     description = "Open-Source, Automated Benchmarking";
-    homepage = https://www.phoronix-test-suite.com/;
+    homepage = "https://www.phoronix-test-suite.com/";
     maintainers = with maintainers; [ davidak ];
     license = licenses.gpl3;
     platforms = with platforms; unix;

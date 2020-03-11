@@ -74,12 +74,12 @@ let
   };
 
   composer = mkDerivation rec {
-    version = "1.9.1";
+    version = "1.9.3";
     pname = "composer";
 
     src = pkgs.fetchurl {
       url = "https://getcomposer.org/download/${version}/composer.phar";
-      sha256 = "04a1fqxhxrckgxw9xbx7mplkzw808k2dz4jqsxq2dy7w6y80n88z";
+      sha256 = "VRZVwvyB9BBlCPQrvEsk6r00sCKxO8Hn2WQr9IPQp9Q=";
     };
 
     dontUnpack = true;
@@ -201,13 +201,13 @@ let
 
   maxminddb = buildPecl rec {
     pname = "maxminddb";
-    version = "1.5.0";
+    version = "1.6.0";
 
     src = pkgs.fetchFromGitHub {
       owner = "maxmind";
       repo = "MaxMind-DB-Reader-php";
       rev = "v${version}";
-      sha256 = "1ilgpx36rgihjr8s4bvkbms5hl6xy7mymna3ym2bl4lb15vkr0sm";
+      sha256 = "0sa943ij9pgz55aik93lllb8lh063bvr66ibn77p3y3p41vdiabz";
     };
 
     buildInputs = [ pkgs.libmaxminddb ];
@@ -287,15 +287,27 @@ let
     meta.broken = isPhp74; # Build error
   };
 
+  pdo_oci = buildPecl rec {
+    inherit (php) src version;
+
+    pname = "pdo_oci";
+    sourceRoot = "php-${version}/ext/pdo_oci";
+
+    buildInputs = [ pkgs.oracle-instantclient ];
+    configureFlags = [ "--with-pdo-oci=instantclient,${pkgs.oracle-instantclient.lib}/lib" ];
+
+    postPatch = ''
+      sed -i -e 's|OCISDKMANINC=`.*$|OCISDKMANINC="${pkgs.oracle-instantclient.dev}/include"|' config.m4
+    '';
+  };
+
   pdo_sqlsrv = buildPecl {
-    version = "5.6.1";
+    version = "5.8.0";
     pname = "pdo_sqlsrv";
 
-    sha256 = "02ill1iqffa5fha9iz4y91823scml24ikfk8pn90jyycfwv07x6a";
+    sha256 = "0z4vbyd851b4jr6p69l2ylk91iihndsm2qjb429pxcv8g6dqzqll";
 
-    buildInputs = [ pkgs.unixODBC ];
-
-    meta.broken = isPhp74; # Build error
+    buildInputs = [ pkgs.unixODBC ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [ pkgs.libiconv ];
   };
 
   php-cs-fixer = mkDerivation rec {
@@ -429,12 +441,12 @@ let
   };
 
   phpstan = mkDerivation rec {
-    version = "0.12.3";
+    version = "0.12.14";
     pname = "phpstan";
 
     src = pkgs.fetchurl {
       url = "https://github.com/phpstan/phpstan/releases/download/${version}/phpstan.phar";
-      sha256 = "08ya50qf75nq8ypyhb0vsqnj166kc27rc8iasxr3y7kssbfd95ai";
+      sha256 = "JAq1/+bVhTgKRR7oFusqZ/yBOYewaOM38ZoiCjirsTg=";
     };
 
     phases = [ "installPhase" ];
@@ -524,12 +536,12 @@ let
   };
 
   psalm = mkDerivation rec {
-    version = "3.7.2";
+    version = "3.9.3";
     pname = "psalm";
 
     src = pkgs.fetchurl {
       url = "https://github.com/vimeo/psalm/releases/download/${version}/psalm.phar";
-      sha256 = "0mcxlckycvpxxc6h0x0kdidbq2l4m3xws1v3kdf797js234x0vjx";
+      sha256 = "KHm2n06y/yxN5B2rCVxT5ja7HxkyxAMsjZ5HLb3xr4M=";
     };
 
     phases = [ "installPhase" ];
@@ -614,14 +626,12 @@ let
   };
 
   sqlsrv = buildPecl {
-    version = "5.6.1";
+    version = "5.8.0";
     pname = "sqlsrv";
 
-    sha256 = "0ial621zxn9zvjh7k1h755sm2lc9aafc389yxksqcxcmm7kqmd0a";
+    sha256 = "1kv4krk1w4hri99b0sdgwgy9c4y0yh217wx2y3irhkfi46kdrjnw";
 
-    buildInputs = [ pkgs.unixODBC ];
-
-    meta.broken = isPhp74; # Build error
+    buildInputs = [ pkgs.unixODBC ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [ pkgs.libiconv ];
   };
 
   v8 = buildPecl {

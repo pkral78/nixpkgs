@@ -3,21 +3,24 @@
 , fetchPypi
 , libGLU, libGL
 , xorg
+, numpy
 }:
 
 buildPythonPackage rec {
   pname = "pybullet";
-  version = "2.5.8";
+  version = "2.6.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "5824e902e0dd8bf7177ce5d9e038c6b04be65f72621fe13f93ec15c9d9c85a49";
+    sha256 = "1lsvjqij1vb9w8j6lvnq7lppflc7svz4cj37n74q67mb46gq3dxr";
   };
 
   buildInputs = [
     libGLU libGL
     xorg.libX11
   ];
+
+  propagatedBuildInputs =  [ numpy ];
 
   patches = [
     # make sure X11 and OpenGL can be found at runtime

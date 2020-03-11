@@ -6,7 +6,7 @@
 
 let
   optional = stdenv.lib.optional;
-  version = "3.29";
+  version = "3.30";
   name = "libreswan-${version}";
   binPath = stdenv.lib.makeBinPath [
     bash iproute iptables procps coreutils gnused gawk nss.tools which python
@@ -22,15 +22,16 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://download.libreswan.org/${name}.tar.gz";
-    sha256 = "0gmbb1m5in5dvnbk1n31r8myrdankzvi6yk9gcqbcwijyih423nn";
+    sha256 = "1bww4w5r6hx0xf9xdxvkfmcv7zyas58ls1mklk6k197kv2i0p24w";
   };
 
   # These flags were added to compile v3.18. Try to lift them when updating.
-  NIX_CFLAGS_COMPILE = [ "-Wno-error=redundant-decls" "-Wno-error=format-nonliteral"
+  NIX_CFLAGS_COMPILE = toString [ "-Wno-error=redundant-decls" "-Wno-error=format-nonliteral"
     # these flags were added to build with gcc7
     "-Wno-error=implicit-fallthrough"
     "-Wno-error=format-truncation"
     "-Wno-error=pointer-compare"
+    "-Wno-error=stringop-truncation"
   ];
 
   nativeBuildInputs = [ makeWrapper pkgconfig ];

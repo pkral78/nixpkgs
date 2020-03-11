@@ -62,7 +62,7 @@ in {
     https = mkOption {
       type = types.bool;
       default = false;
-      description = "Enable if there is a TLS terminating proxy in front of nextcloud.";
+      description = "Use https for generated links.";
     };
 
     maxUploadSize = mkOption {
@@ -229,6 +229,15 @@ in {
         '';
       };
 
+      trustedProxies = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        description = ''
+          Trusted proxies, to provide if the nextcloud installation is being
+          proxied to secure against e.g. spoofing.
+        '';
+      };
+
       overwriteProtocol = mkOption {
         type = types.nullOr (types.enum [ "http" "https" ]);
         default = null;
@@ -352,6 +361,7 @@ in {
               ${optionalString (c.dbpassFile != null) "'dbpassword' => nix_read_pwd(),"}
               'dbtype' => '${c.dbtype}',
               'trusted_domains' => ${writePhpArrary ([ cfg.hostName ] ++ c.extraTrustedDomains)},
+              'trusted_proxies' => ${writePhpArrary (c.trustedProxies)},
             ];
           '';
           occInstallCmd = let
@@ -433,7 +443,7 @@ in {
         pools.nextcloud = {
           user = "nextcloud";
           group = "nginx";
-          phpOptions = phpOptionsExtensions + phpOptionsStr;
+          phpOptions = phpOptionsStr;
           phpPackage = phpPackage;
           phpEnv = {
             NEXTCLOUD_CONFIG_DIR = "${cfg.home}/config";
@@ -523,6 +533,7 @@ in {
                 add_header X-Robots-Tag none;
                 add_header X-Download-Options noopen;
                 add_header X-Permitted-Cross-Domain-Policies none;
+                add_header X-Frame-Options sameorigin;
                 add_header Referrer-Policy no-referrer;
                 access_log off;
               '';
@@ -537,6 +548,7 @@ in {
               add_header X-Robots-Tag none;
               add_header X-Download-Options noopen;
               add_header X-Permitted-Cross-Domain-Policies none;
+              add_header X-Frame-Options sameorigin;
               add_header Referrer-Policy no-referrer;
               add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
               error_page 403 /core/templates/403.php;

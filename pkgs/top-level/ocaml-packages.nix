@@ -154,28 +154,13 @@ let
 
     cmdliner = callPackage ../development/ocaml-modules/cmdliner { };
 
-    cohttp_p4 = callPackage ../development/ocaml-modules/cohttp/0.19.3.nix {
-      base64 = base64_2;
-      lwt = lwt2;
-    };
-
-    cohttp =
-      if lib.versionOlder "4.03" ocaml.version
-      then callPackage ../development/ocaml-modules/cohttp { }
-      else cohttp_p4;
+    cohttp = callPackage ../development/ocaml-modules/cohttp { };
 
     cohttp-lwt = callPackage ../development/ocaml-modules/cohttp/lwt.nix { };
 
     cohttp-lwt-unix = callPackage ../development/ocaml-modules/cohttp/lwt-unix.nix { };
 
-    conduit_p4 = callPackage ../development/ocaml-modules/conduit/0.10.0.nix {
-       lwt = lwt2;
-    };
-
-    conduit =
-      if lib.versionOlder "4.03" ocaml.version
-      then callPackage ../development/ocaml-modules/conduit { }
-      else conduit_p4;
+    conduit = callPackage ../development/ocaml-modules/conduit { };
 
     conduit-lwt = callPackage ../development/ocaml-modules/conduit/lwt.nix { };
 
@@ -190,6 +175,8 @@ let
     cpdf = callPackage ../development/ocaml-modules/cpdf { };
 
     cppo = callPackage ../development/tools/ocaml/cppo { };
+
+    cpu = callPackage ../development/ocaml-modules/cpu { };
 
     cpuid = callPackage ../development/ocaml-modules/cpuid { };
 
@@ -238,6 +225,8 @@ let
     dtoa = callPackage ../development/ocaml-modules/dtoa { };
 
     duff = callPackage ../development/ocaml-modules/duff { };
+
+    dum = callPackage ../development/ocaml-modules/dum { };
 
     dune = callPackage ../development/tools/ocaml/dune { };
 
@@ -466,6 +455,8 @@ let
 
     lambdaTerm = callPackage ../development/ocaml-modules/lambda-term { };
 
+    lens = callPackage ../development/ocaml-modules/lens { };
+
     linenoise = callPackage ../development/ocaml-modules/linenoise { };
 
     llvm = callPackage ../development/ocaml-modules/llvm {
@@ -503,6 +494,8 @@ let
     lwt_ssl = callPackage ../development/ocaml-modules/lwt_ssl {
       lwt = ocaml_lwt;
     };
+
+    macaddr = callPackage ../development/ocaml-modules/macaddr { };
 
     macaque = callPackage ../development/ocaml-modules/macaque { };
 
@@ -550,9 +543,15 @@ let
       lwt = ocaml_lwt;
     };
 
+    npy = callPackage ../development/ocaml-modules/npy {
+      inherit (pkgs.python3Packages) numpy;
+    };
+
     num = if lib.versionOlder "4.06" ocaml.version
       then callPackage ../development/ocaml-modules/num {}
       else null;
+
+    parmap = callPackage ../development/ocaml-modules/parmap { };
 
     comparelib = callPackage ../development/ocaml-modules/comparelib { };
 
@@ -608,6 +607,8 @@ let
     ocaml_pcre = callPackage ../development/ocaml-modules/pcre {};
 
     pgocaml = callPackage ../development/ocaml-modules/pgocaml {};
+
+    pgocaml_ppx = callPackage ../development/ocaml-modules/pgocaml/ppx.nix {};
 
     ocaml-sat-solvers = callPackage ../development/ocaml-modules/ocaml-sat-solvers { };
 
@@ -833,7 +834,7 @@ let
 
     sedlex = callPackage ../development/ocaml-modules/sedlex { };
 
-    setcore = callPackage ../development/ocaml-modules/setcore { };
+    sedlex_2 = callPackage ../development/ocaml-modules/sedlex/2.nix { };
 
     sodium = callPackage ../development/ocaml-modules/sodium { };
 
@@ -1191,8 +1192,6 @@ let
 
     ocamlnat = callPackage  ../development/ocaml-modules/ocamlnat { };
 
-    trv = callPackage ../development/tools/misc/trv { };
-
     omake_rc1 = callPackage ../development/tools/ocaml/omake/0.9.8.6-rc1.nix { };
 
     google-drive-ocamlfuse = callPackage ../applications/networking/google-drive-ocamlfuse { };
@@ -1228,7 +1227,9 @@ in let inherit (pkgs) callPackage; in rec
 
   ocamlPackages_4_09 = mkOcamlPackages (callPackage ../development/compilers/ocaml/4.09.nix { });
 
-  ocamlPackages_latest = ocamlPackages_4_09;
+  ocamlPackages_4_10 = mkOcamlPackages (callPackage ../development/compilers/ocaml/4.10.nix { });
+
+  ocamlPackages_latest = ocamlPackages_4_10;
 
   ocamlPackages = ocamlPackages_4_07;
 }
