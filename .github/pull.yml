@@ -1,0 +1,14 @@
+version: "1"
+rules:
+  - base: master
+    upstream: NixOS:master
+    mergeMethod: hardreset
+  - base: nixos-unstable
+    upstream: NixOS:nixos-unstable
+    mergeMethod: merge
+  - base: nixos-19.09
+    upstream: NixOS:nixos-19.09
+    mergeMethod: hardreset
+  - base: nixos-20.03
+    upstream: NixOS:nixos-20.03
+    mergeMethod: hardreset
