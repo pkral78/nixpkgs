@@ -625,6 +625,8 @@ in
 
   amp = callPackage ../applications/editors/amp {};
 
+  ams = callPackage ../applications/audio/ams {};
+
   amtterm = callPackage ../tools/system/amtterm {};
 
   analog = callPackage ../tools/admin/analog {};
@@ -864,6 +866,9 @@ in
   crc32c = callPackage ../development/libraries/crc32c { };
 
   cue = callPackage ../development/tools/cue { };
+
+  deltachat-electron = callPackage
+    ../applications/networking/instant-messengers/deltachat-electron { };
 
   deskew = callPackage ../applications/graphics/deskew { };
 
@@ -2056,6 +2061,8 @@ in
 
   optar = callPackage ../tools/graphics/optar {};
 
+  obinskit = callPackage ../applications/misc/obinskit {};
+
   pastel = callPackage ../applications/misc/pastel {
     inherit (darwin.apple_sdk.frameworks) Security;
   };
@@ -2111,8 +2118,6 @@ in
   snippetpixie = callPackage ../tools/text/snippetpixie { };
 
   socklog = callPackage ../tools/system/socklog { };
-
-  staccato = callPackage ../tools/text/staccato { };
 
   stagit = callPackage ../development/tools/stagit { };
 
@@ -3092,7 +3097,7 @@ in
 
   cholmod-extra = callPackage ../development/libraries/science/math/cholmod-extra { };
 
-  emscriptenVersion = "1.38.28";
+  emscriptenVersion = "1.39.1";
 
   emscripten = callPackage ../development/compilers/emscripten { };
 
@@ -4551,6 +4556,7 @@ in
 
   liquidsoap = callPackage ../tools/audio/liquidsoap/full.nix {
     ffmpeg = ffmpeg-full;
+    ocamlPackages = ocaml-ng.ocamlPackages_4_07;
   };
 
   lksctp-tools = callPackage ../os-specific/linux/lksctp-tools { };
@@ -6535,6 +6541,8 @@ in
     conf = config.slstatus.conf or null;
   };
 
+  smartdns = callPackage ../tools/networking/smartdns { };
+
   smartmontools = callPackage ../tools/system/smartmontools {
     inherit (darwin.apple_sdk.frameworks) IOKit ApplicationServices;
   };
@@ -8361,7 +8369,9 @@ in
 
   fsharp41 = callPackage ../development/compilers/fsharp41 { mono = mono6; };
 
-  fstar = callPackage ../development/compilers/fstar { };
+  fstar = callPackage ../development/compilers/fstar {
+    ocamlPackages = ocaml-ng.ocamlPackages_4_07;
+  };
 
   dotnetPackages = recurseIntoAttrs (callPackage ./dotnet-packages.nix {});
 
@@ -8830,13 +8840,9 @@ in
   rust_1_41_0 = callPackage ../development/compilers/rust/1_41_0.nix {
     inherit (darwin.apple_sdk.frameworks) CoreFoundation Security;
   };
-  rust_1_38_0 = callPackage ../development/compilers/rust/1_38_0.nix {
-    inherit (darwin.apple_sdk.frameworks) CoreFoundation Security;
-  };
   rust = rust_1_41_0;
 
   rustPackages_1_41_0 = rust_1_41_0.packages.stable;
-  rustPackages_1_38_0 = rust_1_38_0.packages.stable;
   rustPackages = rustPackages_1_41_0;
 
   inherit (rustPackages) cargo clippy rustc rustPlatform;
@@ -8920,7 +8926,6 @@ in
     inherit (darwin.apple_sdk.frameworks) Security;
   };
   rustracerd = callPackage ../development/tools/rust/racerd {
-    inherit (rustPackages_1_38_0) rustPlatform;
     inherit (darwin.apple_sdk.frameworks) Security;
   };
   rust-bindgen = callPackage ../development/tools/rust/bindgen { };
@@ -10163,6 +10168,7 @@ in
   fffuu = haskell.lib.justStaticExecutables (haskellPackages.callPackage ../tools/misc/fffuu { });
 
   flow = callPackage ../development/tools/analysis/flow {
+    ocamlPackages = ocaml-ng.ocamlPackages_4_07;
     inherit (darwin.apple_sdk.frameworks) CoreServices;
   };
 
@@ -10613,7 +10619,9 @@ in
 
   remake = callPackage ../development/tools/build-managers/remake { };
 
-  retdec = callPackage ../development/tools/analysis/retdec { };
+  retdec = callPackage ../development/tools/analysis/retdec {
+    stdenv = gcc8Stdenv;
+  };
   retdec-full = retdec.override {
     withPEPatterns = true;
   };
@@ -10850,6 +10858,8 @@ in
   };
 
   watson-ruby = callPackage ../development/tools/misc/watson-ruby {};
+
+  webdis = callPackage ../development/tools/database/webdis { };
 
   xc3sprog = callPackage ../development/tools/misc/xc3sprog { };
 
@@ -11442,6 +11452,8 @@ in
   ffmpegthumbnailer = callPackage ../development/libraries/ffmpegthumbnailer { };
 
   ffmpeg-sixel = callPackage ../development/libraries/ffmpeg-sixel { };
+
+  ffmpeg-normalize = python3Packages.callPackage ../applications/video/ffmpeg-normalize { };
 
   ffms = callPackage ../development/libraries/ffms { };
 
@@ -12773,9 +12785,7 @@ in
 
   libmysofa = callPackage ../development/libraries/audio/libmysofa { };
 
-  libmysqlconnectorcpp = callPackage ../development/libraries/libmysqlconnectorcpp {
-    mysql = mysql57;
-  };
+  libmysqlconnectorcpp = callPackage ../development/libraries/libmysqlconnectorcpp { };
 
   libnatpmp = callPackage ../development/libraries/libnatpmp { };
 
@@ -16856,7 +16866,6 @@ in
 
   # Hardened linux
   hardenedLinuxPackagesFor = kernel: linuxPackagesFor (kernel.override {
-    features.ia32Emulation = false;
     structuredExtraConfig = import ../os-specific/linux/kernel/hardened-config.nix {
       inherit stdenv;
       inherit (kernel) version;
@@ -18354,7 +18363,7 @@ in
 
   azpainter = callPackage ../applications/graphics/azpainter { };
 
-  cadence =  libsForQt5.callPackage ../applications/audio/cadence { };
+  cadence =  qt5.callPackage ../applications/audio/cadence { };
 
   milkytracker = callPackage ../applications/audio/milkytracker { };
 
@@ -19149,6 +19158,8 @@ in
   fritzing = libsForQt5.callPackage ../applications/science/electronics/fritzing { };
 
   fsv = callPackage ../applications/misc/fsv { };
+
+  ft2-clone = callPackage ../applications/audio/ft2-clone { };
 
   fvwm = callPackage ../applications/window-managers/fvwm { };
 
@@ -20226,11 +20237,12 @@ in
 
   linuxband = callPackage ../applications/audio/linuxband { };
 
-  ledger2 = callPackage ../applications/office/ledger/2.6.3.nix { };
-  ledger3 = callPackage ../applications/office/ledger {
+  ledger = callPackage ../applications/office/ledger {
+    # Boost >= 1.67 changed the name of boost python; ledger's cmake build needs
+    # an update to find it:
+    # https://www.boost.org/doc/libs/1_68_0/libs/python/doc/html/rn.html
     boost = boost15x;
   };
-  ledger = ledger3;
 
   ledger-autosync = callPackage  ../applications/office/ledger-autosync { };
 
@@ -20626,6 +20638,7 @@ in
     else
       libsForQt5.callPackage ../applications/audio/musescore { };
 
+  mmh = callPackage ../applications/networking/mailreaders/mmh { };
   mutt = callPackage ../applications/networking/mailreaders/mutt { };
   mutt-with-sidebar = mutt.override {
     withSidebar = true;
@@ -21185,6 +21198,8 @@ in
 
   pstree = callPackage ../applications/misc/pstree { };
 
+  pt2-clone = callPackage ../applications/audio/pt2-clone { };
+
   ptask = callPackage ../applications/misc/ptask { };
 
   pulseaudio-ctl = callPackage ../applications/audio/pulseaudio-ctl { };
@@ -21533,6 +21548,8 @@ in
 
   sound-juicer = callPackage ../applications/audio/sound-juicer { };
 
+  soundtracker = callPackage ../applications/audio/soundtracker { };
+
   spice-vdagent = callPackage ../applications/virtualization/spice-vdagent { };
 
   spike = callPackage ../applications/virtualization/spike { };
@@ -21722,7 +21739,7 @@ in
 
   stalonetray = callPackage ../applications/window-managers/stalonetray {};
 
-  inherit (ocamlPackages) stog;
+  inherit (ocaml-ng.ocamlPackages_4_07) stog;
 
   stp = callPackage ../applications/science/logic/stp { };
 
@@ -21907,7 +21924,6 @@ in
 
   thunderbird = callPackage ../applications/networking/mailreaders/thunderbird {
     inherit (gnome2) libIDL;
-    inherit (rustPackages_1_38_0) cargo rustc;
     libpng = libpng_apng;
     gtk3Support = true;
   };
@@ -22045,7 +22061,10 @@ in
 
   unigine-valley = callPackage ../applications/graphics/unigine-valley { };
 
-  inherit (ocaml-ng.ocamlPackages_4_05) unison;
+  unison = callPackage ../applications/networking/sync/unison {
+    enableX11 = config.unison.enableX11 or true;
+    ocamlPackages = ocaml-ng.ocamlPackages_4_05;
+  };
 
   unpaper = callPackage ../tools/graphics/unpaper { };
 
@@ -22479,8 +22498,6 @@ in
   };
 
   wsjtx = qt5.callPackage ../applications/radio/wsjtx { };
-
-  wtftw = callPackage ../applications/window-managers/wtftw {};
 
   wxhexeditor = callPackage ../applications/editors/wxhexeditor {
     wxGTK = wxGTK31;
@@ -24406,7 +24423,9 @@ in
 
   abc-verifier = callPackage ../applications/science/logic/abc {};
 
-  abella = callPackage ../applications/science/logic/abella {};
+  abella = callPackage ../applications/science/logic/abella {
+    ocamlPackages = ocaml-ng.ocamlPackages_4_07;
+  };
 
   acgtk = callPackage ../applications/science/logic/acgtk {};
 
@@ -24414,7 +24433,9 @@ in
 
   aspino = callPackage ../applications/science/logic/aspino {};
 
-  beluga = callPackage ../applications/science/logic/beluga { };
+  beluga = callPackage ../applications/science/logic/beluga {
+    ocamlPackages = ocaml-ng.ocamlPackages_4_07;
+  };
 
   boogie = dotnetPackages.Boogie;
 
@@ -24762,7 +24783,9 @@ in
   golly = callPackage ../applications/science/misc/golly { wxGTK = wxGTK30; };
   golly-beta = callPackage ../applications/science/misc/golly/beta.nix { wxGTK = wxGTK30; };
 
-  megam = callPackage ../applications/science/misc/megam { };
+  megam = callPackage ../applications/science/misc/megam {
+    inherit (ocaml-ng.ocamlPackages_4_07) ocaml;
+  };
 
   netlogo = callPackage ../applications/science/misc/netlogo { };
 
@@ -25026,7 +25049,9 @@ in
 
   flockit = callPackage ../tools/backup/flockit { };
 
-  foldingathome = callPackage ../misc/foldingathome { };
+  fahclient = callPackage ../applications/science/misc/foldingathome/client.nix {};
+  fahcontrol = callPackage ../applications/science/misc/foldingathome/control.nix {};
+  fahviewer = callPackage ../applications/science/misc/foldingathome/viewer.nix {};
 
   foo2zjs = callPackage ../misc/drivers/foo2zjs {};
 
@@ -25144,13 +25169,9 @@ in
 
   lilypond-unstable = callPackage ../misc/lilypond/unstable.nix { };
 
-  lilypond-with-fonts = callPackage ../misc/lilypond/with-fonts.nix {
-    lilypond = lilypond-unstable;
-  };
+  lilypond-with-fonts = callPackage ../misc/lilypond/with-fonts.nix { };
 
-  openlilylib-fonts = callPackage ../misc/lilypond/fonts.nix {
-    lilypond = lilypond-unstable;
-  };
+  openlilylib-fonts = callPackage ../misc/lilypond/fonts.nix { };
 
   loop = callPackage ../tools/misc/loop { };
 
