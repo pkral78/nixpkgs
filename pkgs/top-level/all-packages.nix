@@ -9875,6 +9875,8 @@ in
     go = go_1_12;
   };
 
+  bazel-gazelle = callPackage ../development/tools/bazel-gazelle { };
+
   bazelisk = callPackage ../development/tools/bazelisk { };
 
   buildBazelPackage = callPackage ../build-support/build-bazel-package { };
@@ -17753,6 +17755,8 @@ in
 
   gnome-breeze = callPackage ../data/themes/gnome-breeze { };
 
+  gnome-icon-theme = callPackage ../data/icons/gnome-icon-theme { };
+
   go-font = callPackage ../data/fonts/go-font { };
 
   greybird = callPackage ../data/themes/greybird { };
@@ -22148,6 +22152,8 @@ in
   };
 
   tudu = callPackage ../applications/office/tudu { };
+
+  tut = callPackage ../applications/misc/tut { };
 
   tuxguitar = callPackage ../applications/editors/music/tuxguitar { };
 
