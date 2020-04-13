@@ -828,6 +828,8 @@ in
 
   certigo = callPackage ../tools/admin/certigo { };
 
+  catcli = python3Packages.callPackage ../tools/filesystems/catcli { };
+
   chezmoi = callPackage ../tools/misc/chezmoi { };
 
   chipsec = callPackage ../tools/security/chipsec {
@@ -1330,7 +1332,7 @@ in
   };
 
   bsh = fetchurl {
-    url = http://www.beanshell.org/bsh-2.0b5.jar;
+    url = "http://www.beanshell.org/bsh-2.0b5.jar";
     sha256 = "0p2sxrpzd0vsk11zf3kb5h12yl1nq4yypb5mpjrm8ww0cfaijck2";
   };
 
@@ -4652,6 +4654,10 @@ in
 
   medfile = callPackage ../development/libraries/medfile { };
 
+  meilisearch = callPackage ../servers/search/meilisearch {
+    inherit (darwin.apple_sdk.frameworks) IOKit Security;
+  };
+
   memtester = callPackage ../tools/system/memtester { };
 
   mhonarc = perlPackages.MHonArc;
@@ -5391,9 +5397,7 @@ in
 
   noip = callPackage ../tools/networking/noip { };
 
- nomad = callPackage ../applications/networking/cluster/nomad {
-    buildGoPackage = buildGo112Package;
-  };
+ nomad = callPackage ../applications/networking/cluster/nomad { };
 
   notable = callPackage ../applications/misc/notable { };
 
@@ -9038,6 +9042,7 @@ in
   scala_2_13 = callPackage ../development/compilers/scala/2.13.nix { jre = jre8; };
   scala = scala_2_13;
 
+  metal = callPackage ../development/libraries/metal { };
   metals = callPackage ../development/tools/metals { };
   scalafix = callPackage ../development/tools/scalafix { };
   scalafmt = callPackage ../development/tools/scalafmt { };
@@ -13885,7 +13890,7 @@ in
 
   portaudio2014 = portaudio.overrideAttrs (oldAttrs: {
     src = fetchurl {
-      url = http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz;
+      url = "http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz";
       sha256 = "0mwddk4qzybaf85wqfhxqlf0c5im9il8z03rd4n127k8y2jj9q4g";
     };
   });
@@ -17808,7 +17813,9 @@ in
 
   inconsolata-lgc = callPackage ../data/fonts/inconsolata/lgc.nix {};
 
-  inconsolata-nerdfont = callPackage ../data/fonts/inconsolata-nerdfont {};
+  inconsolata-nerdfont = nerdfonts.override {
+    fonts = [ "Inconsolata" ];
+  };
 
   input-fonts = callPackage ../data/fonts/input-fonts { };
 
@@ -18212,7 +18219,9 @@ in
 
   terminus_font_ttf = callPackage ../data/fonts/terminus-font-ttf { };
 
-  terminus-nerdfont = callPackage ../data/fonts/terminus-nerdfont { };
+  terminus-nerdfont = nerdfonts.override {
+    fonts = [ "Terminus" ];
+  };
 
   termtekst = callPackage ../misc/emulators/termtekst { };
 
