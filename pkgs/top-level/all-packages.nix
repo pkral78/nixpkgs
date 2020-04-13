@@ -567,9 +567,7 @@ in
 
   acme-client = callPackage ../tools/networking/acme-client { inherit (darwin) apple_sdk; };
 
-  amass = callPackage ../tools/networking/amass {
-    inherit (darwin.apple_sdk.frameworks) Security;
-  };
+  amass = callPackage ../tools/networking/amass { };
 
   afew = callPackage ../applications/networking/mailreaders/afew { };
 
@@ -2106,6 +2104,8 @@ in
   pixiecore = callPackage ../tools/networking/pixiecore {};
 
   pyCA = python3Packages.callPackage ../applications/video/pyca {};
+
+  pyrit = callPackage ../tools/security/pyrit {};
 
   pyznap = python3Packages.callPackage ../tools/backup/pyznap {};
 
@@ -5118,6 +5118,8 @@ in
 
   mgba = libsForQt5.callPackage ../misc/emulators/mgba { };
 
+  microcom = callPackage ../applications/misc/microcom { };
+
   midisheetmusic = callPackage ../applications/audio/midisheetmusic { };
 
   mikutter = callPackage ../applications/networking/instant-messengers/mikutter { };
@@ -5711,7 +5713,7 @@ in
   padthv1 = libsForQt5.callPackage ../applications/audio/padthv1 { };
 
   page = callPackage ../tools/misc/page { };
-  
+
   pagmo2 = callPackage ../development/libraries/pagmo2 { };
 
   pakcs = callPackage ../development/compilers/pakcs { };
@@ -10349,9 +10351,7 @@ in
 
   help2man = callPackage ../development/tools/misc/help2man { };
 
-  heroku = callPackage ../development/tools/heroku {
-    nodejs = nodejs-10_x;
-  };
+  heroku = callPackage ../development/tools/heroku { };
 
   ccloud-cli = callPackage ../development/tools/ccloud-cli { };
 
@@ -16696,7 +16696,6 @@ in
     kernelPatches =
       [ kernelPatches.bridge_stp_helper
         kernelPatches.request_key_helper
-        kernelPatches.modinst_arg_list_too_long
       ];
   };
 
@@ -17162,9 +17161,7 @@ in
 
   go-tools = callPackage ../development/tools/go-tools { };
 
-  gotools = callPackage ../development/tools/gotools {
-    inherit (darwin.apple_sdk.frameworks) Security;
-  };
+  gotools = callPackage ../development/tools/gotools { };
 
   gotop = callPackage ../tools/system/gotop { };
 
@@ -20849,6 +20846,8 @@ in
     i3GapsSupport = false;
   };
 
+  polyphone = libsForQt5.callPackage ../applications/audio/polyphone { };
+
   ptex = callPackage ../development/libraries/ptex {};
 
   qbec = callPackage ../applications/networking/cluster/qbec { };
@@ -23977,10 +23976,6 @@ in
     lua = lua5_2;
   };
 
-  worldofgoo_demo = worldofgoo.override {
-    demo = true;
-  };
-
   worldofgoo = callPackage ../games/worldofgoo { };
 
   xboard =  callPackage ../games/xboard { };
@@ -26298,9 +26293,7 @@ in
 
   dsniff = callPackage ../tools/networking/dsniff {};
 
-  wal-g = callPackage ../tools/backup/wal-g {
-    inherit (darwin.apple_sdk.frameworks) Security;
-  };
+  wal-g = callPackage ../tools/backup/wal-g { };
 
   tlwg = callPackage ../data/fonts/tlwg { };
 
