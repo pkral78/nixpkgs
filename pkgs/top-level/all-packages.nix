@@ -1974,6 +1974,8 @@ in
 
   linuxptp = callPackage ../os-specific/linux/linuxptp { };
 
+  lite = callPackage ../applications/editors/lite { };
+
   loadwatch = callPackage ../tools/system/loadwatch { };
 
   loccount = callPackage ../development/tools/misc/loccount { };
@@ -5611,6 +5613,9 @@ in
 
   openapi-generator-cli = callPackage ../tools/networking/openapi-generator-cli { };
   openapi-generator-cli-unstable = callPackage ../tools/networking/openapi-generator-cli/unstable.nix { };
+
+  openbazaar = callPackage ../applications/networking/openbazaar { };
+  openbazaar-client = callPackage ../applications/networking/openbazaar/client.nix { };
 
   opencc = callPackage ../tools/text/opencc { };
 
