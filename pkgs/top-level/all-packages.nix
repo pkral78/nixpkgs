@@ -4470,6 +4470,8 @@ in
 
   jucipp = callPackage ../applications/editors/jucipp { };
 
+  jugglinglab = callPackage ../tools/misc/jugglinglab { };
+
   jupp = callPackage ../applications/editors/jupp { };
 
   jupyter = callPackage ../applications/editors/jupyter { };
@@ -14073,6 +14075,7 @@ in
 
   protobuf = protobuf3_8;
 
+  protobuf3_12 = callPackage ../development/libraries/protobuf/3.12.nix { };
   protobuf3_11 = callPackage ../development/libraries/protobuf/3.11.nix { };
   protobuf3_10 = callPackage ../development/libraries/protobuf/3.10.nix { };
   protobuf3_9 = callPackage ../development/libraries/protobuf/3.9.nix { };
@@ -18761,6 +18764,8 @@ in
 
   bs1770gain = callPackage ../applications/audio/bs1770gain { };
 
+  bjumblr = callPackage ../applications/audio/bjumblr { };
+
   bsequencer = callPackage ../applications/audio/bsequencer { };
 
   bslizr = callPackage ../applications/audio/bslizr { };
@@ -21690,8 +21695,6 @@ in
   ripcord = qt5.callPackage ../applications/networking/instant-messengers/ripcord { };
 
   ripser = callPackage ../applications/science/math/ripser { };
-
-  rkt = callPackage ../applications/virtualization/rkt { };
 
   rkdeveloptool = callPackage ../misc/rkdeveloptool { };
 
