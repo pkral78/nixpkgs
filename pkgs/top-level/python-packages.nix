@@ -1927,7 +1927,9 @@ in {
 
   bids-validator = callPackage ../development/python-modules/bids-validator { };
 
-  binwalk = callPackage ../development/python-modules/binwalk { };
+  binwalk = callPackage ../development/python-modules/binwalk {
+    pyqtgraph = null;
+  };
 
   binwalk-full = appendToName "full" (self.binwalk.override {
     pyqtgraph = self.pyqtgraph;
@@ -3249,6 +3251,8 @@ in {
   plaster = callPackage ../development/python-modules/plaster {};
 
   plaster-pastedeploy = callPackage ../development/python-modules/plaster-pastedeploy {};
+
+  playsound = callPackage ../development/python-modules/playsound { };
 
   plexapi = callPackage ../development/python-modules/plexapi { };
 
@@ -5718,7 +5722,7 @@ in {
 
   rply = callPackage ../development/python-modules/rply {};
 
-  rpm = toPythonModule (pkgs.rpm.override{inherit python;});
+  rpm = disabledIf (!isPy3k) (toPythonModule (pkgs.rpm.override{ inherit python; }));
 
   rpmfluff = callPackage ../development/python-modules/rpmfluff {};
 

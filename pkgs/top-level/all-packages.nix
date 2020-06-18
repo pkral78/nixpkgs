@@ -1968,7 +1968,7 @@ in
 
   interlock = callPackage ../servers/interlock {};
 
-  jellyfin = callPackage ../servers/jellyfin { ffmpeg = ffmpeg_4; };
+  jellyfin = callPackage ../servers/jellyfin { };
 
   jellyfin-mpv-shim = python3Packages.callPackage ../applications/video/jellyfin-mpv-shim { };
 
@@ -4684,6 +4684,8 @@ in
 
   kippo = callPackage ../servers/kippo { };
 
+  kristall = libsForQt5.callPackage ../applications/networking/browsers/kristall { };
+
   kzipmix = pkgsi686Linux.callPackage ../tools/compression/kzipmix { };
 
   ma1sd = callPackage ../servers/ma1sd { };
@@ -5869,8 +5871,6 @@ in
 
   patchage = callPackage ../applications/audio/patchage { };
 
-  patchwork-classic = callPackage ../applications/networking/ssb/patchwork-classic { };
-
   pcapfix = callPackage ../tools/networking/pcapfix { };
 
   pbzip2 = callPackage ../tools/compression/pbzip2 { };
@@ -6401,7 +6401,9 @@ in
 
   rpiboot-unstable = callPackage ../development/misc/rpiboot/unstable.nix { };
 
-  rpm = callPackage ../tools/package-management/rpm { };
+  rpm = callPackage ../tools/package-management/rpm {
+    python = python3;
+  };
 
   rpm-ostree = callPackage ../tools/misc/rpm-ostree {
     gperf = gperf_3_0;
@@ -6838,7 +6840,7 @@ in
 
   svgcleaner = callPackage ../tools/graphics/svgcleaner { };
 
-  ssb-patchwork = callPackage ../applications/networking/ssb/patchwork { };
+  ssb-patchwork = callPackage ../applications/networking/ssb-patchwork { };
 
   ssdeep = callPackage ../tools/security/ssdeep { };
 
@@ -10274,12 +10276,6 @@ in
 
   cpplint = callPackage ../development/tools/analysis/cpplint { };
 
-  cquery = callPackage ../development/tools/misc/cquery {
-    # 7 is the default, but only on Linux, so keep this for now
-    llvmPackages = llvmPackages_7;
-  };
-
-
   ccls = callPackage ../development/tools/misc/ccls {
     llvmPackages = llvmPackages_8;
     stdenv = llvmPackages_8.stdenv;
@@ -11723,8 +11719,6 @@ in
   ffmpeg = ffmpeg_4;
 
   ffmpeg-full = callPackage ../development/libraries/ffmpeg-full {
-    ffmpeg = ffmpeg_4;
-
     # The following need to be fixed on Darwin
     frei0r = if stdenv.isDarwin then null else frei0r;
     game-music-emu = if stdenv.isDarwin then null else game-music-emu;
@@ -12081,7 +12075,7 @@ in
   gsettings-qt = libsForQt5.callPackage ../development/libraries/gsettings-qt { };
 
   gst_all_1 = recurseIntoAttrs(callPackage ../development/libraries/gstreamer {
-    callPackage = newScope { libav = pkgs.ffmpeg_4; };
+    callPackage = newScope { libav = pkgs.ffmpeg; };
     inherit (darwin.apple_sdk.frameworks) CoreServices;
   });
 
@@ -13082,8 +13076,6 @@ in
 
   liblastfmSF = callPackage ../development/libraries/liblastfmSF { };
 
-  liblastfm = libsForQt5.callPackage ../development/libraries/liblastfm { };
-
   liblcf = callPackage ../development/libraries/liblcf { };
 
   liblqr1 = callPackage ../development/libraries/liblqr-1 { };
@@ -13817,7 +13809,7 @@ in
     withGUI = false;
   };
 
-  mlt = callPackage ../development/libraries/mlt { ffmpeg = ffmpeg_4; };
+  mlt = callPackage ../development/libraries/mlt { };
 
   mlv-app = libsForQt5.callPackage ../applications/video/mlv-app { };
 
@@ -14217,6 +14209,8 @@ in
 
   flatbuffers = callPackage ../development/libraries/flatbuffers { };
 
+  nanopb = callPackage ../development/libraries/nanopb { };
+
   gnupth = callPackage ../development/libraries/pth { };
   pth = if stdenv.hostPlatform.isMusl then npth else gnupth;
 
@@ -14357,6 +14351,8 @@ in
 
     libktorrent = callPackage ../development/libraries/libktorrent { };
 
+    liblastfm = callPackage ../development/libraries/liblastfm { };
+
     libopenshot = callPackage ../applications/video/openshot-qt/libopenshot.nix { };
 
     libopenshot-audio = callPackage ../applications/video/openshot-qt/libopenshot-audio.nix { };
@@ -14369,9 +14365,7 @@ in
 
     kpmcore = callPackage ../development/libraries/kpmcore { };
 
-    mlt = callPackage ../development/libraries/mlt/qt-5.nix {
-      ffmpeg = ffmpeg_4;
-    };
+    mlt = callPackage ../development/libraries/mlt/qt-5.nix { };
 
     openbr = callPackage ../development/libraries/openbr { };
 
@@ -15149,6 +15143,9 @@ in
 
   wxGTK = wxGTK28;
 
+  wxGTK30 = wxGTK30-gtk2;
+  wxGTK31 = wxGTK31-gtk2;
+
   wxGTK28 = callPackage ../development/libraries/wxwidgets/2.8 {
     inherit (gnome2) GConf;
   };
@@ -15159,14 +15156,28 @@ in
     inherit (darwin.apple_sdk.frameworks) AGL Carbon Cocoa Kernel QuickTime;
   };
 
-  wxGTK30 = callPackage ../development/libraries/wxwidgets/3.0 {
+  wxGTK30-gtk2 = callPackage ../development/libraries/wxwidgets/3.0 {
+    withGtk2 = true;
     inherit (gnome2) GConf;
     inherit (darwin.stubs) setfile;
     inherit (darwin.apple_sdk.frameworks) AGL Carbon Cocoa Kernel QTKit;
   };
 
-  wxGTK31 = callPackage ../development/libraries/wxwidgets/3.1 {
+  wxGTK30-gtk3 = callPackage ../development/libraries/wxwidgets/3.0 {
+    withGtk2 = false;
+    inherit (darwin.stubs) setfile;
+    inherit (darwin.apple_sdk.frameworks) AGL Carbon Cocoa Kernel QTKit;
+  };
+
+  wxGTK31-gtk2 = callPackage ../development/libraries/wxwidgets/3.1 {
+    withGtk2 = true;
     inherit (gnome2) GConf;
+    inherit (darwin.stubs) setfile;
+    inherit (darwin.apple_sdk.frameworks) AGL Carbon Cocoa Kernel QTKit;
+  };
+
+  wxGTK31-gtk3 = callPackage ../development/libraries/wxwidgets/3.1 {
+    withGtk2 = false;
     inherit (darwin.stubs) setfile;
     inherit (darwin.apple_sdk.frameworks) AGL Carbon Cocoa Kernel QTKit;
   };
@@ -15663,6 +15674,7 @@ in
 
   dovecot = callPackage ../servers/mail/dovecot { };
   dovecot_pigeonhole = callPackage ../servers/mail/dovecot/plugins/pigeonhole { };
+  dovecot_fts_xapian = callPackage ../servers/mail/dovecot/plugins/fts_xapian { };
 
   dspam = callPackage ../servers/mail/dspam { };
 
@@ -15753,7 +15765,7 @@ in
 
   hiawatha = callPackage ../servers/http/hiawatha {};
 
-  home-assistant = callPackage ../servers/home-assistant { 
+  home-assistant = callPackage ../servers/home-assistant {
     python3 = python37;
   };
 
@@ -18855,7 +18867,6 @@ in
   bibletime = libsForQt5.callPackage ../applications/misc/bibletime { };
 
   bino3d = libsForQt5.callPackage ../applications/video/bino3d {
-    ffmpeg = ffmpeg_4;
     glew = glew110;
   };
 
@@ -19124,7 +19135,7 @@ in
 
   ctop = callPackage ../tools/system/ctop { };
 
-  cubicsdr = callPackage ../applications/radio/cubicsdr { wxGTK = wxGTK31; };
+  cubicsdr = callPackage ../applications/radio/cubicsdr { };
 
   cum = callPackage ../applications/misc/cum { };
 
@@ -20068,6 +20079,8 @@ in
   hackrf = callPackage ../applications/radio/hackrf { };
 
   hakuneko = callPackage ../tools/misc/hakuneko { };
+
+  hamster = callPackage ../applications/misc/hamster { };
 
   hashit = callPackage ../tools/misc/hashit { };
 
@@ -21046,6 +21059,7 @@ in
   mpvScripts = recurseIntoAttrs {
     convert = callPackage ../applications/video/mpv/scripts/convert.nix {};
     mpris = callPackage ../applications/video/mpv/scripts/mpris.nix {};
+    simple-mpv-webui = callPackage ../applications/video/mpv/scripts/simple-mpv-webui.nix {};
   };
 
   mrpeach = callPackage ../applications/audio/pd-plugins/mrpeach { };
@@ -21363,7 +21377,7 @@ in
 
   obs-linuxbrowser = callPackage ../applications/video/obs-studio/linuxbrowser.nix { };
 
-  obs-studio = libsForQt5.callPackage ../applications/video/obs-studio { ffmpeg = ffmpeg_4; };
+  obs-studio = libsForQt5.callPackage ../applications/video/obs-studio { };
 
   obs-wlrobs = callPackage ../applications/video/obs-studio/wlrobs.nix { };
 
@@ -22191,9 +22205,7 @@ in
 
   soxr = callPackage ../applications/misc/audio/soxr { };
 
-  spek = callPackage ../applications/audio/spek {
-    ffmpeg = ffmpeg_2;
-  };
+  spek = callPackage ../applications/audio/spek { };
 
   spotify = callPackage ../applications/audio/spotify {
     libgcrypt = libgcrypt_1_5;
@@ -23646,7 +23658,6 @@ in
     inherit (plasma5) oxygen;
     inherit (kdeApplications) akonadi-contacts;
     inherit (kdeFrameworks) kcalendarcore;
-    ffmpeg = ffmpeg_4;
     opencv3 = opencv3WithoutCuda;
   };
 
@@ -23846,8 +23857,8 @@ in
 
   katagoWithCuda = katago.override {
     cudaSupport = true;
-    cudnn = cudnn_cudatoolkit_10_1;
-    cudatoolkit = cudatoolkit_10_1;
+    cudnn = cudnn_cudatoolkit_10_2;
+    cudatoolkit = cudatoolkit_10_2;
   };
 
   klavaro = callPackage ../games/klavaro {};
@@ -26353,9 +26364,7 @@ in
 
   vazir-fonts = callPackage ../data/fonts/vazir-fonts { };
 
-  vbam = callPackage ../misc/emulators/vbam {
-    ffmpeg = ffmpeg_4;
-  };
+  vbam = callPackage ../misc/emulators/vbam { };
 
   vice = callPackage ../misc/emulators/vice {
     giflib = giflib_4_1;
