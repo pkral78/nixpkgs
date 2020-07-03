@@ -2150,7 +2150,9 @@ in
 
   pbzx = callPackage ../tools/compression/pbzx { };
 
-  persepolis = python3Packages.callPackage ../tools/networking/persepolis { };
+  persepolis = python3Packages.callPackage ../tools/networking/persepolis {
+    wrapQtAppsHook = qt5.wrapQtAppsHook;
+  };
 
   pev = callPackage ../development/tools/analysis/pev { };
 
@@ -4537,6 +4539,10 @@ in
 
   kbdd = callPackage ../applications/window-managers/kbdd { };
 
+  kbs2 = callPackage ../tools/security/kbs2 {
+    inherit (darwin.apple_sdk.frameworks) AppKit;
+  };
+
   kdbplus = pkgsi686Linux.callPackage ../applications/misc/kdbplus { };
 
   keepalived = callPackage ../tools/networking/keepalived { };
@@ -5539,6 +5545,8 @@ in
   nifskope = libsForQt5.callPackage ../tools/graphics/nifskope { };
 
   nilfs-utils = callPackage ../tools/filesystems/nilfs-utils {};
+
+  nimmm = callPackage ../applications/misc/nimmm { };
 
   nitrogen = callPackage ../tools/X11/nitrogen {};
 
