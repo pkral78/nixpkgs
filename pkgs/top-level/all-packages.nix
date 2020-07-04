@@ -183,6 +183,8 @@ in
 
   deadcode = callPackage ../development/tools/deadcode { };
 
+  eclipse-mat = callPackage ../development/tools/eclipse-mat { };
+
   glade = callPackage ../development/tools/glade { };
 
   hobbes = callPackage ../development/tools/hobbes { };
@@ -760,6 +762,8 @@ in
   aws-iam-authenticator = callPackage ../tools/security/aws-iam-authenticator {};
 
   awscli = callPackage ../tools/admin/awscli { };
+
+  awscli2 = callPackage ../tools/admin/awscli2 { };
 
   awsebcli = callPackage ../tools/virtualization/awsebcli {};
 
@@ -1791,6 +1795,8 @@ in
   errcheck = callPackage ../development/tools/errcheck { };
 
   eschalot = callPackage ../tools/security/eschalot { };
+
+  espanso = callPackage ../applications/office/espanso { };
 
   esphome = callPackage ../tools/misc/esphome { };
 
@@ -5119,7 +5125,7 @@ in
   mailhog = callPackage ../servers/mail/mailhog {};
 
   mailnag = callPackage ../applications/networking/mailreaders/mailnag {
-    pythonPackages = python2Packages;
+    pythonPackages = python3Packages;
   };
 
   mailsend = callPackage ../tools/networking/mailsend { };
@@ -5960,9 +5966,7 @@ in
 
   brickd = callPackage ../servers/brickd { };
 
-  bully = callPackage ../tools/networking/bully {
-    openssl = openssl_1_0_2;
-  };
+  bully = callPackage ../tools/networking/bully { };
 
   pcapc = callPackage ../tools/networking/pcapc { };
 
@@ -7822,9 +7826,7 @@ in
     libxml2 = libxml2Python;
   };
 
-  xsecurelock = callPackage ../tools/X11/xsecurelock {
-    xset = xorg.xset;
-  };
+  xsecurelock = callPackage ../tools/X11/xsecurelock { };
 
   xsel = callPackage ../tools/misc/xsel { };
 
@@ -14987,8 +14989,6 @@ in
 
   telepathy-farstream = callPackage ../development/libraries/telepathy/farstream {};
 
-  telepathy-qt = callPackage ../development/libraries/telepathy/qt { qtbase = qt4; };
-
   termbox = callPackage ../development/libraries/termbox { };
 
   tevent = callPackage ../development/libraries/tevent { };
@@ -17347,7 +17347,7 @@ in
   # Hardened Linux
   hardenedLinuxPackagesFor = kernel': overrides:
     let # Note: We use this hack since the hardened patches can lag behind and we don't want to delay updates:
-      linux_latest_for_hardened = pkgs.linux_5_6; # TODO: Update to linux_latest
+      linux_latest_for_hardened = pkgs.linux_latest;
       kernel = (if kernel' == pkgs.linux_latest then linux_latest_for_hardened else kernel').override overrides;
     in linuxPackagesFor (kernel.override {
       structuredExtraConfig = import ../os-specific/linux/kernel/hardened/config.nix {
@@ -23629,6 +23629,8 @@ in
   particl-core = callPackage ../applications/blockchains/particl/particl-core.nix { miniupnpc = miniupnpc_2; };
 
   quorum = callPackage ../applications/blockchains/quorum.nix { };
+
+  whirlpool-gui = callPackage ../applications/blockchains/whirlpool-gui { };
 
   ### GAMES
 
