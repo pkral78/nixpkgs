@@ -3969,6 +3969,10 @@ in
   gocryptfs = callPackage ../tools/filesystems/gocryptfs { };
 
   godot = callPackage ../development/tools/godot {};
+  
+  godot-headless = callPackage ../development/tools/godot/headless.nix { };
+
+  godot-server = callPackage ../development/tools/godot/server.nix { };
 
   goklp = callPackage ../tools/networking/goklp {};
 
@@ -6897,6 +6901,8 @@ in
   slstatus = callPackage ../applications/misc/slstatus {
     conf = config.slstatus.conf or null;
   };
+
+  sm64ex = callPackage ../games/sm64ex { };
 
   smartdns = callPackage ../tools/networking/smartdns { };
 
@@ -11258,6 +11264,8 @@ in
 
   remake = callPackage ../development/tools/build-managers/remake { };
 
+  replacement = callPackage ../development/tools/misc/replacement { };
+
   retdec = callPackage ../development/tools/analysis/retdec {
     stdenv = gcc8Stdenv;
   };
@@ -11383,6 +11391,8 @@ in
   stm32flash = callPackage ../development/tools/misc/stm32flash { };
 
   strace = callPackage ../development/tools/misc/strace { };
+
+  summon = callPackage ../development/tools/summon { };
 
   swarm = callPackage ../development/tools/analysis/swarm { };
 
@@ -17607,6 +17617,8 @@ in
 
     rtl88x2bu = callPackage ../os-specific/linux/rtl88x2bu { };
 
+    rtl8821cu = callPackage ../os-specific/linux/rtl8821cu { };
+
     rtlwifi_new = callPackage ../os-specific/linux/rtlwifi_new { };
 
     openafs = callPackage ../servers/openafs/1.6/module.nix { };
@@ -20890,6 +20902,10 @@ in
 
   iksemel = callPackage ../development/libraries/iksemel { };
 
+  imag = callPackage ../applications/misc/imag {
+    inherit (darwin.apple_sdk.frameworks) Security;
+  };
+
   imagej = callPackage ../applications/graphics/imagej { };
 
   imagemagick_light = imagemagick.override {
@@ -21411,6 +21427,8 @@ in
   };
 
   lv2bm = callPackage ../applications/audio/lv2bm { };
+
+  lv2-cpp-tools = callPackage ../applications/audio/lv2-cpp-tools { };
 
   lynx = callPackage ../applications/networking/browsers/lynx { };
 
@@ -23000,6 +23018,8 @@ in
     inherit (darwin.apple_sdk.frameworks) Security;
   };
 
+  talentedhack = callPackage ../applications/audio/talentedhack { };
+
   tambura = callPackage ../applications/audio/tambura { };
 
   tamgamp.lv2 = callPackage ../applications/audio/tamgamp.lv2 { };
@@ -23419,6 +23439,8 @@ in
   vlc_qt5 = vlc;
 
   vmpk = callPackage ../applications/audio/vmpk { };
+
+  vocproc = callPackage ../applications/audio/vocproc { };
 
   vnstat = callPackage ../applications/networking/vnstat { };
 
@@ -24551,6 +24573,8 @@ in
   kobodeluxe = callPackage ../games/kobodeluxe { };
 
   leela-zero = libsForQt5.callPackage ../games/leela-zero { };
+
+  legendary-gl = python38Packages.callPackage ../games/legendary-gl { };
 
   lgogdownloader = callPackage ../games/lgogdownloader { };
 
