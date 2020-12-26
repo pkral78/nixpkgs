@@ -1749,6 +1749,8 @@ in
     gflags = null; # only required for examples/tests
   };
 
+  craftos-pc = callPackage ../misc/emulators/craftos-pc { };
+
   gcdemu = callPackage ../misc/emulators/cdemu/gui.nix { };
 
   image-analyzer = callPackage ../misc/emulators/cdemu/analyzer.nix { };
@@ -3984,6 +3986,8 @@ in
   fdk-aac-encoder = callPackage ../applications/audio/fdkaac { };
 
   feedgnuplot = callPackage ../tools/graphics/feedgnuplot { };
+
+  fbcat = callPackage ../tools/misc/fbcat { };
 
   fbv = callPackage ../tools/graphics/fbv { };
 
@@ -16440,7 +16444,7 @@ in
   vulkan-tools-lunarg = callPackage ../tools/graphics/vulkan-tools-lunarg { };
   vulkan-validation-layers = callPackage ../development/tools/vulkan-validation-layers { };
 
-  vtkWithQt5 = vtk.override { qtLib = qt514; };
+  vtkWithQt5 = vtk.override { qtLib = qt515; };
 
   vxl = callPackage ../development/libraries/vxl {
     libpng = libpng12;
@@ -16643,7 +16647,7 @@ in
   libzra = callPackage ../development/libraries/libzra { };
 
   zig = callPackage ../development/compilers/zig {
-    llvmPackages = llvmPackages_10;
+    llvmPackages = llvmPackages_11;
   };
 
   zimlib = callPackage ../development/libraries/zimlib { };
@@ -18384,6 +18388,7 @@ in
     kernelPatches = [
       kernelPatches.bridge_stp_helper
       kernelPatches.request_key_helper
+      kernelPatches.rtl8761b_support
       kernelPatches.export_kernel_fpu_functions."5.3"
     ];
   };
@@ -19139,6 +19144,8 @@ in
   rtl8192su-firmware = callPackage ../os-specific/linux/firmware/rtl8192su-firmware { };
 
   rtl8723bs-firmware = callPackage ../os-specific/linux/firmware/rtl8723bs-firmware { };
+
+  rtl8761b-firmware = callPackage ../os-specific/linux/firmware/rtl8761b-firmware { };
 
   rtlwifi_new-firmware = callPackage ../os-specific/linux/firmware/rtlwifi_new-firmware { };
 
@@ -25494,6 +25501,7 @@ in
   anki = python3Packages.callPackage ../games/anki {
     inherit (darwin.apple_sdk.frameworks) CoreAudio;
   };
+  anki-bin = callPackage ../games/anki/bin.nix { buildFHSUserEnv = buildFHSUserEnvBubblewrap; };
 
   armagetronad = callPackage ../games/armagetronad { };
 
