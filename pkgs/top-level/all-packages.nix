@@ -222,6 +222,8 @@ in
 
   ptags = callPackage ../development/tools/misc/ptags { };
 
+  ptouch-print = callPackage ../misc/ptouch-print { };
+
   demoit = callPackage ../servers/demoit { };
 
   deviceTree = callPackage ../os-specific/linux/device-tree {};
@@ -1304,6 +1306,8 @@ in
   asc-key-to-qr-code-gif = callPackage ../tools/security/asc-key-to-qr-code-gif { };
 
   gopass = callPackage ../tools/security/gopass { };
+
+  gospider = callPackage ../tools/security/gospider { };
 
   browserpass = callPackage ../tools/security/browserpass { };
 
@@ -3379,6 +3383,8 @@ in
 
   dnstop = callPackage ../tools/networking/dnstop { };
 
+  dnsx = callPackage ../tools/security/dnsx { };
+
   dhcp = callPackage ../tools/networking/dhcp { };
 
   dhcpdump = callPackage ../tools/networking/dhcpdump { };
@@ -4147,6 +4153,8 @@ in
 
   garmintools = callPackage ../development/libraries/garmintools {};
 
+  gau = callPackage ../tools/security/gau { };
+
   gauge = callPackage ../development/tools/gauge { };
 
   gawk = callPackage ../tools/text/gawk {
@@ -4752,6 +4760,8 @@ in
 
   httptunnel = callPackage ../tools/networking/httptunnel { };
 
+  httpx = callPackage ../tools/security/httpx { };
+
   hubicfuse = callPackage ../tools/filesystems/hubicfuse { };
 
   humanfriendly = with python3Packages; toPythonApplication humanfriendly;
@@ -5245,6 +5255,8 @@ in
   lunar-client = callPackage ../games/lunar-client {};
 
   lvmsync = callPackage ../tools/backup/lvmsync { };
+
+  kapp = callPackage ../tools/networking/kapp {};
 
   kdbg = libsForQt5.callPackage ../development/tools/misc/kdbg { };
 
@@ -6204,6 +6216,8 @@ in
 
   oathToolkit = callPackage ../tools/security/oath-toolkit { };
 
+  oatpp = callPackage ../development/libraries/oatpp { };
+
   obex_data_server = callPackage ../tools/bluetooth/obex-data-server { };
 
   obexd = callPackage ../tools/bluetooth/obexd { };
@@ -6256,6 +6270,8 @@ in
   };
 
   onioncircuits = callPackage ../tools/security/onioncircuits { };
+
+  onlykey-cli = callPackage ../tools/security/onlykey-cli { };
 
   openapi-generator-cli = callPackage ../tools/networking/openapi-generator-cli { };
   openapi-generator-cli-unstable = callPackage ../tools/networking/openapi-generator-cli/unstable.nix { };
@@ -6963,6 +6979,8 @@ in
   rtmpdump_gnutls = rtmpdump.override { gnutlsSupport = true; opensslSupport = false; };
 
   rtptools = callPackage ../tools/networking/rtptools { };
+
+  rtss = callPackage ../development/tools/misc/rtss { };
 
   reaverwps = callPackage ../tools/networking/reaver-wps {};
 
@@ -8744,7 +8762,9 @@ in
 
   fish-foreign-env = callPackage ../shells/fish/fish-foreign-env { };
 
-  ion = callPackage ../shells/ion { };
+  ion = callPackage ../shells/ion {
+    inherit (darwin) Security;
+  };
 
   jush = callPackage ../shells/jush { };
 
@@ -9031,8 +9051,9 @@ in
     crystal_0_33
     crystal_0_34
     crystal_0_35
-    crystal
-    crystal2nix;
+    crystal;
+
+  crystal2nix = callPackage ../development/compilers/crystal2nix { };
 
   icr = callPackage ../development/tools/icr { };
 
@@ -9431,7 +9452,8 @@ in
   gcc-arm-embedded-7 = callPackage ../development/compilers/gcc-arm-embedded/7 {};
   gcc-arm-embedded-8 = callPackage ../development/compilers/gcc-arm-embedded/8 {};
   gcc-arm-embedded-9 = callPackage ../development/compilers/gcc-arm-embedded/9 {};
-  gcc-arm-embedded = gcc-arm-embedded-9;
+  gcc-arm-embedded-10 = callPackage ../development/compilers/gcc-arm-embedded/10 {};
+  gcc-arm-embedded = gcc-arm-embedded-10;
 
   gdc = gdc9;
   gdc9 = wrapCC (gcc9.cc.override {
@@ -10544,7 +10566,7 @@ in
 
   ### LUA interpreters
   luaInterpreters = callPackage ./../development/interpreters/lua-5 {};
-  inherit (luaInterpreters) lua5_1 lua5_2 lua5_2_compat lua5_3 lua5_3_compat luajit_2_1 luajit_2_0;
+  inherit (luaInterpreters) lua5_1 lua5_2 lua5_2_compat lua5_3 lua5_3_compat lua5_4 lua5_4_compat luajit_2_1 luajit_2_0;
 
   lua5 = lua5_2_compat;
   lua = lua5;
@@ -11503,6 +11525,8 @@ in
   flootty = callPackage ../development/tools/flootty { };
 
   fffuu = haskell.lib.justStaticExecutables (haskellPackages.callPackage ../tools/misc/fffuu { });
+
+  ffuf = callPackage ../tools/security/ffuf { };
 
   flow = callPackage ../development/tools/analysis/flow {
     ocamlPackages = ocaml-ng.ocamlPackages_4_07;
@@ -14985,6 +15009,8 @@ in
 
   mbedtls = callPackage ../development/libraries/mbedtls { };
 
+  mdctags = callPackage ../development/tools/misc/mdctags { };
+
   mdds = callPackage ../development/libraries/mdds { };
 
   mediastreamer = callPackage ../development/libraries/mediastreamer { };
@@ -15680,7 +15706,7 @@ in
 
     kreport = callPackage ../development/libraries/kreport { };
 
-    KQuickImageEdit = callPackage ../development/libraries/KQuickImageEdit { };
+    kquickimageedit = callPackage ../development/libraries/kquickimageedit { };
 
     ldutils = callPackage ../development/libraries/ldutils { };
 
@@ -17859,9 +17885,9 @@ in
 
   inherit (callPackages ../servers/unifi { })
     unifiLTS
-    unifiStable
-    unifiBeta;
-  unifi = unifiStable;
+    unifi5
+    unifi6;
+  unifi = unifi6;
 
   urserver = callPackage ../servers/urserver { };
 
@@ -18499,6 +18525,14 @@ in
     ];
   };
 
+  linux_lqx = callPackage ../os-specific/linux/kernel/linux-lqx.nix {
+    kernelPatches = [
+      kernelPatches.bridge_stp_helper
+      kernelPatches.request_key_helper
+      kernelPatches.export_kernel_fpu_functions."5.3"
+    ];
+  };
+
   /* Linux kernel modules are inherently tied to a specific kernel.  So
      rather than provide specific instances of those packages for a
      specific kernel, we have a function that builds those packages
@@ -18813,6 +18847,7 @@ in
 
   # zen-kernel
   linuxPackages_zen = recurseIntoAttrs (linuxPackagesFor pkgs.linux_zen);
+  linuxPackages_lqx = recurseIntoAttrs (linuxPackagesFor pkgs.linux_lqx);
 
   # A function to build a manually-configured kernel
   linuxManualConfig = makeOverridable (callPackage ../os-specific/linux/kernel/manual-config.nix {});
@@ -19161,8 +19196,6 @@ in
   raspberrypiWirelessFirmware = callPackage ../os-specific/linux/firmware/raspberrypi-wireless { };
 
   raspberrypi-eeprom = callPackage ../os-specific/linux/raspberrypi-eeprom {};
-
-  raspberrypi-tools = callPackage ../os-specific/linux/firmware/raspberrypi/tools.nix {};
 
   regionset = callPackage ../os-specific/linux/regionset { };
 
@@ -19882,6 +19915,8 @@ in
 
   meslo-lg = callPackage ../data/fonts/meslo-lg {};
 
+  meslo-lgs-nf = callPackage ../data/fonts/meslo-lgs-nf {};
+
   migmix = callPackage ../data/fonts/migmix {};
 
   migu = callPackage ../data/fonts/migu {};
@@ -19936,6 +19971,8 @@ in
     noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-emoji-blob-bin noto-fonts-extra;
 
   nuclear = callPackage ../applications/audio/nuclear { };
+
+  nuclei = callPackage ../tools/security/nuclei { };
 
   nullmailer = callPackage ../servers/mail/nullmailer {
     stdenv = gccStdenv;
@@ -22018,8 +22055,6 @@ in
 
   spectrwm = callPackage ../applications/window-managers/spectrwm { };
 
-  spectral = qt5.callPackage ../applications/networking/instant-messengers/spectral { };
-
   spotify-cli-linux = callPackage ../applications/audio/spotify-cli-linux { };
 
   spotifyd = callPackage ../applications/audio/spotifyd {
@@ -22056,6 +22091,8 @@ in
   i3-gaps = callPackage ../applications/window-managers/i3/gaps.nix { };
 
   i3altlayout = callPackage ../applications/window-managers/i3/altlayout.nix { };
+
+  i3-balance-workspace = python3Packages.callPackage ../applications/window-managers/i3/balance-workspace.nix { };
 
   i3-easyfocus = callPackage ../applications/window-managers/i3/easyfocus.nix { };
 
@@ -23167,6 +23204,8 @@ in
   rep-gtk = callPackage ../development/libraries/rep-gtk { };
 
   sawfish = callPackage ../applications/window-managers/sawfish { };
+
+  sc68 = callPackage ../applications/audio/sc68 { };
 
   sidplayfp = callPackage ../applications/audio/sidplayfp { };
 
@@ -24528,6 +24567,10 @@ in
   ulauncher = callPackage ../applications/misc/ulauncher { };
 
   twinkle = qt5.callPackage ../applications/networking/instant-messengers/twinkle { };
+
+  terminal-typeracer = callPackage ../applications/misc/terminal-typeracer {
+    inherit (darwin.apple_sdk.frameworks) Security;
+  };
 
   ueberzug = with python3Packages; toPythonApplication ueberzug;
 
@@ -27497,6 +27540,8 @@ in
 
   stellarium = libsForQt5.callPackage ../applications/science/astronomy/stellarium { };
 
+  stellarsolver = libsForQt5.callPackage ../development/libraries/stellarsolver { };
+
   astrolabe-generator = callPackage ../applications/science/astronomy/astrolabe-generator { };
 
   tulip = callPackage ../applications/science/misc/tulip {
@@ -27567,6 +27612,8 @@ in
   apmplanner2 = libsForQt514.callPackage ../applications/science/robotics/apmplanner2 { };
 
   betaflight-configurator = callPackage ../applications/science/robotics/betaflight-configurator { };
+
+  mission-planner = callPackage ../applications/science/robotics/mission-planner { };
 
   ### MISC
 
@@ -28765,8 +28812,6 @@ in
 
   mpvc = callPackage ../applications/misc/mpvc { };
 
-  aucdtect = callPackage ../tools/audio/aucdtect { };
-
   togglesg-download = callPackage ../tools/misc/togglesg-download { };
 
   discord = import ../applications/networking/instant-messengers/discord {
@@ -28834,7 +28879,7 @@ in
   ghc-standalone-archive = callPackage ../os-specific/darwin/ghc-standalone-archive { inherit (darwin) cctools; };
 
   vdr = callPackage ../applications/video/vdr { };
-  vdrPlugins = recurseIntoAttrs (callPackages ../applications/video/vdr/plugins.nix { });
+  vdrPlugins = recurseIntoAttrs (callPackage ../applications/video/vdr/plugins.nix { });
   wrapVdr = callPackage ../applications/video/vdr/wrapper.nix {};
 
   chrome-export = callPackage ../tools/misc/chrome-export {};
@@ -29009,6 +29054,8 @@ in
   gpio-utils = callPackage ../os-specific/linux/kernel/gpio-utils.nix { };
 
   navidrome = callPackage ../servers/misc/navidrome {};
+
+  zalgo = callPackage ../tools/misc/zalgo { };
 
   zettlr = callPackage ../applications/misc/zettlr { };
 
