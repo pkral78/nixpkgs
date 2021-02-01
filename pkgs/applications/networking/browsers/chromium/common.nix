@@ -7,7 +7,7 @@
 , xdg_utils, yasm, nasm, minizip, libwebp
 , libusb1, pciutils, nss, re2
 
-, python2Packages, perl, pkgconfig
+, python2Packages, perl, pkg-config
 , nspr, systemd, kerberos
 , util-linux, alsaLib
 , bison, gperf
@@ -39,7 +39,7 @@
 
 buildFun:
 
-with stdenv.lib;
+with lib;
 
 let
   jre = jre8; # TODO: remove override https://github.com/NixOS/nixpkgs/pull/89731
@@ -101,12 +101,14 @@ let
   buildPath = "out/${buildType}";
   libExecPath = "$out/libexec/${packageName}";
 
+  chromiumVersionAtLeast = min-version:
+    versionAtLeast upstream-info.version min-version;
   versionRange = min-version: upto-version:
     let inherit (upstream-info) version;
         result = versionAtLeast version min-version && versionOlder version upto-version;
-        stable-version = (importJSON ./upstream-info.json).stable.version;
-    in if versionAtLeast stable-version upto-version
-       then warn "chromium: stable version ${stable-version} is newer than a patchset bounded at ${upto-version}. You can safely delete it."
+        ungoogled-version = (importJSON ./upstream-info.json).ungoogled-chromium.version;
+    in if versionAtLeast ungoogled-version upto-version
+       then warn "chromium: ungoogled version ${ungoogled-version} is newer than a patchset bounded at ${upto-version}. You can safely delete it."
             result
        else result;
 
@@ -117,7 +119,7 @@ let
   base = rec {
     name = "${packageName}-unwrapped-${version}";
     inherit (upstream-info) version;
-    inherit channel packageName buildType buildPath;
+    inherit packageName buildType buildPath;
 
     src = fetchurl {
       url = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${version}.tar.xz";
@@ -126,7 +128,7 @@ let
 
     nativeBuildInputs = [
       llvmPackages.lldClang.bintools
-      ninja which python2Packages.python perl pkgconfig
+      ninja which python2Packages.python perl pkg-config
       python2Packages.ply python2Packages.jinja2 nodejs
       gnutar python2Packages.setuptools
     ];
@@ -150,8 +152,12 @@ let
     patches = [
       ./patches/no-build-timestamps.patch # Optional patch to use SOURCE_DATE_EPOCH in compute_build_timestamp.py (should be upstreamed)
       ./patches/widevine-79.patch # For bundling Widevine (DRM), might be replaceable via bundle_widevine_cdm=true in gnFlags
-      # ++ optional (versionRange "68" "72") ( githubPatch "<patch>" "0000000000000000000000000000000000000000000000000000000000000000" )
-    ];
+      # ++ optional (versionRange "68" "72") (githubPatch "<patch>" "0000000000000000000000000000000000000000000000000000000000000000")
+    ] ++ optional (versionRange "89" "90") (githubPatch
+      # To fix the build of chromiumBeta:
+      "b5b80df7dafba8cafa4c6c0ba2153dfda467dfc9" # add dependency on opus in webcodecs
+      "1r4wmwaxz5xbffmj5wspv2xj8s32j9p6jnwimjmalqg3al2ba64x"
+    );
 
     postPatch = ''
       # remove unused third-party
@@ -269,6 +275,10 @@ let
       use_system_minigbm = true;
       use_system_libdrm = true;
       system_wayland_scanner_path = "${wayland}/bin/wayland-scanner";
+    } // optionalAttrs (chromiumVersionAtLeast "89") {
+      # Disable PGO (defaults to 2 since M89) because it fails without additional changes:
+      # error: Could not read profile ../../chrome/build/pgo_profiles/chrome-linux-master-1610647094-405a32bcf15e5a84949640f99f84a5b9f61e2f2e.profdata: Unsupported instrumentation profile format version
+      chrome_pgo_phase = 0;
     } // optionalAttrs ungoogled {
       chrome_pgo_phase = 0;
       enable_hangout_services_extension = false;

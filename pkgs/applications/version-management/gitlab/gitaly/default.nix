@@ -1,5 +1,5 @@
-{ stdenv, fetchFromGitLab, fetchFromGitHub, buildGoModule, ruby
-, bundlerEnv, pkgconfig
+{ lib, fetchFromGitLab, fetchFromGitHub, buildGoModule, ruby
+, bundlerEnv, pkg-config
 # libgit2 + dependencies
 , libgit2, openssl, zlib, pcre, http-parser }:
 
@@ -33,14 +33,14 @@ let
       };
   };
 in buildGoModule rec {
-  version = "13.7.1";
+  version = "13.7.4";
   pname = "gitaly";
 
   src = fetchFromGitLab {
     owner = "gitlab-org";
     repo = "gitaly";
     rev = "v${version}";
-    sha256 = "1zmjll7sdan8kc7bq5vjaiyqwzlh5zmx1g4ql4dqmnwscpn1avjb";
+    sha256 = "1inb7xlv8admzy9q1bgxccbrhks0mmc8lng356h39crj5sgaqkmg";
   };
 
   vendorSha256 = "15i1ajvrff1bfpv3kmb1wm1mmriswwfw2v4cml0nv0zp6a5n5187";
@@ -50,7 +50,7 @@ in buildGoModule rec {
   };
 
   buildFlags = [ "-tags=static,system_libgit2" ];
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ pkg-config ];
   buildInputs = [ rubyEnv.wrappedRuby libgit openssl zlib pcre http-parser ];
   doCheck = false;
 
@@ -61,7 +61,7 @@ in buildGoModule rec {
 
   outputs = [ "out" "ruby" ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://gitlab.com/gitlab-org/gitaly";
     description = "A Git RPC service for handling all the git calls made by GitLab";
     platforms = platforms.linux;

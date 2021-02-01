@@ -1,23 +1,37 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib
+, buildGoModule
+, fetchFromGitHub
+, genericUpdater
+, common-updater-scripts
+}:
 
 buildGoModule rec {
   pname = "shellhub-agent";
-  version = "0.4.2";
+  version = "0.5.1";
 
   src = fetchFromGitHub {
     owner = "shellhub-io";
     repo = "shellhub";
     rev = "v${version}";
-    sha256 = "0cd41ing1pcf1bdaaq00w5h7lih5j2kcaa0m41g3ikm3vd1w5qna";
+    sha256 = "1vg236vc2v4g47lb68hb1vy3phamhsyb383fdbblh3vc4vf46j8a";
   };
 
   modRoot = "./agent";
 
-  vendorSha256 = "19gsfhh6idqysdxhpq45sq35gw19adz9lp83krjlhzj1vqm59qma";
+  vendorSha256 = "1l8x9cvisjb8smnsg91v04j1vvawpjzp0lcq0ahw8slz8rfdm80c";
 
   buildFlagsArray = [ "-ldflags=-s -w -X main.AgentVersion=v${version}" ];
 
-  meta = with stdenv.lib; {
+  passthru = {
+    updateScript = genericUpdater {
+      inherit pname version;
+      versionLister = "${common-updater-scripts}/bin/list-git-tags ${src.meta.homepage}";
+      rev-prefix = "v";
+      ignoredVersions = ".(rc|beta).*";
+    };
+  };
+
+  meta = with lib; {
     description =
       "Enables easy access any Linux device behind firewall and NAT";
     longDescription = ''

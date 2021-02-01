@@ -222,10 +222,11 @@ let
       exporterConfig = {
         enable = true;
         url = "http://localhost";
-        configFile = pkgs.writeText "json-exporter-conf.json" (builtins.toJSON [{
-          name = "json_test_metric";
-          path = "$.test";
-        }]);
+        configFile = pkgs.writeText "json-exporter-conf.json" (builtins.toJSON {
+          metrics = [
+            { name = "json_test_metric"; path = "$.test"; }
+          ];
+        });
       };
       metricProvider = {
         systemd.services.prometheus-json-exporter.after = [ "nginx.service" ];
@@ -241,7 +242,9 @@ let
         wait_for_open_port(80)
         wait_for_unit("prometheus-json-exporter.service")
         wait_for_open_port(7979)
-        succeed("curl -sSf localhost:7979/metrics | grep -q 'json_test_metric 1'")
+        succeed(
+            "curl -sSf 'localhost:7979/probe?target=http://localhost' | grep -q 'json_test_metric 1'"
+        )
       '';
     };
 
@@ -420,7 +423,7 @@ let
       exporterConfig = {
         enable = true;
         passwordFile = "/var/nextcloud-pwfile";
-        url = "http://localhost/negative-space.xml";
+        url = "http://localhost";
       };
       metricProvider = {
         systemd.services.nc-pwfile = let
@@ -438,6 +441,7 @@ let
             basicAuth.nextcloud-exporter = "snakeoilpw";
             locations."/" = {
               root = "${pkgs.prometheus-nextcloud-exporter.src}/serverinfo/testdata";
+              tryFiles = "/negative-space.xml =404";
             };
           };
         };
@@ -659,7 +663,7 @@ let
         wait_for_open_port(11334)
         wait_for_open_port(7980)
         wait_until_succeeds(
-            "curl -sSf localhost:7980/metrics | grep -q 'rspamd_scanned{host=\"rspamd\"} 0'"
+            "curl -sSf 'localhost:7980/probe?target=http://localhost:11334/stat' | grep -q 'rspamd_scanned{host=\"rspamd\"} 0'"
         )
       '';
     };

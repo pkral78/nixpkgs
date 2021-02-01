@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitLab
 , substituteAll
 , meson
@@ -17,6 +17,7 @@
 , libgpgerror
 , json-glib
 , duplicity
+, dconf
 }:
 
 stdenv.mkDerivation rec {
@@ -56,13 +57,14 @@ stdenv.mkDerivation rec {
     libhandy_0
     libgpgerror
     json-glib
+    dconf
   ];
 
   mesonFlags = [
     "-Dduplicity_command=${duplicity}/bin/duplicity"
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A simple backup tool";
     longDescription = ''
       Déjà Dup is a simple backup tool. It hides the complexity \

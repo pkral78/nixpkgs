@@ -38,7 +38,7 @@
 , nss_3_53
 , pango
 , perl
-, pkgconfig
+, pkg-config
 , python2
 , python3
 , runtimeShell
@@ -73,13 +73,13 @@ assert waylandSupport -> gtk3Support == true;
 
 stdenv.mkDerivation rec {
   pname = "thunderbird";
-  version = "78.6.0";
+  version = "78.7.0";
 
   src = fetchurl {
     url =
       "mirror://mozilla/thunderbird/releases/${version}/source/thunderbird-${version}.source.tar.xz";
     sha512 =
-      "0hx9gg3ngpvgshrz9j7ni4kh3chadqd5w5fpywjjw4naj0k53d0i9jjhq4p6fyvf6rb2g825ibqq794lr9drn6nrfndh5w1yn5lw69n";
+      "1fwi9dvh9q8pzwri6hyyg89zxkfpw3zin53nkqgvips43yq6jdmyxnz3y9qnk2f50d0lnkx12vvkzgirjhdz23gkf7y860zmwg85vpy";
   };
 
   nativeBuildInputs = [
@@ -92,7 +92,7 @@ stdenv.mkDerivation rec {
     nasm
     nodejs
     perl
-    pkgconfig
+    pkg-config
     python2
     python3
     rust-cbindgen

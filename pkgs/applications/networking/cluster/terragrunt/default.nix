@@ -1,23 +1,26 @@
-{ lib, buildGoModule, fetchFromGitHub, makeWrapper }:
+{ lib, buildGoModule, fetchFromGitHub }:
 
 buildGoModule rec {
   pname = "terragrunt";
-  version = "0.26.7";
+  version = "0.27.3";
 
   src = fetchFromGitHub {
     owner = "gruntwork-io";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1431n6zs2mfkgh281xi0d7m9hxifrrsnd46fnpb54mr6lj9h0sdb";
+    sha256 = "sha256-J1kwcguBSHTsU/kGviQaj/cX6PpZGs3UI2AJy5+/pCc=";
   };
 
-  vendorSha256 = "18ix11g709fvh8h02k3p2bmzrq5fjzaqa50h3g74s3hyl2gc9s9h";
+  vendorSha256 = "sha256-AMxBzUHRsq1HOMtvgYqIw22Cky7gQ7/2hI8wQnxaXb0=";
 
   doCheck = false;
 
-  buildInputs = [ makeWrapper ];
-
-  buildFlagsArray = [ "-ldflags=" "-X main.VERSION=v${version}" ];
+  buildFlagsArray = [
+    "-ldflags="
+    "-s"
+    "-w"
+    "-X main.VERSION=v${version}"
+  ];
 
   meta = with lib; {
     description = "A thin wrapper for Terraform that supports locking for Terraform state and enforces best practices";

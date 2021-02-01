@@ -30,7 +30,7 @@ from urllib.request import urlopen
 COMPONENT_PREFIX = "homeassistant.components"
 PKG_SET = "python3Packages"
 
-# If some requirements are matched by multiple python packages,
+# If some requirements are matched by multiple Python packages,
 # the following can be used to choose one of them
 PKG_PREFERENCES = {
     # Use python3Packages.youtube-dl-light instead of python3Packages.youtube-dl
@@ -39,6 +39,7 @@ PKG_PREFERENCES = {
     "tensorflow-bin_2": "tensorflow",
     "tensorflowWithoutCuda": "tensorflow",
     "tensorflow-build_2": "tensorflow",
+    "whois": "python-whois",
 }
 
 
@@ -160,7 +161,8 @@ def main() -> None:
             if attr_path is not None:
                 # Add attribute path without "python3Packages." prefix
                 attr_paths.append(attr_path[len(PKG_SET + ".") :])
-            else:
+            # home-assistant-frontend is always in propagatedBuildInputs
+            elif name != 'home-assistant-frontend':
                 missing_reqs.append(name)
         else:
             build_inputs[component] = (attr_paths, missing_reqs)
