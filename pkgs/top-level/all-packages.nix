@@ -2908,6 +2908,16 @@ in
 
   beanstalkd = callPackage ../servers/beanstalkd { };
 
+  bee = callPackage ../applications/networking/bee/bee.nix {
+    version = "release";
+  };
+
+  bee-unstable = bee.override {
+    version = "unstable";
+  };
+
+  bee-clef = callPackage ../applications/networking/bee/bee-clef.nix { };
+
   beets = callPackage ../tools/audio/beets {
     pythonPackages = python3Packages;
   };
@@ -3792,7 +3802,7 @@ in
 
   volctl = callPackage ../tools/audio/volctl { };
 
-  vorta = python3Packages.callPackage ../applications/backup/vorta { };
+  vorta = libsForQt5.callPackage ../applications/backup/vorta { };
 
   utahfs = callPackage ../applications/networking/utahfs { };
 
@@ -5954,7 +5964,8 @@ in
   inherit (callPackages ../development/libraries/libwebsockets { })
     libwebsockets_3_1
     libwebsockets_3_2
-    libwebsockets_4_0;
+    libwebsockets_4_0
+    libwebsockets_4_1;
   libwebsockets = libwebsockets_3_2;
 
   licensee = callPackage ../tools/package-management/licensee { };
@@ -7899,6 +7910,8 @@ in
 
   ssh-chat = callPackage ../applications/networking/instant-messengers/ssh-chat { };
 
+  ssh-to-pgp = callPackage ../tools/security/ssh-to-pgp { };
+
   suricata = callPackage ../applications/networking/ids/suricata {
     python = python3;
   };
@@ -9569,7 +9582,7 @@ in
 
   icr = callPackage ../development/tools/icr { };
 
-  scry = callPackage ../development/tools/scry {};
+  scry = callPackage ../development/tools/scry { };
 
   dasm = callPackage ../development/compilers/dasm/default.nix { };
 
@@ -11858,7 +11871,7 @@ in
 
   cloudcompare = libsForQt5.callPackage ../applications/graphics/cloudcompare {};
 
-  cloudfoundry-cli = callPackage ../development/tools/cloudfoundry-cli { };
+  cloudfoundry-cli = callPackage ../applications/networking/cluster/cloudfoundry-cli { };
 
   clpm = callPackage ../development/tools/clpm {};
 
@@ -13337,6 +13350,8 @@ in
 
   cxx-prettyprint = callPackage ../development/libraries/cxx-prettyprint { };
 
+  cxxopts = callPackage ../development/libraries/cxxopts { };
+
   cxxtest = python2Packages.callPackage ../development/libraries/cxxtest { };
 
   cypress = callPackage ../development/web/cypress { };
@@ -14022,6 +14037,11 @@ in
   gtk3 = callPackage ../development/libraries/gtk/3.x.nix {
     inherit (darwin.apple_sdk.frameworks) AppKit Cocoa;
   };
+
+  gtk4 = callPackage ../development/libraries/gtk/4.x.nix {
+    inherit (darwin.apple_sdk.frameworks) AppKit Cocoa;
+  };
+
 
   # On darwin gtk uses cocoa by default instead of x11.
   gtk3-x11 = gtk3.override {
@@ -15834,6 +15854,8 @@ in
   nix-plugins = callPackage ../development/libraries/nix-plugins {};
 
   nika-fonts = callPackage ../data/fonts/nika-fonts { };
+
+  nikto = callPackage ../tools/networking/nikto { };
 
   nlohmann_json = callPackage ../development/libraries/nlohmann_json { };
 
@@ -26538,6 +26560,9 @@ in
   gcompris = libsForQt5.callPackage ../games/gcompris { };
 
   gemrb = callPackage ../games/gemrb { };
+
+  gimx = callPackage ../games/gimx {};
+  gimx-afterglow = lowPrio (gimx.override { gimxAuth = "afterglow"; });
 
   gl117 = callPackage ../games/gl-117 {};
 

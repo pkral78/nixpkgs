@@ -2526,6 +2526,8 @@ in {
 
   geojson-client = callPackage ../development/python-modules/geojson-client { };
 
+  geomet = callPackage ../development/python-modules/geomet { };
+
   geopandas = callPackage ../development/python-modules/geopandas { };
 
   geopy = if isPy3k then
@@ -2753,7 +2755,9 @@ in {
 
   gpyopt = callPackage ../development/python-modules/gpyopt { };
 
-  gradient_sdk = callPackage ../development/python-modules/gradient_sdk { };
+  gradient = callPackage ../development/python-modules/gradient { };
+
+  gradient-utils = callPackage ../development/python-modules/gradient-utils { };
 
   gradient_statsd = callPackage ../development/python-modules/gradient_statsd { };
 
@@ -2792,6 +2796,8 @@ in {
   greenlet = callPackage ../development/python-modules/greenlet { };
 
   grequests = callPackage ../development/python-modules/grequests { };
+
+  gremlinpython = callPackage ../development/python-modules/gremlinpython { };
 
   grib-api = disabledIf (!isPy27) (toPythonModule (pkgs.grib-api.override {
     enablePython = true;
@@ -2874,6 +2880,8 @@ in {
   habanero = callPackage ../development/python-modules/habanero { };
 
   ha-ffmpeg = callPackage ../development/python-modules/ha-ffmpeg { };
+
+  halo = callPackage ../development/python-modules/halo { };
 
   handout = callPackage ../development/python-modules/handout { };
 
@@ -3101,6 +3109,8 @@ in {
   IMAPClient = callPackage ../development/python-modules/imapclient { };
 
   imaplib2 = callPackage ../development/python-modules/imaplib2 { };
+
+  imap-tools = callPackage ../development/python-modules/imap-tools { };
 
   imbalanced-learn = if isPy27 then
     callPackage ../development/python-modules/imbalanced-learn/0.4.nix { }
@@ -3776,6 +3786,8 @@ in {
 
   lockfile = callPackage ../development/python-modules/lockfile { };
 
+  log-symbols = callPackage ../development/python-modules/log-symbols { };
+
   Logbook = callPackage ../development/python-modules/Logbook { };
 
   logfury = callPackage ../development/python-modules/logfury { };
@@ -4433,6 +4445,8 @@ in {
 
   nplusone = callPackage ../development/python-modules/nplusone { };
 
+  npyscreen = callPackage ../development/python-modules/npyscreen { };
+
   ntc-templates = callPackage ../development/python-modules/ntc-templates { };
 
   ntlm-auth = callPackage ../development/python-modules/ntlm-auth { };
@@ -4638,9 +4652,9 @@ in {
 
   panel = callPackage ../development/python-modules/panel { };
 
-  papermill = callPackage ../development/python-modules/papermill { };
+  panflute = callPackage ../development/python-modules/panflute { };
 
-  paperspace = callPackage ../development/python-modules/paperspace { };
+  papermill = callPackage ../development/python-modules/papermill { };
 
   openpaperwork-core = callPackage ../applications/office/paperwork/openpaperwork-core.nix { };
   openpaperwork-gtk = callPackage ../applications/office/paperwork/openpaperwork-gtk.nix { };
@@ -7292,6 +7306,8 @@ in {
 
   sphfile = callPackage ../development/python-modules/sphfile { };
 
+  spinners = callPackage ../development/python-modules/spinners { };
+
   sphinxcontrib-applehelp = callPackage ../development/python-modules/sphinxcontrib-applehelp { };
 
   sphinxcontrib-autoapi = callPackage ../development/python-modules/sphinxcontrib-autoapi { };
@@ -7340,6 +7356,8 @@ in {
     callPackage ../development/python-modules/sphinx/2.nix { };
 
   sphinx-argparse = callPackage ../development/python-modules/sphinx-argparse { };
+
+  sphinx-autobuild = callPackage ../development/python-modules/sphinx-argparse { };
 
   sphinx-jinja = callPackage ../development/python-modules/sphinx-jinja { };
 
