@@ -158,6 +158,8 @@ in
 
   fishnet = callPackage ../servers/fishnet { };
 
+  authy = callPackage ../applications/misc/authy { };
+
   avro-tools = callPackage ../development/tools/avro-tools { };
 
   bacnet-stack = callPackage ../tools/networking/bacnet-stack {};
@@ -617,7 +619,7 @@ in
 
   _1password = callPackage ../applications/misc/1password { };
 
-  _1password-gui = callPackage ../tools/security/1password-gui { };
+  _1password-gui = callPackage ../applications/misc/1password-gui { };
 
   _6tunnel = callPackage ../tools/networking/6tunnel { };
 
@@ -747,6 +749,8 @@ in
   gobgp = callPackage ../tools/networking/gobgp { };
 
   metapixel = callPackage ../tools/graphics/metapixel { };
+
+  xtrt = callPackage ../tools/archivers/xtrt { };
 
   yabridge = callPackage ../tools/audio/yabridge {
     wine = wineWowPackages.minimal;
@@ -1402,6 +1406,8 @@ in
   go-audit = callPackage ../tools/system/go-audit { };
 
   gopass = callPackage ../tools/security/gopass { };
+
+  gopass-jsonapi = callPackage ../tools/security/gopass/jsonapi.nix { };
 
   gospider = callPackage ../tools/security/gospider { };
 
@@ -2346,7 +2352,9 @@ in
 
   qt-video-wlr = libsForQt5.callPackage ../applications/misc/qt-video-wlr { };
 
-  fwup = callPackage ../tools/misc/fwup { };
+  fwup = callPackage ../tools/misc/fwup {
+    inherit (darwin.apple_sdk.frameworks) DiskArbitration;
+  };
 
   fx_cast_bridge = callPackage ../tools/misc/fx_cast { };
 
@@ -6628,6 +6636,8 @@ in
     graphicalSupport = true;
   };
 
+  nmap-unfree = callPackage ../tools/security/nmap-unfree { };
+
   nmapsi4 = libsForQt514.callPackage ../tools/security/nmap/qt.nix { };
 
   nnn = callPackage ../applications/misc/nnn { };
@@ -8160,6 +8170,8 @@ in
   stress = callPackage ../tools/system/stress { };
 
   stress-ng = callPackage ../tools/system/stress-ng { };
+
+  stressapptest = callPackage ../tools/system/stressapptest { };
 
   stoken = callPackage ../tools/security/stoken (config.stoken or {});
 
@@ -10006,7 +10018,7 @@ in
     profiledCompiler = false;
   });
 
-  libgccjit = gcc9.cc.override {
+  libgccjit = gcc.cc.override {
     name = "libgccjit";
     langFortran = false;
     langCC = false;
@@ -12817,7 +12829,7 @@ in
 
   inherit (callPackage ../development/tools/build-managers/shards { })
     shards_0_11
-    shards_0_12
+    shards_0_13
     shards;
 
   shellcheck = callPackage ../development/tools/shellcheck {};
@@ -13771,6 +13783,8 @@ in
   fam = gamin; # added 2018-04-25
 
   ganv = callPackage ../development/libraries/ganv { };
+
+  garble = callPackage ../build-support/go/garble.nix { };
 
   gcab = callPackage ../development/libraries/gcab { };
 
@@ -15722,9 +15736,7 @@ in
 
   libxmp = callPackage ../development/libraries/libxmp { };
 
-  libxslt = callPackage ../development/libraries/libxslt {
-    python = if stdenv.isDarwin then python2 else python3;
-  };
+  libxslt = callPackage ../development/libraries/libxslt { };
 
   libxsmm = callPackage ../development/libraries/libxsmm { };
 
@@ -19689,6 +19701,9 @@ in
 
   musl = callPackage ../os-specific/linux/musl { };
 
+  musl-fts = callPackage ../os-specific/linux/musl-fts { };
+  musl-obstack = callPackage ../os-specific/linux/musl-obstack { };
+
   nushell = callPackage ../shells/nushell {
     inherit (darwin.apple_sdk.frameworks) AppKit Security;
   };
@@ -21611,6 +21626,8 @@ in
     python3Packages = python37Packages;
   };
 
+  cqrlog = callPackage ../applications/radio/cqrlog { };
+
   crun = callPackage ../applications/virtualization/crun {};
 
   csdp = callPackage ../applications/science/math/csdp { };
@@ -22364,6 +22381,10 @@ in
   fomp = callPackage ../applications/audio/fomp { };
 
   formatter = callPackage ../applications/misc/formatter { };
+
+  formiko = with python3Packages; callPackage ../applications/editors/formiko {
+    inherit buildPythonApplication;
+  };
 
   foxtrotgps = callPackage ../applications/misc/foxtrotgps { };
 
@@ -23268,6 +23289,8 @@ in
 
   kubectl = callPackage ../applications/networking/cluster/kubectl { };
 
+  kubectl-example = callPackage ../applications/networking/cluster/kubectl-example { };
+
   kubeless = callPackage ../applications/networking/cluster/kubeless { };
 
   kubelogin = callPackage ../applications/networking/cluster/kubelogin { };
@@ -23551,6 +23574,8 @@ in
   matrix-recorder = callPackage ../applications/networking/instant-messengers/matrix-recorder {};
 
   mblaze = callPackage ../applications/networking/mailreaders/mblaze { };
+
+  mbrola = callPackage ../applications/audio/mbrola { };
 
   mcomix3 = callPackage ../applications/graphics/mcomix3 {};
 
@@ -24833,6 +24858,8 @@ in
 
   seafile-client = libsForQt5.callPackage ../applications/networking/seafile-client { };
 
+  secretscanner = callPackage ../tools/security/secretscanner { };
+
   sent = callPackage ../applications/misc/sent { };
 
   seq24 = callPackage ../applications/audio/seq24 { };
@@ -25300,6 +25327,8 @@ in
 
   ticpp = callPackage ../development/libraries/ticpp { };
 
+  ticker = callPackage ../applications/misc/ticker { };
+
   tickrs = callPackage ../applications/misc/tickrs {
     inherit (darwin.apple_sdk.frameworks) Security;
   };
@@ -25702,6 +25731,8 @@ in
   vym = qt5.callPackage ../applications/misc/vym { };
 
   wad = python3Packages.callPackage ../tools/security/wad { };
+
+  wafw00f = python3Packages.callPackage ../tools/security/wafw00f { };
 
   waon = callPackage ../applications/audio/waon { };
 
@@ -27301,6 +27332,10 @@ in
 
   typespeed = callPackage ../games/typespeed { };
 
+  uchess = callPackage ../games/uchess {
+    buildGoModule = buildGo116Module;
+  };
+
   udig = callPackage ../applications/gis/udig { };
 
   ufoai = callPackage ../games/ufoai { };
@@ -28345,6 +28380,8 @@ in
     cudaSupport = config.cudaSupport or false;
   };
 
+  dap = callPackage ../applications/science/math/dap { };
+
   ecm = callPackage ../applications/science/math/ecm { };
 
   eukleides = callPackage ../applications/science/math/eukleides {
@@ -29270,6 +29307,8 @@ in
 
   ricty = callPackage ../data/fonts/ricty { };
 
+  rmfuse = callPackage ../tools/filesystems/rmfuse {};
+
   rmount = callPackage ../tools/filesystems/rmount {};
 
   romdirfs = callPackage ../tools/filesystems/romdirfs {};
@@ -29965,6 +30004,8 @@ in
 
   zfs-replicate = python3Packages.callPackage ../tools/backup/zfs-replicate { };
 
+  zrepl = callPackage ../tools/backup/zrepl { };
+
   runwayml = callPackage ../applications/graphics/runwayml {};
 
   uhubctl = callPackage ../tools/misc/uhubctl {};
@@ -30025,7 +30066,10 @@ in
 
   zalgo = callPackage ../tools/misc/zalgo { };
 
-  zettlr = callPackage ../applications/misc/zettlr { };
+  zettlr = callPackage ../applications/misc/zettlr {
+    texlive = texlive.combined.scheme-medium;
+    inherit (haskellPackages) pandoc-citeproc;
+  };
 
   unifi-poller = callPackage ../servers/monitoring/unifi-poller {};
 
