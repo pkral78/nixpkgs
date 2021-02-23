@@ -186,6 +186,7 @@ in
   k3s = handleTest ./k3s.nix {};
   kafka = handleTest ./kafka.nix {};
   keepalived = handleTest ./keepalived.nix {};
+  keepassxc = handleTest ./keepassxc.nix {};
   kerberos = handleTest ./kerberos/default.nix {};
   kernel-latest = handleTest ./kernel-latest.nix {};
   kernel-lts = handleTest ./kernel-lts.nix {};
@@ -344,7 +345,6 @@ in
   samba-wsdd = handleTest ./samba-wsdd.nix {};
   sanoid = handleTest ./sanoid.nix {};
   sbt = handleTest ./sbt.nix {};
-  sbt-extras = handleTest ./sbt-extras.nix {};
   sddm = handleTest ./sddm.nix {};
   searx = handleTest ./searx.nix {};
   service-runner = handleTest ./service-runner.nix {};

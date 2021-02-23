@@ -210,6 +210,8 @@ in {
 
   aioasuswrt = callPackage ../development/python-modules/aioasuswrt { };
 
+  aiocache = callPackage ../development/python-modules/aiocache { };
+
   aiocoap = callPackage ../development/python-modules/aiocoap { };
 
   aioconsole = callPackage ../development/python-modules/aioconsole { };
@@ -3291,8 +3293,6 @@ in {
 
   j2cli = callPackage ../development/python-modules/j2cli { };
 
-  jabberbot = callPackage ../development/python-modules/jabberbot { };
-
   janus = callPackage ../development/python-modules/janus { };
 
   jaraco_classes = callPackage ../development/python-modules/jaraco_classes { };
@@ -3398,6 +3398,8 @@ in {
   jsonpointer = callPackage ../development/python-modules/jsonpointer { };
 
   jsonref = callPackage ../development/python-modules/jsonref { };
+
+  json-rpc = callPackage ../development/python-modules/json-rpc { };
 
   jsonrpc-async = callPackage ../development/python-modules/jsonrpc-async { };
 
@@ -4005,6 +4007,8 @@ in {
   };
 
   mccabe = callPackage ../development/python-modules/mccabe { };
+
+  mcstatus = callPackage ../development/python-modules/mcstatus { };
 
   MDP = callPackage ../development/python-modules/mdp { };
 
@@ -5135,6 +5139,8 @@ in {
     protobuf = pkgs.protobuf;
   };
 
+  protobuf3-to-dict = callPackage ../development/python-modules/protobuf3-to-dict { };
+
   prov = callPackage ../development/python-modules/prov { };
 
   prox-tv = callPackage ../development/python-modules/prox-tv { };
@@ -5229,6 +5235,8 @@ in {
 
   pyalgotrade = callPackage ../development/python-modules/pyalgotrade { };
 
+  pyalmond = callPackage ../development/python-modules/pyalmond { };
+
   pyamf = callPackage ../development/python-modules/pyamf { };
 
   pyamg = callPackage ../development/python-modules/pyamg { };
@@ -5310,6 +5318,8 @@ in {
   pycdio = callPackage ../development/python-modules/pycdio { };
 
   pycfdns = callPackage ../development/python-modules/pycfdns { };
+
+  pychannels = callPackage ../development/python-modules/pychannels { };
 
   pychart = callPackage ../development/python-modules/pychart { };
 
@@ -5457,6 +5467,10 @@ in {
   pyfnip = callPackage ../development/python-modules/pyfnip { };
 
   pyflakes = callPackage ../development/python-modules/pyflakes { };
+
+  pyflume = callPackage ../development/python-modules/pyflume { };
+
+  pyflunearyou = callPackage ../development/python-modules/pyflunearyou { };
 
   pyfma = callPackage ../development/python-modules/pyfma { };
 
@@ -5690,6 +5704,8 @@ in {
 
   pymetno = callPackage ../development/python-modules/pymetno { };
 
+  pymitv = callPackage ../development/python-modules/pymitv { };
+
   pymodbus = callPackage ../development/python-modules/pymodbus { };
 
   pymongo = callPackage ../development/python-modules/pymongo { };
@@ -5717,6 +5733,8 @@ in {
   PyMVGLive = callPackage ../development/python-modules/pymvglive { };
 
   pymyq = callPackage ../development/python-modules/pymyq { };
+
+  pymysensors = callPackage ../development/python-modules/pymysensors { };
 
   pymysql = callPackage ../development/python-modules/pymysql { };
 
@@ -6481,6 +6499,8 @@ in {
 
   python-toolbox = callPackage ../development/python-modules/python-toolbox { };
 
+  python-twitch-client = callPackage ../development/python-modules/python-twitch-client { };
+
   python-twitter = callPackage ../development/python-modules/python-twitter { };
 
   python-u2flib-host = callPackage ../development/python-modules/python-u2flib-host { };
@@ -6492,6 +6512,8 @@ in {
   python-utils = callPackage ../development/python-modules/python-utils { };
 
   python-vagrant = callPackage ../development/python-modules/python-vagrant { };
+
+  python-velbus = callPackage ../development/python-modules/python-velbus { };
 
   python-vipaccess = callPackage ../development/python-modules/python-vipaccess { };
 
@@ -6592,6 +6614,8 @@ in {
 
   pyvmomi = callPackage ../development/python-modules/pyvmomi { };
 
+  pyvolumio = callPackage ../development/python-modules/pyvolumio { };
+
   pyvoro = callPackage ../development/python-modules/pyvoro { };
 
   pywal = callPackage ../development/python-modules/pywal { };
@@ -6635,6 +6659,8 @@ in {
   pyxdg = callPackage ../development/python-modules/pyxdg { };
 
   pyxeoma = callPackage ../development/python-modules/pyxeoma { };
+
+  pyxiaomigateway = callPackage ../development/python-modules/pyxiaomigateway { };
 
   pyxl3 = callPackage ../development/python-modules/pyxl3 { };
 
@@ -6728,6 +6754,8 @@ in {
   rarfile = callPackage ../development/python-modules/rarfile { inherit (pkgs) libarchive; };
 
   rasterio = callPackage ../development/python-modules/rasterio { gdal = pkgs.gdal_2; }; # gdal 3.0 not supported yet
+
+  ratelimit = callPackage ../development/python-modules/ratelimit { };
 
   ratelimiter = callPackage ../development/python-modules/ratelimiter { };
 
@@ -6995,6 +7023,8 @@ in {
   safe = callPackage ../development/python-modules/safe { };
 
   safety = callPackage ../development/python-modules/safety { };
+
+  sagemaker = callPackage ../development/python-modules/sagemaker { };
 
   salmon-mail = callPackage ../development/python-modules/salmon-mail { };
 
@@ -7307,6 +7337,8 @@ in {
   smartypants = callPackage ../development/python-modules/smartypants { };
 
   smbus-cffi = callPackage ../development/python-modules/smbus-cffi { };
+
+  smdebug-rulesconfig = callPackage ../development/python-modules/smdebug-rulesconfig { };
 
   smmap2 = throw "smmap2 has been deprecated, use smmap instead."; # added 2020-03-14
 
@@ -7669,6 +7701,8 @@ in {
 
   tag-expressions = callPackage ../development/python-modules/tag-expressions { };
 
+  tahoma-api = callPackage ../development/python-modules/tahoma-api { };
+
   tarman = callPackage ../development/python-modules/tarman { };
 
   tasklib = callPackage ../development/python-modules/tasklib { };
@@ -7972,6 +8006,8 @@ in {
   tubeup = callPackage ../development/python-modules/tubeup { };
 
   tumpa = callPackage ../development/python-modules/tumpa { };
+
+  tuyaha = callPackage ../development/python-modules/tuyaha { };
 
   tvdb_api = callPackage ../development/python-modules/tvdb_api { };
 
@@ -8346,6 +8382,8 @@ in {
 
   widgetsnbextension = callPackage ../development/python-modules/widgetsnbextension { };
 
+  wiffi = callPackage ../development/python-modules/wiffi { };
+
   willow = callPackage ../development/python-modules/willow { };
 
   winacl = callPackage ../development/python-modules/winacl { };
@@ -8371,6 +8409,8 @@ in {
   wrf-python = callPackage ../development/python-modules/wrf-python { };
 
   ws4py = callPackage ../development/python-modules/ws4py { };
+
+  wsgi-intercept = callPackage ../development/python-modules/wsgi-intercept { };
 
   wsgiproxy2 = callPackage ../development/python-modules/wsgiproxy2 { };
 
@@ -8474,8 +8514,6 @@ in {
 
   xmodem = callPackage ../development/python-modules/xmodem { };
 
-  xmpppy = callPackage ../development/python-modules/xmpppy { };
-
   xnd = callPackage ../development/python-modules/xnd { };
 
   xpybutil = callPackage ../development/python-modules/xpybutil { };
@@ -8499,6 +8537,8 @@ in {
   xxhash = callPackage ../development/python-modules/xxhash { };
 
   yahooweather = callPackage ../development/python-modules/yahooweather { };
+
+  yalesmartalarmclient = callPackage ../development/python-modules/yalesmartalarmclient { };
 
   yamale = callPackage ../development/python-modules/yamale { };
 
