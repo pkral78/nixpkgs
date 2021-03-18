@@ -16333,7 +16333,7 @@ in
 
   openbabel2 = callPackage ../development/libraries/openbabel/2.nix { };
 
-  openbabel3 = callPackages ../development/libraries/openbabel { };
+  openbabel3 = callPackage ../development/libraries/openbabel { };
 
   opencascade = callPackage ../development/libraries/opencascade {
     inherit (darwin.apple_sdk.frameworks) OpenCL Cocoa;
@@ -22852,10 +22852,6 @@ in
 
   gtkpod = callPackage ../applications/audio/gtkpod { };
 
-  jbidwatcher = callPackage ../applications/misc/jbidwatcher {
-    java = if stdenv.isLinux then jre else jdk;
-  };
-
   qrcodegen = callPackage ../development/libraries/qrcodegen { };
 
   qrencode = callPackage ../development/libraries/qrencode { };
@@ -24149,6 +24145,8 @@ in
   nwg-launchers = callPackage ../applications/misc/nwg-launchers { };
 
   ocenaudio = callPackage ../applications/audio/ocenaudio { };
+
+  onlyoffice-bin = callPackage ../applications/office/onlyoffice-bin { };
 
   open-policy-agent = callPackage ../development/tools/open-policy-agent { };
 
@@ -26210,6 +26208,9 @@ in
     gtk = gtk2;
   };
 
+  xa = callPackage ../development/compilers/xa/xa.nix { };
+  dxa = callPackage ../development/compilers/xa/dxa.nix { };
+
   x11basic = callPackage ../development/compilers/x11basic {
     autoconf = buildPackages.autoconf269;
   };
@@ -26553,7 +26554,7 @@ in
 
   zombietrackergps = libsForQt5.callPackage ../applications/gis/zombietrackergps { };
 
-  zoom-us = libsForQt5.callPackage ../applications/networking/instant-messengers/zoom-us { };
+  zoom-us = callPackage ../applications/networking/instant-messengers/zoom-us { };
 
   zotero = callPackage ../applications/office/zotero { };
 
