@@ -124,6 +124,16 @@ in {
     venvShellHook
     wheelUnpackHook;
 
+  # Not all packages are compatible with the latest pytest yet.
+  # We need to override the hook to select an older pytest, however,
+  # it should not override the version of pytest that is used for say
+  # Python 2. This is an ugly hack that is needed now because the hook
+  # propagates the package.
+  pytestCheckHook_6_1 = if isPy3k then
+    self.pytestCheckHook.override { pytest = self.pytest_6_1; }
+  else
+    self.pytestCheckHook;
+
   # helpers
 
   # We use build packages because we are making a setup hook to be used as a
@@ -250,7 +260,9 @@ in {
 
   aiohomekit = callPackage ../development/python-modules/aiohomekit { };
 
-  aiohttp = callPackage ../development/python-modules/aiohttp { };
+  aiohttp = callPackage ../development/python-modules/aiohttp {
+    pytestCheckHook = self.pytestCheckHook_6_1;
+  };
 
   aiohttp-cors = callPackage ../development/python-modules/aiohttp-cors { };
 
@@ -327,6 +339,8 @@ in {
   airly = callPackage ../development/python-modules/airly { };
 
   ajpy = callPackage ../development/python-modules/ajpy { };
+
+  ajsonrpc = callPackage ../development/python-modules/ajsonrpc { };
 
   alabaster = callPackage ../development/python-modules/alabaster { };
 
@@ -534,7 +548,9 @@ in {
 
   async-timeout = callPackage ../development/python-modules/async_timeout { };
 
-  async-upnp-client = callPackage ../development/python-modules/async-upnp-client { };
+  async-upnp-client = callPackage ../development/python-modules/async-upnp-client {
+    pytestCheckHook = self.pytestCheckHook_6_1;
+  };
 
   asyncwhois = callPackage ../development/python-modules/asyncwhois { };
 
@@ -1589,6 +1605,7 @@ in {
     cudatoolkit = pkgs.cudatoolkit_10_0;
     cudnn = pkgs.cudnn_cudatoolkit_10_0;
     nccl = pkgs.nccl_cudatoolkit_10;
+    cutensor = pkgs.cutensor_cudatoolkit_10;
   };
 
   curio = callPackage ../development/python-modules/curio { };
@@ -3134,6 +3151,8 @@ in {
 
   hug = callPackage ../development/python-modules/hug { };
 
+  huggingface-hub = callPackage ../development/python-modules/huggingface-hub { };
+
   humanfriendly = callPackage ../development/python-modules/humanfriendly { };
 
   humanize = callPackage ../development/python-modules/humanize { };
@@ -4109,6 +4128,8 @@ in {
   marshmallow-sqlalchemy = callPackage ../development/python-modules/marshmallow-sqlalchemy { };
 
   mask-rcnn = callPackage ../development/python-modules/mask-rcnn { };
+
+  mat2 = callPackage ../development/python-modules/mat2 { };
 
   matchpy = callPackage ../development/python-modules/matchpy { };
 
@@ -6362,6 +6383,14 @@ in {
       };
     };
 
+  pytest_6_1 = self.pytest_6.overridePythonAttrs (oldAttrs: rec {
+    version = "6.1.2";
+    src = oldAttrs.src.override {
+      inherit version;
+      sha256 = "c0a7e94a8cdbc5422a51ccdad8e6f1024795939cc89159a0ae7f0b316ad3823e";
+    };
+  });
+
   pytest-aiohttp = callPackage ../development/python-modules/pytest-aiohttp { };
 
   pytest-annotate = callPackage ../development/python-modules/pytest-annotate { };
@@ -6411,6 +6440,8 @@ in {
   pytest-doctestplus = callPackage ../development/python-modules/pytest-doctestplus { };
 
   pytest-env = callPackage ../development/python-modules/pytest-env { };
+
+  pytest-error-for-skips = callPackage ../development/python-modules/pytest-error-for-skips { };
 
   pytest-expect = callPackage ../development/python-modules/pytest-expect { };
 
@@ -7324,7 +7355,7 @@ in {
   salmon-mail = callPackage ../development/python-modules/salmon-mail { };
 
   sane = callPackage ../development/python-modules/sane {
-    inherit (pkgs) saneBackends;
+    inherit (pkgs) sane-backends;
   };
 
   sampledata = callPackage ../development/python-modules/sampledata { };
@@ -8321,7 +8352,9 @@ in {
 
   trimesh = callPackage ../development/python-modules/trimesh { };
 
-  trio = callPackage ../development/python-modules/trio { };
+  trio = callPackage ../development/python-modules/trio {
+    pytestCheckHook = self.pytestCheckHook_6_1;
+  };
 
   trollius = callPackage ../development/python-modules/trollius { };
 
@@ -8512,7 +8545,12 @@ in {
 
   urlgrabber = callPackage ../development/python-modules/urlgrabber { };
 
-  urllib3 = callPackage ../development/python-modules/urllib3 { };
+  urllib3 = if isPy3k then
+    callPackage ../development/python-modules/urllib3 {
+      pytestCheckHook = self.pytestCheckHook_6_1;
+    }
+  else
+    callPackage ../development/python-modules/urllib3/2.nix { };
 
   urwid = callPackage ../development/python-modules/urwid { };
 
@@ -8713,7 +8751,9 @@ in {
 
   webthing = callPackage ../development/python-modules/webthing { };
 
-  werkzeug = callPackage ../development/python-modules/werkzeug { };
+  werkzeug = callPackage ../development/python-modules/werkzeug {
+    pytestCheckHook = self.pytestCheckHook_6_1;
+  };
 
   west = callPackage ../development/python-modules/west { };
 
@@ -8948,6 +8988,8 @@ in {
   };
 
   yt = callPackage ../development/python-modules/yt { };
+
+  ytmusicapi = callPackage ../development/python-modules/ytmusicapi { };
 
   yubico-client = callPackage ../development/python-modules/yubico-client { };
 
