@@ -322,6 +322,8 @@ in {
 
   aioshelly = callPackage ../development/python-modules/aioshelly { };
 
+  aiosmb = callPackage ../development/python-modules/aiosmb { };
+
   aiosmtpd = callPackage ../development/python-modules/aiosmtpd { };
 
   aiosqlite = callPackage ../development/python-modules/aiosqlite { };
@@ -369,6 +371,8 @@ in {
   amqp = callPackage ../development/python-modules/amqp { };
 
   amqplib = callPackage ../development/python-modules/amqplib { };
+
+  android-backup = callPackage ../development/python-modules/android-backup { };
 
   androidtv = callPackage ../development/python-modules/androidtv { };
 
@@ -1608,10 +1612,10 @@ in {
   cufflinks = callPackage ../development/python-modules/cufflinks { };
 
   cupy = callPackage ../development/python-modules/cupy {
-    cudatoolkit = pkgs.cudatoolkit_10_0;
-    cudnn = pkgs.cudnn_cudatoolkit_10_0;
-    nccl = pkgs.nccl_cudatoolkit_10;
-    cutensor = pkgs.cutensor_cudatoolkit_10;
+    cudatoolkit = pkgs.cudatoolkit_11;
+    cudnn = pkgs.cudnn_cudatoolkit_11;
+    nccl = pkgs.nccl_cudatoolkit_11;
+    cutensor = pkgs.cutensor_cudatoolkit_11;
   };
 
   curio = callPackage ../development/python-modules/curio { };
@@ -3273,6 +3277,8 @@ in {
 
   imgsize = callPackage ../development/python-modules/imgsize { };
 
+  iminuit = callPackage ../development/python-modules/iminuit { };
+
   immutables = callPackage ../development/python-modules/immutables { };
 
   impacket = callPackage ../development/python-modules/impacket { };
@@ -3970,7 +3976,6 @@ in {
 
   llfuse = callPackage ../development/python-modules/llfuse {
     inherit (pkgs) fuse;
-    inherit (pkgs.darwin.apple_sdk.frameworks) DiskArbitration;
   };
 
   llvmlite = callPackage ../development/python-modules/llvmlite {
@@ -4709,8 +4714,6 @@ in {
     callPackage ../development/python-modules/numpy { };
 
   numpy-stl = callPackage ../development/python-modules/numpy-stl { };
-
-  numtraits = callPackage ../development/python-modules/numtraits { };
 
   nunavut = callPackage ../development/python-modules/nunavut { };
 
@@ -5851,6 +5854,8 @@ in {
 
   pykmtronic = callPackage ../development/python-modules/pykmtronic { };
 
+  pykodi = callPackage ../development/python-modules/pykodi { };
+
   pykwalify = callPackage ../development/python-modules/pykwalify { };
 
   pylacrosse = callPackage ../development/python-modules/pylacrosse { };
@@ -6149,6 +6154,8 @@ in {
   pyrabbit2 = callPackage ../development/python-modules/pyrabbit2 { };
 
   pyrad = callPackage ../development/python-modules/pyrad { };
+
+  pyradios = callPackage ../development/python-modules/pyradios { };
 
   py-radix = callPackage ../development/python-modules/py-radix { };
 
@@ -7764,6 +7771,8 @@ in {
 
   softlayer = callPackage ../development/python-modules/softlayer { };
 
+  solaredge = callPackage ../development/python-modules/solaredge { };
+
   solax = callPackage ../development/python-modules/solax { };
 
   solo-python = disabledIf (!pythonAtLeast "3.6") (callPackage ../development/python-modules/solo-python { });
@@ -7863,7 +7872,7 @@ in {
 
   sphinx-argparse = callPackage ../development/python-modules/sphinx-argparse { };
 
-  sphinx-autobuild = callPackage ../development/python-modules/sphinx-argparse { };
+  sphinx-autobuild = callPackage ../development/python-modules/sphinx-autobuild { };
 
   sphinx-jinja = callPackage ../development/python-modules/sphinx-jinja { };
 
