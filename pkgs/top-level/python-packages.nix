@@ -1100,6 +1100,8 @@ in {
 
   bpython = callPackage ../development/python-modules/bpython { };
 
+  bracex = callPackage ../development/python-modules/bracex { };
+
   braintree = callPackage ../development/python-modules/braintree { };
 
   branca = callPackage ../development/python-modules/branca { };
@@ -2059,6 +2061,8 @@ in {
 
   drf-yasg = callPackage ../development/python-modules/drf-yasg { };
 
+  drivelib = callPackage ../development/python-modules/drivelib { };
+
   drms = callPackage ../development/python-modules/drms { };
 
   dropbox = callPackage ../development/python-modules/dropbox { };
@@ -2153,6 +2157,8 @@ in {
 
   enamlx = callPackage ../development/python-modules/enamlx { };
 
+  enrich = callPackage ../development/python-modules/enrich { };
+
   entrance = callPackage ../development/python-modules/entrance {
     routerFeatures = false;
   };
@@ -2232,6 +2238,8 @@ in {
   executor = callPackage ../development/python-modules/executor { };
 
   exifread = callPackage ../development/python-modules/exifread { };
+
+  expiringdict = callPackage ../development/python-modules/expiringdict { };
 
   exrex = callPackage ../development/python-modules/exrex { };
 
@@ -2538,6 +2546,8 @@ in {
   fpdf = callPackage ../development/python-modules/fpdf { };
 
   fpylll = callPackage ../development/python-modules/fpylll { };
+
+  freebox-api = callPackage ../development/python-modules/freebox-api { };
 
   freetype-py = callPackage ../development/python-modules/freetype-py { };
 
@@ -3649,9 +3659,7 @@ in {
 
   keras-preprocessing = callPackage ../development/python-modules/keras-preprocessing { };
 
-  kerberos = callPackage ../development/python-modules/kerberos {
-    inherit (pkgs) kerberos;
-  };
+  kerberos = callPackage ../development/python-modules/kerberos { };
 
   keyring = if isPy3k then
     callPackage ../development/python-modules/keyring { }
@@ -5904,6 +5912,8 @@ in {
 
   pylint-plugin-utils = callPackage ../development/python-modules/pylint-plugin-utils { };
 
+  pylitterbot = callPackage ../development/python-modules/pylitterbot { };
+
   py-lru-cache = callPackage ../development/python-modules/py-lru-cache { };
 
   pylru = callPackage ../development/python-modules/pylru { };
@@ -5947,6 +5957,8 @@ in {
   pymediaroom = callPackage ../development/python-modules/pymediaroom { };
 
   pymeeus = callPackage ../development/python-modules/pymeeus { };
+
+  pymemcache = callPackage ../development/python-modules/pymemcache { };
 
   pymemoize = callPackage ../development/python-modules/pymemoize { };
 
@@ -6057,7 +6069,9 @@ in {
 
   pyosf = callPackage ../development/python-modules/pyosf { };
 
-  pyosmium = callPackage ../development/python-modules/pyosmium { };
+  pyosmium = callPackage ../development/python-modules/pyosmium {
+    inherit (pkgs) lz4;
+  };
 
   pyotp = callPackage ../development/python-modules/pyotp { };
 
@@ -6388,6 +6402,8 @@ in {
 
   pyte = callPackage ../development/python-modules/pyte { };
 
+  pytenable = callPackage ../development/python-modules/pytenable { };
+
   pytelegrambotapi = callPackage ../development/python-modules/pyTelegramBotAPI { };
 
   pytesseract = callPackage ../development/python-modules/pytesseract { };
@@ -6630,6 +6646,8 @@ in {
   python-bidi = callPackage ../development/python-modules/python-bidi { };
 
   python-binance = callPackage ../development/python-modules/python-binance { };
+
+  python-box = callPackage ../development/python-modules/python-box { };
 
   python-constraint = callPackage ../development/python-modules/python-constraint { };
 
@@ -6891,7 +6909,11 @@ in {
 
   pytricia = callPackage ../development/python-modules/pytricia { };
 
+  pytube = callPackage ../development/python-modules/pytube { };
+
   pytun = callPackage ../development/python-modules/pytun { };
+
+  pyturbojpeg = callPackage ../development/python-modules/pyturbojpeg { };
 
   pytz = callPackage ../development/python-modules/pytz { };
 
@@ -7100,6 +7122,8 @@ in {
 
   random2 = callPackage ../development/python-modules/random2 { };
 
+  rapidfuzz = callPackage ../development/python-modules/rapidfuzz { };
+
   rarfile = callPackage ../development/python-modules/rarfile {
     inherit (pkgs) libarchive;
   };
@@ -7204,6 +7228,8 @@ in {
 
   requests_oauthlib = callPackage ../development/python-modules/requests-oauthlib { };
 
+  requests-pkcs12 = callPackage ../development/python-modules/requests-pkcs12 { };
+
   requests-toolbelt = callPackage ../development/python-modules/requests-toolbelt { };
 
   requests_toolbelt = self.requests-toolbelt; # Old attr, 2017-09-26
@@ -7217,6 +7243,8 @@ in {
   responses = callPackage ../development/python-modules/responses { };
 
   respx = callPackage ../development/python-modules/respx { };
+
+  restfly = callPackage ../development/python-modules/restfly { };
 
   restrictedpython = callPackage ../development/python-modules/restrictedpython { };
 
@@ -7348,12 +7376,16 @@ in {
 
   rtslib = callPackage ../development/python-modules/rtslib { };
 
+  ruamel-base = self.ruamel_base;
   ruamel_base = callPackage ../development/python-modules/ruamel_base { };
 
+  ruamel-ordereddict = self.ruamel_ordereddict;
   ruamel_ordereddict = callPackage ../development/python-modules/ruamel_ordereddict { };
 
+  ruamel-yaml = self.ruamel_yaml;
   ruamel_yaml = callPackage ../development/python-modules/ruamel_yaml { };
 
+  ruamel-yaml-clib = self.ruamel_yaml_clib;
   ruamel_yaml_clib = callPackage ../development/python-modules/ruamel_yaml_clib { };
 
   rubymarshal = callPackage ../development/python-modules/rubymarshal { };
@@ -8755,6 +8787,8 @@ in {
 
   WazeRouteCalculator = callPackage ../development/python-modules/WazeRouteCalculator { };
 
+  wcmatch = callPackage ../development/python-modules/wcmatch { };
+
   wcwidth = callPackage ../development/python-modules/wcwidth { };
 
   weasyprint = callPackage ../development/python-modules/weasyprint { };
@@ -8956,6 +8990,8 @@ in {
 
   xnd = callPackage ../development/python-modules/xnd { };
 
+  xpath-expressions = callPackage ../development/python-modules/xpath-expressions { };
+
   xpybutil = callPackage ../development/python-modules/xpybutil { };
 
   xstatic-bootbox = callPackage ../development/python-modules/xstatic-bootbox { };
@@ -9001,6 +9037,8 @@ in {
   yarg = callPackage ../development/python-modules/yarg { };
 
   yarl = callPackage ../development/python-modules/yarl { };
+
+  yaswfp = callPackage ../development/python-modules/yaswfp { };
 
   yattag = callPackage ../development/python-modules/yattag { };
 

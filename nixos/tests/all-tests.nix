@@ -49,6 +49,7 @@ in
   cadvisor = handleTestOn ["x86_64-linux"] ./cadvisor.nix {};
   cage = handleTest ./cage.nix {};
   cagebreak = handleTest ./cagebreak.nix {};
+  calibre-web = handleTest ./calibre-web.nix {};
   cassandra_2_1 = handleTest ./cassandra.nix { testPackage = pkgs.cassandra_2_1; };
   cassandra_2_2 = handleTest ./cassandra.nix { testPackage = pkgs.cassandra_2_2; };
   cassandra_3_0 = handleTest ./cassandra.nix { testPackage = pkgs.cassandra_3_0; };
@@ -110,6 +111,7 @@ in
   ergo = handleTest ./ergo.nix {};
   etcd = handleTestOn ["x86_64-linux"] ./etcd.nix {};
   etcd-cluster = handleTestOn ["x86_64-linux"] ./etcd-cluster.nix {};
+  etebase-server = handleTest ./etebase-server.nix {};
   etesync-dav = handleTest ./etesync-dav.nix {};
   fancontrol = handleTest ./fancontrol.nix {};
   fcitx = handleTest ./fcitx {};
@@ -225,6 +227,7 @@ in
   mariadb-galera-mariabackup = handleTest ./mysql/mariadb-galera-mariabackup.nix {};
   mariadb-galera-rsync = handleTest ./mysql/mariadb-galera-rsync.nix {};
   matomo = handleTest ./matomo.nix {};
+  matrix-appservice-irc = handleTest ./matrix-appservice-irc.nix {};
   matrix-synapse = handleTest ./matrix-synapse.nix {};
   mediawiki = handleTest ./mediawiki.nix {};
   memcached = handleTest ./memcached.nix {};
@@ -287,6 +290,7 @@ in
   nzbget = handleTest ./nzbget.nix {};
   nzbhydra2 = handleTest ./nzbhydra2.nix {};
   oh-my-zsh = handleTest ./oh-my-zsh.nix {};
+  ombi = handleTest ./ombi.nix {};
   openarena = handleTest ./openarena.nix {};
   openldap = handleTest ./openldap.nix {};
   opensmtpd = handleTest ./opensmtpd.nix {};
@@ -318,6 +322,7 @@ in
   plikd = handleTest ./plikd.nix {};
   plotinus = handleTest ./plotinus.nix {};
   podman = handleTestOn ["x86_64-linux"] ./podman.nix {};
+  pomerium = handleTestOn ["x86_64-linux"] ./pomerium.nix {};
   postfix = handleTest ./postfix.nix {};
   postfix-raise-smtpd-tls-security-level = handleTest ./postfix-raise-smtpd-tls-security-level.nix {};
   postgis = handleTest ./postgis.nix {};

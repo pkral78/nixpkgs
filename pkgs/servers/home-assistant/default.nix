@@ -176,10 +176,13 @@ in with py.pkgs; buildPythonApplication rec {
   # services. Before adding new components to this list make sure we have all
   # its dependencies packaged and listed in ./component-packages.nix.
   componentTests = [
+    "accuweather"
+    "airly"
     "alert"
     "api"
     "auth"
     "automation"
+    "axis"
     "bayesian"
     "binary_sensor"
     "caldav"
@@ -200,6 +203,7 @@ in with py.pkgs; buildPythonApplication rec {
     "device_automation"
     "device_sun_light_trigger"
     "device_tracker"
+    "devolo_home_control"
     "dhcp"
     "discovery"
     "emulated_hue"
@@ -213,6 +217,7 @@ in with py.pkgs; buildPythonApplication rec {
     "flux"
     "folder"
     "folder_watcher"
+    "freebox"
     "fritzbox"
     "fritzbox_callmonitor"
     "frontend"
@@ -224,8 +229,10 @@ in with py.pkgs; buildPythonApplication rec {
     "hddtemp"
     "history"
     "history_stats"
+    "homekit"
     "homekit_controller"
     "homeassistant"
+    "homematic"
     "html5"
     "http"
     "hue"
@@ -257,6 +264,7 @@ in with py.pkgs; buildPythonApplication rec {
     "media_player"
     "media_source"
     "met"
+    "minecraft_server"
     "mobile_app"
     "modbus"
     "moon"
@@ -298,7 +306,10 @@ in with py.pkgs; buildPythonApplication rec {
     "sensor"
     "smarttub"
     "smtp"
+    "smappee"
     "solaredge"
+    "sonos"
+    "spotify"
     "sql"
     "ssdp"
     "stream"
@@ -321,6 +332,7 @@ in with py.pkgs; buildPythonApplication rec {
     "upnp"
     "uptime"
     "vacuum"
+    "verisure"
     "weather"
     "webhook"
     "websocket_api"
@@ -384,5 +396,6 @@ in with py.pkgs; buildPythonApplication rec {
     description = "Open source home automation that puts local control and privacy first";
     license = licenses.asl20;
     maintainers = with maintainers; [ dotlambda globin mic92 hexa ];
+    platforms = platforms.linux;
   };
 }

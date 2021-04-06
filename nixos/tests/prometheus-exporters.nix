@@ -201,6 +201,22 @@ let
       '';
     };
 
+    # Access to WHOIS server is required to properly test this exporter, so
+    # just perform basic sanity check that the exporter is running and returns
+    # a failure.
+    domain = {
+      exporterConfig = {
+        enable = true;
+      };
+      exporterTest = ''
+        wait_for_unit("prometheus-domain-exporter.service")
+        wait_for_open_port(9222)
+        succeed(
+            "curl -sSf 'http://localhost:9222/probe?target=nixos.org' | grep -q 'domain_probe_success 0'"
+        )
+      '';
+    };
+
     dovecot = {
       exporterConfig = {
         enable = true;
@@ -599,6 +615,66 @@ let
         wait_for_open_port(9100)
         succeed(
             "curl -sSf http://localhost:9100/metrics | grep -q 'node_exporter_build_info{.\\+} 1'"
+        )
+      '';
+    };
+
+    openldap = {
+      exporterConfig = {
+        enable = true;
+        ldapCredentialFile = "${pkgs.writeText "exporter.yml" ''
+          ldapUser: "cn=root,dc=example"
+          ldapPass: "notapassword"
+        ''}";
+      };
+      metricProvider = {
+        services.openldap = {
+          enable = true;
+          settings.children = {
+            "cn=schema".includes = [
+              "${pkgs.openldap}/etc/schema/core.ldif"
+              "${pkgs.openldap}/etc/schema/cosine.ldif"
+              "${pkgs.openldap}/etc/schema/inetorgperson.ldif"
+              "${pkgs.openldap}/etc/schema/nis.ldif"
+            ];
+            "olcDatabase={1}mdb" = {
+              attrs = {
+                objectClass = [ "olcDatabaseConfig" "olcMdbConfig" ];
+                olcDatabase = "{1}mdb";
+                olcDbDirectory = "/var/db/openldap";
+                olcSuffix = "dc=example";
+                olcRootDN = {
+                  # cn=root,dc=example
+                  base64 = "Y249cm9vdCxkYz1leGFtcGxl";
+                };
+                olcRootPW = {
+                  path = "${pkgs.writeText "rootpw" "notapassword"}";
+                };
+              };
+            };
+            "olcDatabase={2}monitor".attrs = {
+              objectClass = [ "olcDatabaseConfig" ];
+              olcDatabase = "{2}monitor";
+              olcAccess = [ "to dn.subtree=cn=monitor by users read" ];
+            };
+          };
+          declarativeContents."dc=example" = ''
+            dn: dc=example
+            objectClass: domain
+            dc: example
+
+            dn: ou=users,dc=example
+            objectClass: organizationalUnit
+            ou: users
+          '';
+        };
+      };
+      exporterTest = ''
+        wait_for_unit("prometheus-openldap-exporter.service")
+        wait_for_open_port(389)
+        wait_for_open_port(9330)
+        wait_until_succeeds(
+            "curl -sSf http://localhost:9330/metrics | grep -q 'openldap_scrape{result=\"ok\"} 1'"
         )
       '';
     };
