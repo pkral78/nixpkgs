@@ -1102,6 +1102,8 @@ in
 
   betterdiscordctl = callPackage ../tools/misc/betterdiscordctl { };
 
+  betterdiscord-installer = callPackage ../tools/misc/betterdiscord-installer { };
+
   brakeman = callPackage ../development/tools/analysis/brakeman { };
 
   brewtarget = libsForQt514.callPackage ../applications/misc/brewtarget { } ;
@@ -2487,6 +2489,8 @@ in
 
   go-chromecast = callPackage ../applications/video/go-chromecast { };
 
+  go-containerregistry = callPackage ../development/tools/go-containerregistry { };
+
   go-rice = callPackage ../tools/misc/go.rice {};
 
   go-2fa = callPackage ../tools/security/2fa {};
@@ -2568,6 +2572,8 @@ in
 
   gringo = callPackage ../tools/misc/gringo { };
 
+  grit = callPackage ../tools/misc/grit { };
+
   grobi = callPackage ../tools/X11/grobi { };
 
   gscan2pdf = callPackage ../applications/graphics/gscan2pdf { };
@@ -2629,6 +2635,8 @@ in
   jellyfin-mpv-shim = python3Packages.callPackage ../applications/video/jellyfin-mpv-shim { };
 
   jotta-cli = callPackage ../applications/misc/jotta-cli { };
+
+  joycond = callPackage ../os-specific/linux/joycond { };
 
   jwt-cli = callPackage ../tools/security/jwt-cli {
     inherit (darwin.apple_sdk.frameworks) Security;
@@ -2859,6 +2867,8 @@ in
   piglit = callPackage ../tools/graphics/piglit { };
 
   playerctl = callPackage ../tools/audio/playerctl { };
+
+  poweralertd = callPackage ../tools/misc/poweralertd { };
 
   ps_mem = callPackage ../tools/system/ps_mem { };
 
@@ -4085,7 +4095,6 @@ in
 
   wrangler = callPackage ../development/tools/wrangler {
    inherit (darwin.apple_sdk.frameworks) CoreFoundation CoreServices Security;
-   inherit (darwin) libiconv;
   };
 
   wsl-open = callPackage ../tools/misc/wsl-open { };
@@ -5053,6 +5062,8 @@ in
   gpart = callPackage ../tools/filesystems/gpart { };
 
   gparted = callPackage ../tools/misc/gparted { };
+
+  gpt2tc = callPackage ../tools/text/gpt2tc { };
 
   ldmtool = callPackage ../tools/misc/ldmtool { };
 
@@ -6047,6 +6058,10 @@ in
     pythonPackages = python3Packages;
   };
 
+  nats-top = callPackage ../tools/system/nats-top { };
+
+  natscli = callPackage ../tools/system/natscli { };
+
   nbench = callPackage ../tools/misc/nbench { };
 
   ncrack = callPackage ../tools/security/ncrack { };
@@ -6063,6 +6078,8 @@ in
   netperf = callPackage ../applications/networking/netperf { };
 
   netsniff-ng = callPackage ../tools/networking/netsniff-ng { };
+
+  nkeys = callPackage ../tools/system/nkeys { };
 
   nyxt = callPackage ../applications/networking/browsers/nyxt { };
 
@@ -7593,9 +7610,7 @@ in
 
   pympress = callPackage ../applications/office/pympress { };
 
-  pyspread = python3Packages.callPackage ../applications/office/pyspread {
-    inherit (qt5) qtsvg wrapQtAppsHook;
-  };
+  pyspread = libsForQt5.callPackage ../applications/office/pyspread { };
 
   pythonIRClib = pythonPackages.pythonIRClib;
 
@@ -9646,6 +9661,8 @@ in
   zsh-autopair = callPackage ../shells/zsh/zsh-autopair { };
 
   zsh-bd = callPackage ../shells/zsh/zsh-bd { };
+
+  zsh-clipboard = callPackage ../shells/zsh/zsh-clipboard { };
 
   zsh-git-prompt = callPackage ../shells/zsh/zsh-git-prompt { };
 
@@ -12871,6 +12888,7 @@ in
 
   khronos-ocl-icd-loader = callPackage ../development/libraries/khronos-ocl-icd-loader {  };
 
+  krankerl = callPackage ../development/tools/krankerl { };
 
   krew = callPackage ../development/tools/krew { };
 
@@ -13087,6 +13105,8 @@ in
       vanilla = true;
     };
   }));
+
+  polar = callPackage ../tools/misc/polar { };
 
   inherit (nodePackages) postcss-cli;
 
@@ -14888,8 +14908,8 @@ in
   iso-flags = callPackage ../data/icons/iso-flags { };
 
   ispc = callPackage ../development/compilers/ispc {
-    stdenv = llvmPackages_10.stdenv;
-    llvmPackages = llvmPackages_10;
+    stdenv = llvmPackages_11.stdenv;
+    llvmPackages = llvmPackages_11;
   };
 
   isso = callPackage ../servers/isso { };
@@ -15254,6 +15274,8 @@ in
   libdivsufsort = callPackage ../development/libraries/libdivsufsort { };
 
   libdmtx = callPackage ../development/libraries/libdmtx { };
+
+  libdmapsharing = callPackage ../development/libraries/libdmapsharing { };
 
   libdnet = callPackage ../development/libraries/libdnet { };
 
@@ -15872,6 +15894,8 @@ in
   libpcap = callPackage ../development/libraries/libpcap { };
 
   libpeas = callPackage ../development/libraries/libpeas { };
+
+  libpg_query = callPackage ../development/libraries/libpg_query { };
 
   libpipeline = callPackage ../development/libraries/libpipeline { };
 
@@ -16741,6 +16765,8 @@ in
   pkcs11helper = callPackage ../development/libraries/pkcs11helper { };
 
   pkgdiff = callPackage ../tools/misc/pkgdiff { };
+
+  place-cursor-at = haskell.lib.justStaticExecutables haskellPackages.place-cursor-at;
 
   plib = callPackage ../development/libraries/plib { };
 
@@ -18864,6 +18890,7 @@ in
   prometheus-aws-s3-exporter = callPackage ../servers/monitoring/prometheus/aws-s3-exporter.nix { };
   prometheus-bind-exporter = callPackage ../servers/monitoring/prometheus/bind-exporter.nix { };
   prometheus-bird-exporter = callPackage ../servers/monitoring/prometheus/bird-exporter.nix { };
+  prometheus-bitcoin-exporter = callPackage ../servers/monitoring/prometheus/bitcoin-exporter.nix { };
   prometheus-blackbox-exporter = callPackage ../servers/monitoring/prometheus/blackbox-exporter.nix { };
   prometheus-collectd-exporter = callPackage ../servers/monitoring/prometheus/collectd-exporter.nix { };
   prometheus-consul-exporter = callPackage ../servers/monitoring/prometheus/consul-exporter.nix { };
@@ -19234,7 +19261,9 @@ in
 
   alsaPluginWrapper = callPackage ../os-specific/linux/alsa-plugins/wrapper.nix { };
 
-  alsaUtils = callPackage ../os-specific/linux/alsa-utils { };
+  alsaUtils = callPackage ../os-specific/linux/alsa-utils {
+    fftw = fftwFloat;
+  };
   alsaOss = callPackage ../os-specific/linux/alsa-oss { };
   alsaTools = callPackage ../os-specific/linux/alsa-tools { };
 
@@ -19760,6 +19789,13 @@ in
     ];
   };
 
+  linux_xanmod = callPackage ../os-specific/linux/kernel/linux-xanmod.nix {
+    kernelPatches = [
+      kernelPatches.bridge_stp_helper
+      kernelPatches.request_key_helper
+    ];
+  };
+
   /* Linux kernel modules are inherently tied to a specific kernel.  So
      rather than provide specific instances of those packages for a
      specific kernel, we have a function that builds those packages
@@ -20079,6 +20115,9 @@ in
   # zen-kernel
   linuxPackages_zen = recurseIntoAttrs (linuxPackagesFor pkgs.linux_zen);
   linuxPackages_lqx = recurseIntoAttrs (linuxPackagesFor pkgs.linux_lqx);
+
+  # XanMod kernel
+  linuxPackages_xanmod = recurseIntoAttrs (linuxPackagesFor pkgs.linux_xanmod);
 
   # A function to build a manually-configured kernel
   linuxManualConfig = makeOverridable (callPackage ../os-specific/linux/kernel/manual-config.nix {});
@@ -21384,6 +21423,8 @@ in
   shaderc = callPackage ../development/compilers/shaderc { };
 
   shades-of-gray-theme = callPackage ../data/themes/shades-of-gray { };
+
+  sjasmplus = callPackage ../development/compilers/sjasmplus { };
 
   skeu = callPackage ../data/themes/skeu { };
 
@@ -23439,6 +23480,7 @@ in
   swaybg = callPackage ../applications/window-managers/sway/bg.nix { };
   swayidle = callPackage ../applications/window-managers/sway/idle.nix { };
   swaylock = callPackage ../applications/window-managers/sway/lock.nix { };
+  swaywsr = callPackage ../applications/window-managers/sway/wsr.nix { };
   sway-contrib = recurseIntoAttrs (callPackages ../applications/window-managers/sway/contrib.nix { });
 
   swaylock-fancy = callPackage ../applications/window-managers/sway/lock-fancy.nix { };
@@ -23510,6 +23552,8 @@ in
   i3status = callPackage ../applications/window-managers/i3/status.nix { };
 
   i3status-rust = callPackage ../applications/window-managers/i3/status-rust.nix { };
+
+  i3wsr = callPackage ../applications/window-managers/i3/wsr.nix { };
 
   i3-wk-switch = callPackage ../applications/window-managers/i3/wk-switch.nix { };
 
@@ -24181,6 +24225,8 @@ in
   melonDS = libsForQt5.callPackage ../misc/emulators/melonDS { };
 
   meme = callPackage ../applications/graphics/meme { };
+
+  meme-suite = callPackage ../applications/science/biology/meme-suite { };
 
   # Needs qtwebkit which is broken on qt5.15
   mendeley = libsForQt514.callPackage ../applications/office/mendeley {
@@ -26936,6 +26982,8 @@ in
 
   zscroll = callPackage ../applications/misc/zscroll {};
 
+  zsteg = callPackage ../tools/security/zsteg { };
+
   zynaddsubfx = zyn-fusion;
 
   zynaddsubfx-fltk = callPackage ../applications/audio/zynaddsubfx {
@@ -27952,6 +28000,8 @@ in
 
   ufoai = callPackage ../games/ufoai { };
 
+  uhexen2 = callPackage ../games/uhexen2 { };
+
   ultimatestunts = callPackage ../games/ultimatestunts { };
 
   ultrastar-creator = libsForQt5.callPackage ../tools/misc/ultrastar-creator { };
@@ -28015,7 +28065,7 @@ in
 
   warsow = callPackage ../games/warsow { };
 
-  warzone2100 = libsForQt5.callPackage ../games/warzone2100 { };
+  warzone2100 = callPackage ../games/warzone2100 { };
 
   wesnoth = callPackage ../games/wesnoth {
     inherit (darwin.apple_sdk.frameworks) Cocoa Foundation;
@@ -28245,6 +28295,14 @@ in
   molden = callPackage ../applications/science/chemistry/molden { };
 
   octopus = callPackage ../applications/science/chemistry/octopus { };
+
+  openlp = libsForQt5.callPackage ../applications/misc/openlp { };
+  openlpFull = appendToName "full" (openlp.override {
+    pdfSupport = true;
+    presentationSupport = true;
+    vlcSupport = true;
+    gstreamerSupport = true;
+  });
 
   openmolcas = callPackage ../applications/science/chemistry/openmolcas { };
 
