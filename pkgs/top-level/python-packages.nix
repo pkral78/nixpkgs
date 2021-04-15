@@ -379,6 +379,8 @@ in {
 
   amcrest = callPackage ../development/python-modules/amcrest { };
 
+  amiibo-py = callPackage ../development/python-modules/amiibo-py { };
+
   amply = callPackage ../development/python-modules/amply { };
 
   amqp = callPackage ../development/python-modules/amqp { };
@@ -1814,6 +1816,8 @@ in {
   devpi-common = callPackage ../development/python-modules/devpi-common { };
 
   dftfit = callPackage ../development/python-modules/dftfit { };
+
+  diagrams = callPackage ../development/python-modules/diagrams { };
 
   diceware = callPackage ../development/python-modules/diceware { };
 
@@ -8572,6 +8576,8 @@ in {
 
   tvnamer = callPackage ../development/python-modules/tvnamer { };
 
+  tweedledum = callPackage ../development/python-modules/tweedledum { };
+
   tweepy = callPackage ../development/python-modules/tweepy { };
 
   twentemilieu = callPackage ../development/python-modules/twentemilieu { };
@@ -9157,6 +9163,8 @@ in {
   yappi = callPackage ../development/python-modules/yappi { };
 
   Yapsy = callPackage ../development/python-modules/yapsy { };
+
+  yara-python = callPackage ../development/python-modules/yara-python { };
 
   yarg = callPackage ../development/python-modules/yarg { };
 
