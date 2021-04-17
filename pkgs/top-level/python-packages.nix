@@ -1413,6 +1413,8 @@ in {
 
   clickhouse-cityhash = callPackage ../development/python-modules/clickhouse-cityhash {};
 
+  clickhouse-cli = callPackage ../development/python-modules/clickhouse-cli { };
+
   clickhouse-driver = callPackage ../development/python-modules/clickhouse-driver {};
 
   cliff = callPackage ../development/python-modules/cliff { };
@@ -3397,7 +3399,7 @@ in {
 
   ipdbplugin = callPackage ../development/python-modules/ipdbplugin { };
 
-  ipfsapi = callPackage ../development/python-modules/ipfsapi { };
+  ipfshttpclient = callPackage ../development/python-modules/ipfshttpclient { };
 
   iptools = callPackage ../development/python-modules/iptools { };
 
@@ -3684,6 +3686,8 @@ in {
   karton-classifier = callPackage ../development/python-modules/karton-classifier { };
 
   karton-core = callPackage ../development/python-modules/karton-core { };
+
+  karton-yaramatcher = callPackage ../development/python-modules/karton-yaramatcher { };
 
   kazoo = callPackage ../development/python-modules/kazoo { };
 
@@ -4810,6 +4814,8 @@ in {
     # requires both the graphviz package and python package
     graphvizPkgs = pkgs.graphviz;
   };
+
+  oci = callPackage ../development/python-modules/oci { };
 
   od = callPackage ../development/python-modules/od { };
 
@@ -8225,6 +8231,8 @@ in {
   else
     callPackage ../development/python-modules/sympy/1_5.nix { };
 
+  systembridge = callPackage ../development/python-modules/systembridge { };
+
   systemd = callPackage ../development/python-modules/systemd {
     inherit (pkgs) systemd;
   };
@@ -8986,6 +8994,8 @@ in {
   winsspi = callPackage ../development/python-modules/winsspi { };
 
   wled = callPackage ../development/python-modules/wled { };
+
+  woob = callPackage ../development/python-modules/woob { };
 
   word2vec = callPackage ../development/python-modules/word2vec { };
 
