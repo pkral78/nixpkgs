@@ -2109,6 +2109,8 @@ in {
 
   ds4drv = callPackage ../development/python-modules/ds4drv { };
 
+  dsmr-parser = callPackage ../development/python-modules/dsmr-parser { };
+
   dtopt = callPackage ../development/python-modules/dtopt { };
 
   duckdb = callPackage ../development/python-modules/duckdb {
@@ -3069,6 +3071,8 @@ in {
 
   habanero = callPackage ../development/python-modules/habanero { };
 
+  hachoir = callPackage ../development/python-modules/hachoir { };
+
   ha-ffmpeg = callPackage ../development/python-modules/ha-ffmpeg { };
 
   halo = callPackage ../development/python-modules/halo { };
@@ -3244,6 +3248,8 @@ in {
   hypchat = callPackage ../development/python-modules/hypchat { };
 
   hyperframe = callPackage ../development/python-modules/hyperframe { };
+
+  hyperion-py = callPackage ../development/python-modules/hyperion-py { };
 
   hyperkitty = callPackage ../servers/mail/mailman/hyperkitty.nix { };
 
@@ -5248,6 +5254,8 @@ in {
   pkginfo = callPackage ../development/python-modules/pkginfo { };
 
   pkuseg = callPackage ../development/python-modules/pkuseg { };
+
+  ppdeep = callPackage ../development/python-modules/ppdeep { };
 
   pynndescent = callPackage ../development/python-modules/pynndescent { };
 
@@ -8284,6 +8292,8 @@ in {
 
   tahoma-api = callPackage ../development/python-modules/tahoma-api { };
 
+  tailer = callPackage ../development/python-modules/tailer { };
+
   tarman = callPackage ../development/python-modules/tarman { };
 
   tasklib = callPackage ../development/python-modules/tasklib { };
@@ -8731,6 +8741,8 @@ in {
 
   unifi = callPackage ../development/python-modules/unifi { };
 
+  unify = callPackage ../development/python-modules/unify { };
+
   unifiled = callPackage ../development/python-modules/unifiled { };
 
   units = callPackage ../development/python-modules/units { };
@@ -8748,6 +8760,8 @@ in {
   unrpa = callPackage ../development/python-modules/unrpa { };
 
   untangle = callPackage ../development/python-modules/untangle { };
+
+  untokenize = callPackage ../development/python-modules/untokenize { };
 
   upass = callPackage ../development/python-modules/upass { };
 
