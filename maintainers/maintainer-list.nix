@@ -428,6 +428,12 @@
     githubId = 782180;
     name = "Alex Vorobiev";
   };
+  alex-eyre = {
+    email = "A.Eyre@sms.ed.ac.uk";
+    github = "alex-eyre";
+    githubId = 38869148;
+    name = "Alex Eyre";
+  };
   algorith = {
     email = "dries_van_daele@telenet.be";
     name = "Dries Van Daele";
@@ -7195,6 +7201,16 @@
     githubId = 16385648;
     name = "Niko Pavlinek";
   };
+  nixbitcoin = {
+    email = "nixbitcoin@i2pmail.org";
+    github = "nixbitcoin";
+    githubId = 45737139;
+    name = "nixbitcoindev";
+    keys = [{
+      longkeyid = "rsa4096/0xDD11F9AD5308B3BA";
+      fingerprint = "577A 3452 7F3E 2A85 E80F  E164 DD11 F9AD 5308 B3BA";
+    }];
+  };
   nixinator = {
     email = "33lockdown33@protonmail.com";
     github = "nixinator";
@@ -7248,6 +7264,12 @@
     github = "noneucat";
     githubId = 40049608;
     name = "Andy Chun";
+  };
+  noreferences = {
+    email = "norkus@norkus.net";
+    github = "noreferences";
+    githubId = 13085275;
+    name = "Juozas Norkus";
   };
   norfair = {
     email = "syd@cs-syd.eu";
@@ -7416,6 +7438,12 @@
     github = "omnipotententity";
     githubId = 1538622;
     name = "Michael Reilly";
+  };
+  onsails = {
+    email = "andrey@onsails.com";
+    github = "onsails";
+    githubId = 107261;
+    name = "Andrey Kuznetsov";
   };
   onny = {
     email = "onny@project-insanity.org";
