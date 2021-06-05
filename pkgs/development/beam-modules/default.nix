@@ -63,7 +63,7 @@ let
       };
 
       elixir_1_8 = lib'.callElixir ../interpreters/elixir/1.8.nix {
-        inherit erlang;
+        erlang = pkgs.beam.interpreters.erlangR23;
         debugInfo = true;
       };
 
@@ -77,17 +77,12 @@ let
       elixir_ls = callPackage ./elixir_ls.nix { inherit elixir fetchMixDeps mixRelease; };
 
       lfe = lfe_1_3;
-      lfe_1_2 = lib'.callLFE ../interpreters/lfe/1.2.nix { inherit erlang buildRebar3 buildHex; };
       lfe_1_3 = lib'.callLFE ../interpreters/lfe/1.3.nix { inherit erlang buildRebar3 buildHex; };
 
       # Non hex packages. Examples how to build Rebar/Mix packages with and
       # without helper functions buildRebar3 and buildMix.
       hex = callPackage ./hex { };
       webdriver = callPackage ./webdriver { };
-      relxExe = callPackage ../tools/erlang/relx-exe { };
-
-      # An example of Erlang/C++ package.
-      cuter = callPackage ../tools/erlang/cuter { };
     };
 in
 makeExtensible packages

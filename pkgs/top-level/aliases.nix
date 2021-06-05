@@ -340,6 +340,7 @@ mapAliases ({
   jikes = throw "jikes was deprecated on 2019-10-07: abandoned by upstream";
   joseki = apache-jena-fuseki; # added 2016-02-28
   json_glib = json-glib; # added 2018-02-25
+  kalk = kalker; # added 2021-06-03
   kdecoration-viewer = throw "kdecoration-viewer has been removed from nixpkgs, as there is no upstream activity"; # 2020-06-16
   k9copy = throw "k9copy has been removed from nixpkgs, as there is no upstream activity"; # 2020-11-06
   kodiGBM = kodi-gbm;
@@ -498,6 +499,7 @@ mapAliases ({
   nixFlakes = nixUnstable; # added 2021-05-21
   nmap_graphical = nmap-graphical;  # added 2017-01-19
   nologin = shadow; # added 2018-04-25
+  nordic-polar = throw "nordic-polar was removed on 2021-05-27, now integrated in nordic"; # added 2021-05-27
   nxproxy = nx-libs; # added 2019-02-15
   nylas-mail-bin = throw "nylas-mail-bin was deprecated on 2019-09-11: abandoned by upstream";
   oauth2_proxy = oauth2-proxy; # added 2021-04-18
@@ -1069,5 +1071,12 @@ mapAliases ({
   inherit (libsForQt5)
     sddm
   ;
+
+  # LLVM packages for (integration) testing that should not be used inside Nixpkgs:
+  llvmPackages_git = recurseIntoAttrs (callPackage ../development/compilers/llvm/git {
+    inherit (stdenvAdapters) overrideCC;
+    buildLlvmTools = buildPackages.llvmPackages_git.tools;
+    targetLlvmLibraries = targetPackages.llvmPackages_git.libraries;
+  });
 
 })
