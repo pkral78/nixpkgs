@@ -1010,6 +1010,8 @@ in
 
   tilix = callPackage ../applications/terminal-emulators/tilix { };
 
+  timedoctor = callPackage ../applications/office/timedoctor { };
+
   twine = with python3Packages; toPythonApplication twine;
 
   wayst = callPackage ../applications/terminal-emulators/wayst { };
@@ -1535,6 +1537,8 @@ in
 
   gitless = callPackage ../applications/version-management/gitless { python = python3; };
 
+  gitlint = python3Packages.callPackage ../tools/misc/gitlint { };
+
   gitter = callPackage  ../applications/networking/instant-messengers/gitter { };
 
   gjs = callPackage ../development/libraries/gjs { };
@@ -1855,6 +1859,8 @@ in
   };
 
   bat-extras = recurseIntoAttrs (callPackages ../tools/misc/bat-extras { });
+
+  beats = callPackage ../tools/misc/beats { };
 
   beauty-line-icon-theme = callPackage ../data/icons/beauty-line-icon-theme {
     inherit (plasma5Packages) breeze-icons;
@@ -2814,6 +2820,10 @@ in
   gtg = callPackage ../applications/office/gtg { };
 
   gti = callPackage ../tools/misc/gti { };
+
+  grapejuice = callPackage ../games/grapejuice {
+    wine = wineWowPackages.unstable;
+  };
 
   hdate = callPackage ../applications/misc/hdate { };
 
@@ -3843,6 +3853,8 @@ in
   cloogppl = callPackage ../development/libraries/cloog-ppl { };
 
   cloud-utils = callPackage ../tools/misc/cloud-utils { };
+
+  cobalt = callPackage ../applications/misc/cobalt { };
 
   cocoapods = callPackage ../development/mobile/cocoapods { };
 
@@ -9824,6 +9836,8 @@ in
 
   unrar = callPackage ../tools/archivers/unrar { };
 
+  vul = callPackage ../applications/misc/vul { };
+
   xar = callPackage ../tools/compression/xar { };
 
   xarchive = callPackage ../tools/archivers/xarchive { };
@@ -11910,6 +11924,7 @@ in
   cargo-make = callPackage ../development/tools/rust/cargo-make {
     inherit (darwin.apple_sdk.frameworks) Security SystemConfiguration;
   };
+  cargo-modules = callPackage ../development/tools/rust/cargo-modules { };
   cargo-msrv = callPackage ../development/tools/rust/cargo-msrv {
     inherit (darwin.apple_sdk.frameworks) Security;
   };
@@ -12719,6 +12734,8 @@ in
   guile-sdl = callPackage ../development/guile-modules/guile-sdl { };
 
   guile-sdl2 = callPackage ../development/guile-modules/guile-sdl2 { };
+
+  guile-ssh = callPackage ../development/guile-modules/guile-ssh { };
 
   guile-xcb = callPackage ../development/guile-modules/guile-xcb {
     guile = guile_2_0;
@@ -15090,7 +15107,9 @@ in
 
   gdal_2 = callPackage ../development/libraries/gdal/2.4.nix { };
 
-  gdcm = callPackage ../development/libraries/gdcm { };
+  gdcm = callPackage ../development/libraries/gdcm {
+    inherit (darwin.apple_sdk.frameworks) ApplicationServices Cocoa;
+  };
 
   ggz_base_libs = callPackage ../development/libraries/ggz_base_libs {};
 
@@ -20664,6 +20683,7 @@ in
       kernelPatches.bridge_stp_helper
       kernelPatches.request_key_helper
       kernelPatches.rtl8761b_support
+      kernelPatches.rtnetlink_fix_regression_in_bridge_vlan_configuration
     ];
   };
 
@@ -20678,6 +20698,7 @@ in
     kernelPatches = [
       kernelPatches.bridge_stp_helper
       kernelPatches.request_key_helper
+      kernelPatches.rtnetlink_fix_regression_in_bridge_vlan_configuration
     ];
   };
 
@@ -20685,6 +20706,7 @@ in
     kernelPatches = [
       kernelPatches.bridge_stp_helper
       kernelPatches.request_key_helper
+      kernelPatches.rtnetlink_fix_regression_in_bridge_vlan_configuration
     ];
   };
 
@@ -20744,6 +20766,7 @@ in
     kernelPatches = [
       kernelPatches.bridge_stp_helper
       kernelPatches.request_key_helper
+      kernelPatches.rtnetlink_fix_regression_in_bridge_vlan_configuration
     ];
   };
 
@@ -23433,6 +23456,8 @@ in
 
   edbrowse = callPackage ../applications/editors/edbrowse { };
 
+  oed = callPackage ../applications/editors/oed { };
+
   ekho = callPackage ../applications/audio/ekho { };
 
   electron-cash = libsForQt5.callPackage ../applications/misc/electron-cash { };
@@ -25790,6 +25815,8 @@ in
   diff-pdf = callPackage ../applications/misc/diff-pdf { wxGTK = wxGTK31; };
 
   mlocate = callPackage ../tools/misc/mlocate { };
+
+  plocate = callPackage ../tools/misc/plocate { };
 
   mypaint = callPackage ../applications/graphics/mypaint { };
 
