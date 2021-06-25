@@ -1883,6 +1883,12 @@
     githubId = 2131991;
     name = "Elmo Todurov";
   };
+  cjab = {
+    email = "chad+nixpkgs@jablonski.xyz";
+    github = "cjab";
+    githubId = 136485;
+    name = "Chad Jablonski";
+  };
   ck3d = {
     email = "ck3d@gmx.de";
     github = "ck3d";
@@ -4017,6 +4023,12 @@
     githubId = 1742172;
     name = "Hamish Hutchings";
   };
+  hanemile = {
+    email = "mail@emile.space";
+    github = "hanemile";
+    githubId = 22756350;
+    name = "Emile Hansmaennel";
+  };
   hansjoergschurr = {
     email = "commits@schurr.at";
     github = "hansjoergschurr";
@@ -5193,6 +5205,12 @@
   jwilberding = {
     email = "jwilberding@afiniate.com";
     name = "Jordan Wilberding";
+  };
+  jwoudenberg = {
+    email = "nixpkgs@jasperwoudenberg.com";
+    github = "jwoudenberg";
+    githubId = 1525551;
+    name = "Jasper Woudenberg";
   };
   jwygoda = {
     email = "jaroslaw@wygoda.me";

@@ -204,6 +204,8 @@ in
 
   buf = callPackage ../development/tools/buf { };
 
+  elfcat = callPackage ../tools/misc/elfcat { };
+
   # Zip file format only allows times after year 1980, which makes e.g. Python wheel building fail with:
   # ValueError: ZIP does not support timestamps before 1980
   ensureNewerSourcesForZipFilesHook = ensureNewerSourcesHook { year = "1980"; };
@@ -3069,6 +3071,8 @@ in
     inherit (darwin.apple_sdk.frameworks) Cocoa;
   };
 
+  notify = callPackage ../tools/misc/notify { };
+
   nrsc5 = callPackage ../applications/misc/nrsc5 { };
 
   nwipe = callPackage ../tools/security/nwipe { };
@@ -4375,6 +4379,8 @@ in
   trivy = callPackage ../tools/admin/trivy { };
 
   trompeloeil = callPackage ../development/libraries/trompeloeil { };
+
+  updog = callPackage ../tools/networking/updog { };
 
   uudeview = callPackage ../tools/misc/uudeview { };
 
@@ -12667,6 +12673,8 @@ in
 
   wasm = ocamlPackages.wasm;
 
+  wasm3 = callPackage ../development/interpreters/wasm3 { };
+
   proglodyte-wasm = callPackage ../development/interpreters/proglodyte-wasm { };
 
 
@@ -13901,6 +13909,8 @@ in
   };
 
   premake = premake4;
+
+  privacyidea = callPackage ../applications/misc/privacyidea { };
 
   procodile = callPackage ../tools/system/procodile { };
 
@@ -20824,7 +20834,7 @@ in
 
     dpdk-kmods = callPackage ../os-specific/linux/dpdk-kmods { };
 
-    dpdk = throw "The dpdk driver has been renamed to dpdk-mods.";
+    dpdk = throw "The dpdk driver has been renamed to dpdk-kmods.";
 
     exfat-nofuse = callPackage ../os-specific/linux/exfat { };
 
@@ -20944,6 +20954,8 @@ in
     system76 = callPackage ../os-specific/linux/system76 { };
 
     system76-acpi = callPackage ../os-specific/linux/system76-acpi { };
+
+    system76-power = callPackage ../os-specific/linux/system76-power { };
 
     system76-io = callPackage ../os-specific/linux/system76-io { };
 
@@ -22500,6 +22512,8 @@ in
   maligned = callPackage ../development/tools/maligned { };
 
   inter = callPackage ../data/fonts/inter { };
+
+  open-fonts = callPackage ../data/fonts/open-fonts { };
 
   scientifica = callPackage ../data/fonts/scientifica { };
 
@@ -26588,7 +26602,7 @@ in
 
   scite = callPackage ../applications/editors/scite { };
 
-  scli = with python3Packages; callPackage ../applications/misc/scli { };
+  scli = callPackage ../applications/misc/scli { };
 
   scribus = callPackage ../applications/office/scribus {
     inherit (gnome2) libart_lgpl;
@@ -27186,6 +27200,8 @@ in
   trojita = libsForQt5.callPackage ../applications/networking/mailreaders/trojita { };
 
   tudu = callPackage ../applications/office/tudu { };
+
+  tuna = python3Packages.callPackage ../os-specific/linux/tuna { };
 
   tunefish = callPackage ../applications/audio/tunefish {
     stdenv = clangStdenv; # https://github.com/jpcima/tunefish/issues/4
@@ -29869,6 +29885,11 @@ in
 
   elmerfem = callPackage ../applications/science/physics/elmerfem {};
 
+  mcfm = callPackage ../applications/science/physics/MCFM {
+    stdenv = gccStdenv;
+    lhapdf = lhapdf.override { stdenv = gccStdenv; };
+  };
+
   professor = callPackage ../applications/science/physics/professor { };
 
   sacrifice = callPackage ../applications/science/physics/sacrifice {};
@@ -30243,6 +30264,8 @@ in
   calc = callPackage ../applications/science/math/calc { };
 
   pcalc = callPackage ../applications/science/math/pcalc { };
+
+  programmer-calculator = callPackage ../applications/science/math/programmer-calculator { };
 
   bcal = callPackage ../applications/science/math/bcal { };
 
