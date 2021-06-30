@@ -278,6 +278,8 @@ let
 
     domain-name = callPackage ../development/ocaml-modules/domain-name { };
 
+    dose3 = callPackage ../development/ocaml-modules/dose3 { };
+
     dtoa = callPackage ../development/ocaml-modules/dtoa { };
 
     duff = callPackage ../development/ocaml-modules/duff { };
@@ -609,7 +611,7 @@ let
     };
 
     lwt = callPackage ../development/ocaml-modules/lwt {
-      ocaml-migrate-parsetree = ocaml-migrate-parsetree-2-1;
+      ocaml-migrate-parsetree = ocaml-migrate-parsetree-2;
     };
 
     ocaml_lwt = lwt;
@@ -845,12 +847,12 @@ let
 
     ocaml-migrate-parsetree-1-8 = callPackage ../development/ocaml-modules/ocaml-migrate-parsetree/1.8.x.nix { };
 
-    ocaml-migrate-parsetree-2-1 = callPackage ../development/ocaml-modules/ocaml-migrate-parsetree/2.1.x.nix { };
+    ocaml-migrate-parsetree-2 = callPackage ../development/ocaml-modules/ocaml-migrate-parsetree/2.x.nix { };
 
     ocamlmod = callPackage ../development/tools/ocaml/ocamlmod { };
 
     ocaml-monadic = callPackage ../development/ocaml-modules/ocaml-monadic {
-      ocaml-migrate-parsetree = ocaml-migrate-parsetree-2-1;
+      ocaml-migrate-parsetree = ocaml-migrate-parsetree-2;
     };
 
     ocaml_mysql = callPackage ../development/ocaml-modules/mysql { };
