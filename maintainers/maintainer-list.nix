@@ -4061,6 +4061,12 @@
     github = "gytis-ivaskevicius";
     githubId = 23264966;
   };
+  hagl = {
+    email = "harald@glie.be";
+    github = "hagl";
+    githubId = 1162118;
+    name = "Harald Gliebe";
+  };
   hakuch = {
     email = "hakuch@gmail.com";
     github = "hakuch";
@@ -10787,6 +10793,12 @@
     github = "udono";
     githubId = 347983;
     name = "Udo Spallek";
+  };
+  ulrikstrid = {
+    email = "ulrik.strid@outlook.com";
+    github = "ulrikstrid";
+    githubId = 1607770;
+    name = "Ulrik Strid";
   };
   unode = {
     email = "alves.rjc@gmail.com";
