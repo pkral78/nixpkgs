@@ -952,6 +952,8 @@ in
 
   lifecycled = callPackage ../tools/misc/lifecycled { };
 
+  lilo = callPackage ../tools/misc/lilo { };
+
   lilyterm = callPackage ../applications/terminal-emulators/lilyterm {
     inherit (gnome2) vte;
     gtk = gtk2;
@@ -1563,6 +1565,8 @@ in
   gmni = callPackage ../applications/networking/browsers/gmni { };
 
   gmnisrv = callPackage ../servers/gemini/gmnisrv { };
+
+  gmnitohtml = callPackage ../applications/misc/gmnitohtml { };
 
   goimapnotify = callPackage ../tools/networking/goimapnotify { };
 
@@ -5544,7 +5548,17 @@ in
 
   grub2 = grub2_full;
 
-  grub2_full = callPackage ../tools/misc/grub/2.0x.nix { };
+  grub2_full = callPackage ../tools/misc/grub/2.0x.nix {
+    # update breaks grub2
+    gnulib = pkgs.gnulib.overrideAttrs (oldAttrs: rec {
+      version = "20200223";
+      src = fetchgit {
+        url = "https://git.savannah.gnu.org/r/gnulib.git";
+        rev = "292fd5d6ff5ecce81ec3c648f353732a9ece83c0";
+        sha256 = "0hkg3nql8nsll0vrqk4ifda0v4kpi67xz42r8daqsql6c4rciqnw";
+      };
+    });
+  };
 
   grub2_efi = grub2.override {
     efiSupport = true;
@@ -7279,7 +7293,7 @@ in
   grocy = callPackage ../servers/grocy { };
 
   inherit (callPackage ../servers/nextcloud {})
-    nextcloud18 nextcloud19 nextcloud20 nextcloud21;
+    nextcloud19 nextcloud20 nextcloud21 nextcloud22;
 
   nextcloud-client = libsForQt5.callPackage ../applications/networking/nextcloud-client { };
 
@@ -8222,8 +8236,6 @@ in
 
   quickbms = pkgsi686Linux.callPackage ../tools/archivers/quickbms { };
 
-  ocz-ssd-guru = callPackage ../tools/misc/ocz-ssd-guru { };
-
   q-text-as-data = callPackage ../tools/misc/q-text-as-data { };
 
   qalculate-gtk = callPackage ../applications/science/math/qalculate-gtk { };
@@ -8595,7 +8607,9 @@ in
 
   samim-fonts = callPackage ../data/fonts/samim-fonts {};
 
-  saml2aws = callPackage ../tools/security/saml2aws {};
+  saml2aws = callPackage ../tools/security/saml2aws {
+    inherit (darwin.apple_sdk.frameworks) AppKit;
+  };
 
   sammler = callPackage ../tools/security/sammler {};
 
@@ -9129,6 +9143,10 @@ in
   swiften = callPackage ../development/libraries/swiften { };
 
   squeekboard = callPackage ../applications/accessibility/squeekboard { };
+
+  sx = callPackage ../tools/X11/sx {
+    inherit (xorg) xauth xorgserver;
+  };
 
   t = callPackage ../tools/misc/t { };
 
@@ -13723,6 +13741,8 @@ in
   julius = callPackage ../games/julius { };
 
   augustus = callPackage ../games/augustus { };
+
+  k0sctl = callPackage ../applications/networking/cluster/k0sctl { };
 
   k2tf = callPackage ../development/tools/misc/k2tf { };
 
@@ -20672,6 +20692,8 @@ in
 
   kbdlight = callPackage ../os-specific/linux/kbdlight { };
 
+  kinect-audio-setup = callPackage ../os-specific/linux/kinect-audio-setup { };
+
   kmscon = callPackage ../os-specific/linux/kmscon { };
 
   kmscube = callPackage ../os-specific/linux/kmscube { };
@@ -23288,10 +23310,11 @@ in
 
   cipher = callPackage ../applications/misc/cipher { };
 
-  claws-mail = callPackage ../applications/networking/mailreaders/claws-mail {
+  claws-mail-gtk2 = callPackage ../applications/networking/mailreaders/claws-mail {
     inherit (xorg) libSM;
+    useGtk3 = false;
   };
-  claws-mail-gtk3 = callPackage ../applications/networking/mailreaders/claws-mail {
+  claws-mail = callPackage ../applications/networking/mailreaders/claws-mail {
     inherit (xorg) libSM;
     useGtk3 = true;
   };
@@ -25662,6 +25685,8 @@ in
 
   rofi-power-menu = callPackage ../applications/misc/rofi-power-menu { };
 
+  rofi-vpn = callPackage ../applications/networking/rofi-vpn { };
+
   ympd = callPackage ../applications/audio/ympd { };
 
   # a somewhat more maintained fork of ympd
@@ -27207,6 +27232,8 @@ in
 
   tempo = callPackage ../servers/tracing/tempo {};
 
+  temporal = callPackage ../applications/networking/cluster/temporal { };
+
   tendermint = callPackage ../tools/networking/tendermint { };
 
   termdown = python3Packages.callPackage ../applications/misc/termdown { };
@@ -28324,6 +28351,9 @@ in
 
   zola = callPackage ../applications/misc/zola {
     inherit (darwin.apple_sdk.frameworks) CoreServices;
+    # Version 0.13.0 has the lexical_core 0.7.4 dependency that doesn't build
+    # with rust 1.53. This should be fixed in the next version.
+    rustPlatform = rustPackages_1_45.rustPlatform;
   };
 
   zombietrackergps = libsForQt5.callPackage ../applications/gis/zombietrackergps { };
