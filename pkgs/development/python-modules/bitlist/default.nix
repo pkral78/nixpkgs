@@ -8,11 +8,11 @@
 
 buildPythonPackage rec {
   pname = "bitlist";
-  version = "0.3.1";
+  version = "0.4.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "04dz64r21a39p8wph5qlhvs5y873qgk6xxjlzw8n695b8jm3ixir";
+    sha256 = "sha256-IL1tpP/F6O3BvJab6aC6r6PhRgKFpLp9aXmOK1rQXaU=";
   };
 
   propagatedBuildInputs = [
@@ -23,6 +23,11 @@ buildPythonPackage rec {
     pytestCheckHook
     nose
   ];
+
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace "parts~=1.0.3" "parts>=1.0.3"
+  '';
 
   pythonImportsCheck = [ "bitlist" ];
 

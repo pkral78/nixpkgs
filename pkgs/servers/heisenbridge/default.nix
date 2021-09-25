@@ -1,14 +1,14 @@
-{ lib, fetchFromGitHub, python3Packages }:
+{ lib, fetchurl, python3Packages }:
 
 python3Packages.buildPythonPackage rec {
   pname = "heisenbridge";
-  version = "unstable-2021-05-29";
+  version = "1.1.2";
 
-  src = fetchFromGitHub {
-    owner = "hifi";
-    repo = "heisenbridge";
-    rev = "980755226b0cb46ad9c7f40e0e940f354212a8b7";
-    sha256 = "sha256-jO1Dqtv3IbV4FLI3C82pxssgrCf43hAEcPLYszX2GNI=";
+  # Use the release tarball because it has the version set correctly using the
+  # version.txt file.
+  src = fetchurl {
+    url = "https://github.com/hifi/heisenbridge/releases/download/v${version}/heisenbridge-${version}.tar.gz";
+    sha256 = "sha256-hY0dB4QT9W18ubUytvJwRUWKpNQMpyYdSLbmu+c8BCo=";
   };
 
   propagatedBuildInputs = with python3Packages; [
@@ -16,8 +16,6 @@ python3Packages.buildPythonPackage rec {
     irc
     pyyaml
   ];
-
-  checkInputs = [ python3Packages.pytestCheckHook ];
 
   meta = with lib; {
     description = "A bouncer-style Matrix-IRC bridge.";
