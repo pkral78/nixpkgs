@@ -75,6 +75,7 @@ chriskempson/base16-vim
 ChristianChiarulli/nvcode-color-schemes.vim
 christoomey/vim-sort-motion
 christoomey/vim-tmux-navigator
+ciaranm/inkpot
 ckarnell/antonys-macro-repeater
 clojure-vim/vim-jack-in
 cloudhead/neovim-fuzzy
@@ -166,12 +167,12 @@ folke/tokyonight.nvim@main
 folke/trouble.nvim@main
 folke/twilight.nvim@main
 folke/which-key.nvim@main
+FooSoft/vim-argwrap
 freitass/todo.txt-vim
 frigoeu/psc-ide-vim
 fruit-in/brainfuck-vim
 fruit-in/vim-nong-theme
 fsharp/vim-fsharp
-fszymanski/deoplete-emoji
 garbas/vim-snipmate
 gcmt/taboo.vim
 gcmt/wildfire.vim
@@ -561,6 +562,7 @@ pearofducks/ansible-vim
 peitalin/vim-jsx-typescript
 peterbjorgensen/sved
 peterhoeg/vim-qml
+PeterRincker/vim-argumentative
 petRUShka/vim-opencl
 phaazon/hop.nvim
 phanviet/vim-monokai-pro
@@ -623,6 +625,7 @@ RobertAudi/securemodelines
 rodjek/vim-puppet
 romainl/vim-cool
 romainl/vim-qf
+romainl/vim-qlist
 roman/golden-ratio
 romgrk/barbar.nvim
 romgrk/nvim-treesitter-context
@@ -641,7 +644,7 @@ rust-lang/rust.vim
 ryanoasis/vim-devicons
 ryvnf/readline.vim
 saadparwaiz1/cmp_luasnip
-saecki/crates.nvim
+saecki/crates.nvim@main
 sainnhe/edge
 sainnhe/gruvbox-material
 sainnhe/sonokai
@@ -865,6 +868,7 @@ w0ng/vim-hybrid
 wakatime/vim-wakatime
 wannesm/wmgraphviz.vim
 wbthomason/packer.nvim
+weilbith/nvim-code-action-menu@main
 wellle/targets.vim
 wellle/tmux-complete.vim
 wfxr/minimap.vim

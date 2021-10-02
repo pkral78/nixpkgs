@@ -560,6 +560,7 @@
   ./services/misc/octoprint.nix
   ./services/misc/ombi.nix
   ./services/misc/osrm.nix
+  ./services/misc/owncast.nix
   ./services/misc/packagekit.nix
   ./services/misc/paperless-ng.nix
   ./services/misc/parsoid.nix
@@ -962,6 +963,7 @@
   ./services/web-apps/calibre-web.nix
   ./services/web-apps/convos.nix
   ./services/web-apps/cryptpad.nix
+  ./services/web-apps/dex.nix
   ./services/web-apps/discourse.nix
   ./services/web-apps/documize.nix
   ./services/web-apps/dokuwiki.nix
@@ -989,6 +991,7 @@
   ./services/web-apps/nextcloud.nix
   ./services/web-apps/nexus.nix
   ./services/web-apps/node-red.nix
+  ./services/web-apps/pict-rs.nix
   ./services/web-apps/plantuml-server.nix
   ./services/web-apps/plausible.nix
   ./services/web-apps/pgpkeyserver-lite.nix
