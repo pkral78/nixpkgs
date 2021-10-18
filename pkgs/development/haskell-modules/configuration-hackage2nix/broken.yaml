@@ -1284,6 +1284,7 @@ broken-packages:
   - escape-artist
   - escoger
   - espial
+  - esqueleto-pgcrypto
   - ess
   - estimators
   - EstProgress
@@ -1534,7 +1535,6 @@ broken-packages:
   - funcons-values
   - function-instances-algebra
   - functor
-  - functor-combinators
   - functor-friends
   - functor-infix
   - functorm
@@ -1676,6 +1676,7 @@ broken-packages:
   - git-cuk
   - git-date
   - gitdo
+  - github
   - github-backup
   - github-data
   - github-tools
@@ -3847,7 +3848,6 @@ broken-packages:
   - process-leksah
   - process-listlike
   - processmemory
-  - procex
   - procrastinating-variable
   - procstat
   - prof2pretty
@@ -4269,6 +4269,7 @@ broken-packages:
   - semialign-extras
   - semibounded-lattices
   - Semigroup
+  - semigroupoids-do
   - semigroupoids-syntax
   - semigroups-actions
   - sendgrid-haskell
@@ -4383,6 +4384,7 @@ broken-packages:
   - shopify
   - shortcut-links
   - shorten-strings
+  - short-vec
   - show-prettyprint
   - Shpadoinkle-backend-snabbdom
   - Shpadoinkle-isreal
@@ -4662,6 +4664,7 @@ broken-packages:
   - streaming-utils
   - streaming-with
   - streamly-examples
+  - streamly-lz4
   - streamly-process
   - stream-monad
   - streamproc
@@ -4714,6 +4717,7 @@ broken-packages:
   - SVD2HS
   - svfactor
   - svg-builder-fork
+  - svgcairo
   - svgutils
   - svm-light-utils
   - svm-simple
@@ -4949,6 +4953,7 @@ broken-packages:
   - Titim
   - tkhs
   - tkyprof
+  - tmp-proc-example
   - todo
   - tofromxml
   - to-haskell
@@ -5285,6 +5290,7 @@ broken-packages:
   - warc
   - warp-dynamic
   - warp-grpc
+  - warp-quic
   - warp-static
   - warp-systemd
   - wasm
@@ -5405,6 +5411,7 @@ broken-packages:
   - xml-prettify
   - xml-query
   - xml-tydom-core
+  - xml-verify
   - XMMS
   - xmonad-bluetilebranch
   - xmonad-contrib-gpl
