@@ -4,25 +4,29 @@
 , pkg-config
 , openssl
 , stdenv
+, AppKit
 , Security
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "synth";
-  version = "0.6.0";
+  version = "0.6.2";
 
   src = fetchFromGitHub {
     owner = "getsynth";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-i5X2HUOCgY2znH4rDzhFpsPXsFeM7GR4soAO/rFDjjo=";
+    sha256 = "sha256-MeZ5bkOMTJVvaBfGahKsXvaYhfMKcYzPFsBp/p2dPQQ=";
   };
 
-  cargoSha256 = "sha256-47i46Y6JjTGWC7mfMd2x2k8v0SY1o2UHdEU4rF0VrsY=";
+  cargoSha256 = "sha256-lNeDpUla/PfGd/AogdcOtrmL1Jp+0Ji9LH1CF7uOEe0=";
 
   nativeBuildInputs = [ pkg-config ];
 
-  buildInputs = [ openssl ] ++ lib.optional stdenv.isDarwin Security;
+  buildInputs = [ openssl ] ++ lib.optionals stdenv.isDarwin [
+    AppKit
+    Security
+  ];
 
   # requires unstable rust features
   RUSTC_BOOTSTRAP = 1;

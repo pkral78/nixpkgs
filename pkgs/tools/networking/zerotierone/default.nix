@@ -2,13 +2,13 @@
 
 stdenv.mkDerivation rec {
   pname = "zerotierone";
-  version = "1.8.2";
+  version = "1.8.4";
 
   src = fetchFromGitHub {
     owner = "zerotier";
     repo = "ZeroTierOne";
     rev = version;
-    sha256 = "sha256-Itq06zE2AVQ1HSUEQdNUuvEazfU56Hs86T0DEVuF8d4=";
+    sha256 = "sha256-aM0FkcrSd5dEJVdJryIGuyWNFwvKH0SBfOuy4dIMK4A=";
   };
 
   preConfigure = ''

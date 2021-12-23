@@ -1,11 +1,13 @@
-# Update script: pkgs/development/tools/rust/rust-analyzer/update.sh
 { lib
+, fetchFromGitHub
 , vscode-utils
 , jq
 , rust-analyzer
 , nodePackages
 , moreutils
 , esbuild
+, pkg-config
+, libsecret
 , setDefaultServerPath ? true
 }:
 
@@ -13,16 +15,32 @@ let
   pname = "rust-analyzer";
   publisher = "matklad";
 
+  # Use the plugin version as in vscode marketplace, updated by update script.
+  inherit (vsix) version;
+
+  releaseTag = "2021-11-29";
+
+  src = fetchFromGitHub {
+    owner = "rust-analyzer";
+    repo = "rust-analyzer";
+    rev = releaseTag;
+    sha256 = "sha256-vh7z8jupVxXPOko3sWUsOB7eji/7lKfwJ/CE3iw97Sw=";
+  };
+
   build-deps = nodePackages."rust-analyzer-build-deps-../../misc/vscode-extensions/rust-analyzer/build-deps";
   # FIXME: Making a new derivation to link `node_modules` and run `npm run package`
   # will cause a build failure.
   vsix = build-deps.override {
-    src = "${rust-analyzer.src}/editors/code";
+    src = "${src}/editors/code";
     outputs = [ "vsix" "out" ];
 
-    releaseTag = rust-analyzer.version;
+    inherit releaseTag;
 
-    nativeBuildInputs = [ jq moreutils esbuild ];
+    nativeBuildInputs = [
+      jq moreutils esbuild
+      # Required by `keytar`, which is a dependency of `vsce`.
+      pkg-config libsecret
+    ];
 
     # Follows https://github.com/rust-analyzer/rust-analyzer/blob/41949748a6123fd6061eb984a47f4fe780525e63/xtask/src/dist.rs#L39-L65
     postInstall = ''
@@ -34,12 +52,11 @@ let
       ' package.json | sponge package.json
 
       mkdir -p $vsix
-      npx vsce package -o $vsix/${pname}.zip
+      # vsce ask for continue due to missing LICENSE.md
+      # Should be removed after https://github.com/rust-analyzer/rust-analyzer/commit/acd5c1f19bf7246107aaae7b6fe3f676a516c6d2
+      echo y | npx vsce package -o $vsix/${pname}.zip
     '';
   };
-
-  # Use the plugin version as in vscode marketplace, updated by update script.
-  inherit (vsix) version;
 
 in
 vscode-utils.buildVscodeExtension {
@@ -60,7 +77,7 @@ vscode-utils.buildVscodeExtension {
     description = "An alternative rust language server to the RLS";
     homepage = "https://github.com/rust-analyzer/rust-analyzer";
     license = with licenses; [ mit asl20 ];
-    maintainers = with maintainers; [ oxalica ];
+    maintainers = with maintainers; [ ];
     platforms = platforms.all;
   };
 }

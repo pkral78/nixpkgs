@@ -12,7 +12,7 @@ with self; with super; {
     inherit (pkgs) antlr4;
   };
 
-  appleseed = toPythonModule (pkgs.appleseed.override { inherit (self) python; });
+  appleseed = disabled super.appleseed;
 
   application = callPackage ../development/python-modules/application { };
 
@@ -132,11 +132,6 @@ with self; with super; {
 
   gdcm = disabled super.gdcm;
 
-  gaia = disabledIf (isPyPy || isPy3k) (toPythonModule (pkgs.gaia.override {
-    pythonPackages = self;
-    pythonSupport = true;
-  })); # gaia isn't supported with python3 and it's not available from pypi
-
   geant4 = disabled super.geant4;
 
   geopy = callPackage ../development/python-modules/geopy/2.nix { };
@@ -217,8 +212,6 @@ with self; with super; {
   jupyter-client = callPackage ../development/python-modules/jupyter-client/5.nix { };
 
   jupyter_console = callPackage ../development/python-modules/jupyter_console/5.nix { };
-
-  keyring = callPackage ../development/python-modules/keyring/2.nix { };
 
   koji = callPackage ../development/python-modules/koji { };
 
@@ -380,6 +373,8 @@ with self; with super; {
 
   openpyxl = callPackage ../development/python-modules/openpyxl/2.nix { };
 
+  openvino = disabled super.openvino;
+
   openwrt-luci-rpc = disabled super.openwrt-luci-rpc;
 
   opt-einsum = callPackage ../development/python-modules/opt-einsum/2.nix { };
@@ -400,6 +395,8 @@ with self; with super; {
   };
 
   pip = callPackage ../development/python-modules/pip/20.nix { };
+
+  platformdirs = callPackage ../development/python-modules/platformdirs/2.nix { };
 
   pluggy = callPackage ../development/python-modules/pluggy/0.nix { };
 
@@ -425,7 +422,7 @@ with self; with super; {
   pyblosxom = callPackage ../development/python-modules/pyblosxom { };
 
   pycairo = callPackage ../development/python-modules/pycairo/1.18.nix {
-    inherit (pkgs) meson;
+    inherit (pkgs.buildPackages) meson;
   };
 
   pycangjie = disabled pycangjie;
@@ -463,8 +460,6 @@ with self; with super; {
   };
 
   pyhamcrest = callPackage ../development/python-modules/pyhamcrest/1.nix { };
-
-  pyjwt = callPackage ../development/python-modules/pyjwt/1.nix { };
 
   pykickstart = callPackage ../development/python-modules/pykickstart { };
 
@@ -529,17 +524,17 @@ with self; with super; {
 
   remotecv = callPackage ../development/python-modules/remotecv { };
 
+  recoll = disabled super.recoll;
+
   rhpl = callPackage ../development/python-modules/rhpl { };
 
   rivet = disabled super.rivet;
 
   robotframework-ride = callPackage ../development/python-modules/robotframework-ride { };
 
-  ruamel-ordereddict = self.ruamel_ordereddict;
-  ruamel_ordereddict = callPackage ../development/python-modules/ruamel_ordereddict { };
+  ruamel-ordereddict = callPackage ../development/python-modules/ruamel-ordereddict { };
 
-  ruamel_yaml = self.ruamel-yaml;
-  ruamel-yaml = callPackage ../development/python-modules/ruamel_yaml/0.16.nix { };
+  ruamel-yaml = callPackage ../development/python-modules/ruamel-yaml/0.16.nix { };
 
   runsnakerun = callPackage ../development/python-modules/runsnakerun { };
 
@@ -627,6 +622,8 @@ with self; with super; {
 
   tarman = callPackage ../development/python-modules/tarman { };
 
+  tensorflow-bin = disabled super.tensorflow-bin;
+
   thumbor = callPackage ../development/python-modules/thumbor { };
 
   tmdb3 = callPackage ../development/python-modules/tmdb3 { };
@@ -648,6 +645,8 @@ with self; with super; {
   TurboCheetah = callPackage ../development/python-modules/TurboCheetah { };
 
   typing = callPackage ../development/python-modules/typing { };
+
+  tzlocal = callPackage ../development/python-modules/tzlocal/2.nix { };
 
   ujson = callPackage ../development/python-modules/ujson/2.nix { };
 

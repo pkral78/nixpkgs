@@ -822,6 +822,7 @@ dont-distribute-packages:
  - convertible-text
  - coordinate
  - copilot
+ - copilot-c99
  - copilot-cbmc
  - copilot-language
  - copilot-libraries
@@ -948,6 +949,7 @@ dont-distribute-packages:
  - diagrams-pgf
  - diagrams-reflex
  - diagrams-wx
+ - dialog
  - difference-monoid
  - digestive-functors-hsp
  - dingo-core
@@ -990,6 +992,7 @@ dont-distribute-packages:
  - domain-core
  - domain-optics
  - dormouse-client
+ - dovetail-aeson
  - dow
  - download-media-content
  - dph-examples
@@ -1081,7 +1084,6 @@ dont-distribute-packages:
  - extract-dependencies
  - extrapolate
  - factual-api
- - fakedata-quickcheck
  - falling-turnip
  - fallingblocks
  - family-tree
@@ -1110,7 +1112,6 @@ dont-distribute-packages:
  - fields
  - filepath-crypto
  - filepath-io-access
- - filepather
  - filesystem-enumerator
  - find-clumpiness
  - findhttp
@@ -1151,7 +1152,6 @@ dont-distribute-packages:
  - fortran-vars
  - foscam-directory
  - foscam-sort
- - fp-ieee
  - fplll
  - fpnla-examples
  - frame-markdown
@@ -1222,12 +1222,15 @@ dont-distribute-packages:
  - ghc-mod
  - ghc-tags-plugin
  - ghci-pretty
+ - ghcjs-dom-webkit
  - ghcjs-hplay
  - ght
  - gi-cairo-again
+ - gi-clutter
+ - gi-coglpango
  - gi-gsk
  - gi-gstpbutils
- - gi-gtk_4_0_4
+ - gi-gtk_4_0_5
  - git-fmt
  - git-gpush
  - git-object
@@ -1485,6 +1488,8 @@ dont-distribute-packages:
  - hbb
  - hbcd
  - hbf
+ - hbro
+ - hbro-contrib
  - hcg-minus-cairo
  - hcheat
  - hcheckers
@@ -1506,7 +1511,6 @@ dont-distribute-packages:
  - heavy-logger-instances
  - hecc
  - hedgehog-checkers-lens
- - hedgehog-fakedata
  - hedgehog-gen-json
  - hedis-pile
  - heist-aeson
@@ -1570,8 +1574,7 @@ dont-distribute-packages:
  - hmeap
  - hmeap-utils
  - hmep
- - hmm-lapack
- - hmm-lapack_0_4_1
+ - hmm-lapack_0_5
  - hmt
  - hmt-diagrams
  - hnormalise
@@ -1917,7 +1920,7 @@ dont-distribute-packages:
  - language-python-colour
  - language-qux
  - language-spelling
- - lapack-hmatrix
+ - lapack_0_5
  - lat
  - latex-formulae-hakyll
  - latex-formulae-pandoc
@@ -1962,8 +1965,6 @@ dont-distribute-packages:
  - lightstep-haskell
  - lighttpd-conf
  - lighttpd-conf-qq
- - linear-circuit
- - linear-circuit_0_1_0_3
  - linearmap-category
  - linearscan-hoopl
  - linkchk
@@ -2043,8 +2044,6 @@ dont-distribute-packages:
  - macosx-make-standalone
  - magic-wormhole
  - magicbane
- - magico
- - magico_0_0_2_2
  - mahoro
  - maid
  - mail-pool
@@ -2122,6 +2121,7 @@ dont-distribute-packages:
  - mmark-cli
  - mmark-cli_0_0_5_1
  - mmark-ext
+ - mmark-ext_0_2_1_4
  - mmtl-base
  - moan
  - modify-fasta
@@ -2143,6 +2143,8 @@ dont-distribute-packages:
  - moo-nad
  - morley
  - morloc
+ - morpheus-graphql-client_0_18_0
+ - morpheus-graphql_0_18_0
  - morphisms-functors-inventory
  - mosaico-lib
  - motor-diagrams
@@ -2239,7 +2241,6 @@ dont-distribute-packages:
  - nomyx-language
  - nomyx-library
  - nomyx-server
- - notifications-tray-icon
  - notmuch-haskell
  - notmuch-web
  - numeric-ode
@@ -2273,8 +2274,6 @@ dont-distribute-packages:
  - openpgp-Crypto
  - openpgp-crypto-api
  - openssh-github-keys
- - opentracing-jaeger
- - opentracing-zipkin-v1
  - optima-for-hasql
  - optimal-blocks
  - optimusprime
@@ -2288,7 +2287,7 @@ dont-distribute-packages:
  - pairing
  - panda
  - pandoc-japanese-filters
- - pandoc_2_16_1
+ - pandoc_2_16_2
  - papa
  - papa-base
  - papa-base-implement
@@ -2333,6 +2332,7 @@ dont-distribute-packages:
  - persona-idp
  - peyotls
  - peyotls-codec
+ - pg-entity
  - pgsql-simple
  - phonetic-languages-examples
  - phonetic-languages-general
@@ -2341,7 +2341,6 @@ dont-distribute-packages:
  - phonetic-languages-simplified-generalized-examples-array
  - phonetic-languages-simplified-lists-examples
  - phooey
- - photoname
  - pianola
  - pier
  - ping
@@ -2377,10 +2376,14 @@ dont-distribute-packages:
  - polydata
  - polysemy-RandomFu
  - polysemy-check
+ - polysemy-conc
  - polysemy-http
+ - polysemy-log
  - polysemy-log-co
+ - polysemy-log-di
  - polysemy-methodology-co-log
  - polysemy-optics
+ - polysemy-process
  - polysemy-readline
  - polysemy-resume
  - polysemy-webserver
@@ -2577,8 +2580,6 @@ dont-distribute-packages:
  - replicant
  - repr
  - representable-tries
- - resistor-cube
- - resistor-cube_0_0_1_3
  - resource-pool-catchio
  - resource-simple
  - respond
@@ -2634,7 +2635,6 @@ dont-distribute-packages:
  - rose-trie
  - roshask
  - rosmsg-bin
- - rounded-hw
  - roundtrip-xml
  - route-generator
  - route-planning
@@ -2726,7 +2726,6 @@ dont-distribute-packages:
  - servant-ede
  - servant-event-stream
  - servant-examples
- - servant-github-webhook
  - servant-http2-client
  - servant-matrix-param
  - servant-polysemy

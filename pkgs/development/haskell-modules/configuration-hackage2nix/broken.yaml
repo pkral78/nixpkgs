@@ -88,6 +88,7 @@ broken-packages:
   - aeson-tiled
   - aeson-typescript
   - aeson-utils
+  - aeson-value-parser
   - affection
   - affine-invariant-ensemble-mcmc
   - Agata
@@ -834,6 +835,7 @@ broken-packages:
   - contstuff-monads-tf
   - contstuff-transformers
   - convert-annotation
+  - copilot-core
   - copilot-sbv
   - copr
   - COrdering
@@ -1123,6 +1125,7 @@ broken-packages:
   - docopt
   - docrecords
   - doctest-discover-configurator
+  - doctest-parallel
   - doctest-prop
   - docusign-example
   - docvim
@@ -1134,6 +1137,7 @@ broken-packages:
   - dotfs
   - dot-linker
   - doublify-toolkit
+  - dovetail
   - downloader
   - dozenal
   - dozens
@@ -1327,6 +1331,7 @@ broken-packages:
   - explicit-constraint-lens
   - explicit-determinant
   - explicit-iomodes
+  - exploring-interpreters
   - exposed-containers
   - expression-parser
   - expressions
@@ -1349,7 +1354,6 @@ broken-packages:
   - fadno-braids
   - failable-list
   - failure-detector
-  - fakedata
   - fake-type
   - faktory
   - f-algebra-gen
@@ -1662,15 +1666,19 @@ broken-packages:
   - ghc-usage
   - gh-labeler
   - giak
+  - gi-cogl
   - Gifcurry
   - gi-graphene
   - gi-gsttag
+  - gi-gtk-layer-shell
   - gi-gtkosxapplication
   - gi-gtksheet
   - gi-handy
+  - gi-json
   - ginsu
   - gipeda
   - giphy-api
+  - gi-rsvg
   - gist
   - GiST
   - git
@@ -1680,7 +1688,6 @@ broken-packages:
   - git-cuk
   - git-date
   - gitdo
-  - github
   - github-backup
   - github-data
   - github-tools
@@ -1841,7 +1848,6 @@ broken-packages:
   - haddock-cheatsheet
   - haddock-leksah
   - haddock-test
-  - hadolint
   - hadoop-formats
   - hadoop-rpc
   - hafar
@@ -2021,6 +2027,7 @@ broken-packages:
   - hastache
   - haste
   - haste-prim
+  - has-transformers
   - hat
   - hatex-guide
   - hats
@@ -2069,6 +2076,7 @@ broken-packages:
   - hdph-closure
   - hdr-histogram
   - HDRUtils
+  - headed-megaparsec
   - headergen
   - heap-console
   - heapsort
@@ -2426,7 +2434,6 @@ broken-packages:
   - htssets
   - http2-client
   - http2-grpc-proto-lens
-  - http3
   - http-attoparsec
   - http-client-lens
   - http-client-request-modifiers
@@ -2725,6 +2732,7 @@ broken-packages:
   - kmonad
   - kmp-dfa
   - koellner-phonetic
+  - koji-install
   - Konf
   - kontra-config
   - kparams
@@ -2790,7 +2798,7 @@ broken-packages:
   - language-typescript
   - language-vhdl
   - language-webidl
-  - lapack
+  - lapack-hmatrix
   - LargeCardinalHierarchy
   - Lastik
   - latest-npm-version
@@ -2918,10 +2926,8 @@ broken-packages:
   - llsd
   - llvm-base
   - llvm-ffi
-  - llvm-ffi-tools
   - llvm-general-pure
   - llvm-ht
-  - llvm-pkg-config
   - llvm-pretty
   - lmonad
   - load-balancing
@@ -3169,7 +3175,6 @@ broken-packages:
   - monad-mersenne-random
   - monad-mock
   - monad-open
-  - Monadoro
   - monad-parallel-progressbar
   - monad-param
   - monad-persist
@@ -3205,6 +3210,7 @@ broken-packages:
   - morfette
   - morfeusz
   - morpheus-graphql-cli
+  - morpheus-graphql-code-gen
   - morphisms-functors
   - morphisms-objects
   - morte
@@ -3377,7 +3383,6 @@ broken-packages:
   - nix-freeze-tree
   - nixfromnpm
   - nixpkgs-update
-  - nix-thunk
   - nix-tools
   - nkjp
   - nlp-scores
@@ -3457,6 +3462,7 @@ broken-packages:
   - onama
   - ONC-RPC
   - on-demand-ssh-tunnel
+  - one-line-aeson-text
   - one-liner-instances
   - oneormore
   - onpartitions
@@ -3558,6 +3564,7 @@ broken-packages:
   - pandoc-filter-indent
   - pandoc-include
   - pandoc-lens
+  - pandoc-lua-marshal
   - pandoc-markdown-ghci-filter
   - pandoc-placetable
   - pandoc-pyplot
@@ -3717,7 +3724,6 @@ broken-packages:
   - pi-forall
   - pig
   - pi-hoole
-  - pinch
   - pinchot
   - Pipe
   - pipes-async
@@ -3785,6 +3791,7 @@ broken-packages:
   - polydata-core
   - polynom
   - polynomial
+  - polysemy-mocks
   - polysemy-plugin
   - polysemy-zoo
   - polytypeable
@@ -4034,6 +4041,7 @@ broken-packages:
   - read-bounded
   - read-ctags
   - read-io
+  - readline-in-other-words
   - readline-statevar
   - readme-lhs
   - readshp
@@ -4722,6 +4730,7 @@ broken-packages:
   - stripe-http-streams
   - stripe-signature
   - stripe-tests
+  - stripe-wreq
   - strong-path
   - strongswan-sql
   - structural-traversal
@@ -4792,7 +4801,6 @@ broken-packages:
   - syntax-trees
   - syntax-trees-fork-bairyn
   - synthesizer
-  - synthesizer-alsa
   - Sysmon
   - sys-process
   - system-canonicalpath
@@ -5354,6 +5362,7 @@ broken-packages:
   - web-encodings
   - WeberLogic
   - webfinger-client
+  - webkitgtk3
   - webkit-javascriptcore
   - webmention
   - web-output

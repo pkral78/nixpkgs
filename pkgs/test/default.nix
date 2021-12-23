@@ -27,6 +27,10 @@ with pkgs;
   cc-multilib-gcc = callPackage ./cc-wrapper/multilib.nix { stdenv = gccMultiStdenv; };
   cc-multilib-clang = callPackage ./cc-wrapper/multilib.nix { stdenv = clangMultiStdenv; };
 
+  fetchpatch = callPackages ../build-support/fetchpatch/tests.nix { };
+  fetchgit = callPackages ../build-support/fetchgit/tests.nix { };
+  fetchFirefoxAddon = callPackages ../build-support/fetchfirefoxaddon/tests.nix { };
+
   install-shell-files = callPackage ./install-shell-files {};
 
   kernel-config = callPackage ./kernel.nix {};
@@ -36,6 +40,8 @@ with pkgs;
   macOSSierraShared = callPackage ./macos-sierra-shared {};
 
   cross = callPackage ./cross {};
+
+  php = recurseIntoAttrs (callPackages ./php {});
 
   rustCustomSysroot = callPackage ./rust-sysroot {};
   buildRustCrate = callPackage ../build-support/rust/build-rust-crate/test { };

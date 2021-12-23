@@ -155,6 +155,7 @@ self: super: builtins.intersectAttrs super {
   github-types = dontCheck super.github-types;          # http://hydra.cryp.to/build/1114046/nixlog/1/raw
   hadoop-rpc = dontCheck super.hadoop-rpc;              # http://hydra.cryp.to/build/527461/nixlog/2/raw
   hasql = dontCheck super.hasql;                        # http://hydra.cryp.to/build/502489/nixlog/4/raw
+  hasql-interpolate = dontCheck super.hasql-interpolate; # wants to connect to postgresql
   hasql-transaction = dontCheck super.hasql-transaction; # wants to connect to postgresql
   hjsonschema = overrideCabal (drv: { testTarget = "local"; }) super.hjsonschema;
   marmalade-upload = dontCheck super.marmalade-upload;  # http://hydra.cryp.to/build/501904/nixlog/1/raw
@@ -222,6 +223,17 @@ self: super: builtins.intersectAttrs super {
 
   # Nix-specific workaround
   xmonad = appendPatch ./patches/xmonad-nix.patch (dontCheck super.xmonad);
+  xmonad_0_17_0 = doDistribute (appendPatch ./patches/xmonad_0_17_0-nix.patch (super.xmonad_0_17_0));
+
+  # Need matching xmonad version
+  xmonad-contrib_0_17_0 = doDistribute (super.xmonad-contrib_0_17_0.override {
+    xmonad = self.xmonad_0_17_0;
+  });
+
+  xmonad-extras_0_17_0 = doDistribute (super.xmonad-extras_0_17_0.override {
+    xmonad = self.xmonad_0_17_0;
+    xmonad-contrib = self.xmonad-contrib_0_17_0;
+  });
 
   # wxc supports wxGTX >= 3.0, but our current default version points to 2.8.
   # http://hydra.cryp.to/build/1331287/log/raw
@@ -490,12 +502,15 @@ self: super: builtins.intersectAttrs super {
     postPatch = ''
       sed -i -e 's|"abc"|"${pkgs.abc-verifier}/bin/abc"|' Data/SBV/Provers/ABC.hs
       sed -i -e 's|"boolector"|"${pkgs.boolector}/bin/boolector"|' Data/SBV/Provers/Boolector.hs
-      sed -i -e 's|"cvc4"|"${pkgs.cvc4}/bin/cvc4"|' Data/SBV/Provers/CVC4.hs
       sed -i -e 's|"yices-smt2"|"${pkgs.yices}/bin/yices-smt2"|' Data/SBV/Provers/Yices.hs
       sed -i -e 's|"z3"|"${pkgs.z3}/bin/z3"|' Data/SBV/Provers/Z3.hs
-
+    '' + (if pkgs.stdenv.isAarch64 then ''
+      sed -i -e 's|\[abc, boolector, cvc4, mathSAT, yices, z3, dReal\]|[abc, boolector, yices, z3]|' SBVTestSuite/SBVConnectionTest.hs
+    ''
+    else ''
+      sed -i -e 's|"cvc4"|"${pkgs.cvc4}/bin/cvc4"|' Data/SBV/Provers/CVC4.hs
       sed -i -e 's|\[abc, boolector, cvc4, mathSAT, yices, z3, dReal\]|[abc, boolector, cvc4, yices, z3]|' SBVTestSuite/SBVConnectionTest.hs
-   '';
+    '');
   }) super.sbv;
 
   # The test-suite requires a running PostgreSQL server.
@@ -516,25 +531,30 @@ self: super: builtins.intersectAttrs super {
       })
       (addBuildTools (with pkgs.buildPackages; [makeWrapper python3Packages.sphinx]) super.futhark);
 
-  git-annex = with pkgs;
-    if (!stdenv.isLinux) then
-      let path = lib.makeBinPath [ coreutils ];
-      in overrideCabal (_drv: {
-        # This is an instance of https://github.com/NixOS/nix/pull/1085
-        # Fails with:
-        #   gpg: can't connect to the agent: File name too long
-        postPatch = lib.optionalString stdenv.isDarwin ''
-          substituteInPlace Test.hs \
-            --replace ', testCase "crypto" test_crypto' ""
-        '';
-        # On Darwin, git-annex mis-detects options to `cp`, so we wrap the
-        # binary to ensure it uses Nixpkgs' coreutils.
-        postFixup = ''
-          wrapProgram $out/bin/git-annex \
-            --prefix PATH : "${path}"
-        '';
-      }) (addBuildTool buildPackages.makeWrapper super.git-annex)
-    else super.git-annex;
+  git-annex = let
+    pathForDarwin = pkgs.lib.makeBinPath [ pkgs.coreutils ];
+  in overrideCabal (drv: pkgs.lib.optionalAttrs (!pkgs.stdenv.isLinux) {
+    # This is an instance of https://github.com/NixOS/nix/pull/1085
+    # Fails with:
+    #   gpg: can't connect to the agent: File name too long
+    postPatch = pkgs.lib.optionalString pkgs.stdenv.isDarwin ''
+      substituteInPlace Test.hs \
+        --replace ', testCase "crypto" test_crypto' ""
+    '' + (drv.postPatch or "");
+    # On Darwin, git-annex mis-detects options to `cp`, so we wrap the
+    # binary to ensure it uses Nixpkgs' coreutils.
+    postFixup = ''
+      wrapProgram $out/bin/git-annex \
+        --prefix PATH : "${pathForDarwin}"
+    '' + (drv.postFixup or "");
+    buildTools = [
+      pkgs.buildPackages.makeWrapper
+    ] ++ (drv.buildTools or []);
+  }) (super.git-annex.override {
+    dbus = if pkgs.stdenv.isLinux then self.dbus else null;
+    fdo-notify = if pkgs.stdenv.isLinux then self.fdo-notify else null;
+    hinotify = if pkgs.stdenv.isLinux then self.hinotify else self.fsnotify;
+  });
 
   # The test suite has undeclared dependencies on git.
   githash = dontCheck super.githash;
@@ -848,6 +868,12 @@ self: super: builtins.intersectAttrs super {
       export HOME=$TMPDIR/home
     '';
   }) super.hls-pragmas-plugin;
+  hls-hlint-plugin = overrideCabal (drv: {
+    testToolDepends = [ pkgs.git ];
+    preCheck = ''
+      export HOME=$TMPDIR/home
+    '';
+  }) super.hls-hlint-plugin;
   hiedb = overrideCabal (drv: {
     preCheck = ''
       export PATH=$PWD/dist/build/hiedb:$PATH
@@ -936,11 +962,11 @@ self: super: builtins.intersectAttrs super {
 
   rel8 = addTestToolDepend pkgs.postgresql super.rel8;
 
-  cachix = generateOptparseApplicativeCompletion "cachix" (super.cachix.override { nix = pkgs.nix_2_3; });
+  cachix = generateOptparseApplicativeCompletion "cachix" (super.cachix.override { nix = pkgs.nix_2_4; });
 
-  hercules-ci-agent = super.hercules-ci-agent.override { nix = pkgs.nix_2_3; };
-  hercules-ci-cnix-expr = super.hercules-ci-cnix-expr.override { nix = pkgs.nix_2_3; };
-  hercules-ci-cnix-store = super.hercules-ci-cnix-store.override { nix = pkgs.nix_2_3; };
+  hercules-ci-agent = appendConfigureFlag "-fnix-2_4" (super.hercules-ci-agent.override { nix = pkgs.nix_2_4; });
+  hercules-ci-cnix-expr = appendConfigureFlag "-fnix-2_4" (super.hercules-ci-cnix-expr.override { nix = pkgs.nix_2_4; });
+  hercules-ci-cnix-store = appendConfigureFlag "-fnix-2_4" (super.hercules-ci-cnix-store.override { nix = pkgs.nix_2_4; });
 
   # Enable extra optimisations which increase build time, but also
   # later compiler performance, so we should do this for user's benefit.
@@ -1000,4 +1026,15 @@ self: super: builtins.intersectAttrs super {
       fi
     '' + (drv.postConfigure or "");
   }) super.procex;
+
+  # Apply a patch which hardcodes the store path of graphviz instead of using
+  # whatever graphviz is in PATH.
+  graphviz = overrideCabal (drv: {
+    patches = [
+      (pkgs.substituteAll {
+        src = ./patches/graphviz-hardcode-graphviz-store-path.patch;
+        inherit (pkgs) graphviz;
+      })
+    ] ++ (drv.patches or []);
+  }) super.graphviz;
 }

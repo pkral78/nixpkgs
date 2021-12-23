@@ -12,11 +12,11 @@ buildPythonPackage (rec {
   # there's a clear path forward. See
   # https://github.com/elastic/elasticsearch-py/issues/1639 for more
   # info.
-  version = "7.15.1";
+  version = "7.16.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1e9a6302945d98046899a7c9b3d345c881ac7b05ba176d3a49c9d2702b1e8bc8";
+    sha256 = "c024ee2e7e2509c842c4e3c5e2b99a92ceecfde06d6dac2d32a19bf566c3e175";
   };
 
   # Check is disabled because running them destroy the content of the local cluster!

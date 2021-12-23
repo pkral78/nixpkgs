@@ -23,6 +23,12 @@ let
       # branches (wip patches from tickets), but exports each commit as a separate
       # patch, so merge commits can lead to conflicts. Used if squashed == false.
       #
+      # The above is the preferred option. To use it, find a Trac ticket and pass the
+      # "Commit" field from the ticket as "rev", choosing "base" as an appropriate
+      # release tag, i.e. a tag that doesn't cause the patch to include a lot of
+      # unrelated changes. If there is no such tag (due to nonlinear history, for
+      # example), there are two other options, listed below.
+      #
       # 2) From GitHub's sagemath/sage repo. This lets us use a GH feature that allows
       # us to choose between a .patch file, with one patch per commit, or a .diff file,
       # which squashes all commits into a single diff. This is used if squashed ==
@@ -117,6 +123,22 @@ stdenv.mkDerivation rec {
       name = "sympy-1.9-update.patch";
       rev = "beed4e16aff32e47d0c3b1c58cb1e2f4c38590f8";
       sha256 = "sha256-3eJPfWfCrCAQ5filIn7FbzjRQeO9QyTIVl/HyRuqFtE=";
+    })
+
+    # https://trac.sagemath.org/ticket/32567
+    (fetchSageDiff {
+      base = "9.5.beta2";
+      name = "arb-2.21.0-update.patch";
+      rev = "eb3304dd521a3d5a9334e747a08e234bbf16b4eb";
+      sha256 = "sha256-XDkaY4VQGyESXI6zuD7nCNzyQOl/fmBFvAESH9+RRvk=";
+    })
+
+    # https://trac.sagemath.org/ticket/32797
+    (fetchSageDiff {
+      base = "9.5.beta7";
+      name = "pari-2.13.3-update.patch";
+      rev = "f5f7a86908daf60b25e66e6a189c51ada7e0a732";
+      sha256 = "sha256-H/caGx3q4KcdsyGe+ojV9bUTQ5y0siqM+QHgDbeEnbw=";
     })
   ];
 

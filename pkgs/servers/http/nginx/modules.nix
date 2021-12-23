@@ -293,10 +293,10 @@ in
   pam = {
     src = fetchFromGitHub {
       name = "pam";
-      owner = "stogh";
+      owner = "sto";
       repo = "ngx_http_auth_pam_module";
-      rev = "v1.5.2";
-      sha256 = "06nydxk82rc9yrw4408nakb197flxh4z1yv935crg65fn9706rl7";
+      rev = "v1.5.3";
+      sha256 = "sha256:09lnljdhjg65643bc4535z378lsn4llbq67zcxlln0pizk9y921a";
     };
     inputs = [ pkgs.pam ];
   };
@@ -498,10 +498,10 @@ in
       name = "video-thumbextractor";
       owner = "wandenberg";
       repo = "nginx-video-thumbextractor-module";
-      rev = "0.9.0";
-      sha256 = "1b0v471mzbcys73pzr7gpvzzhff0cva0l5ff32cv7z1v9c0ypji7";
+      rev = "92b80642538eec4cfc98114dec5917b8d820e912";
+      sha256 = "0a8d9ifryhhnll7k7jcsf9frshk5yhpsgz7zgxdmw81wbz5hxklc";
     };
-    inputs = [ pkgs.ffmpeg_3 ];
+    inputs = [ pkgs.ffmpeg ];
   };
 
   vod = {
