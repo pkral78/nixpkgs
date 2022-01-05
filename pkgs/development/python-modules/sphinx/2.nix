@@ -75,8 +75,8 @@ buildPythonPackage rec {
 
   meta = {
     description = "A tool that makes it easy to create intelligent and beautiful documentation for Python projects";
-    homepage = http://sphinx.pocoo.org/;
+    homepage = "http://sphinx.pocoo.org/";
     license = lib.licenses.bsd3;
-    maintainers = with lib.maintainers; [ nand0p ];
+    maintainers = with lib.maintainers; [ ];
   };
 }

@@ -1,9 +1,9 @@
-{ stdenv, fetchpatch, fetchFromGitHub, cmake, zlib, gmp, jdk8,
+{ lib, stdenv, fetchpatch, fetchFromGitHub, cmake, zlib, gmp, jdk8,
   # The JDK we use on Darwin currenly makes extensive use of rpaths which are
   # annoying and break the python library, so let's not bother for now
   includeJava ? !stdenv.hostPlatform.isDarwin, includeGplCode ? true }:
 
-with stdenv.lib;
+with lib;
 
 let
   boolToCmake = x: if x then "ON" else "OFF";
@@ -23,15 +23,25 @@ let
   patches = [
     # Python 3.8 compatibility
     (fetchpatch {
-      url = https://github.com/sambayless/monosat/commit/a5079711d0df0451f9840f3a41248e56dbb03967.patch;
+      url = "https://github.com/sambayless/monosat/commit/a5079711d0df0451f9840f3a41248e56dbb03967.patch";
       sha256 = "1p2y0jw8hb9c90nbffhn86k1dxd6f6hk5v70dfmpzka3y6g1ksal";
     })
   ];
 
+  # source behind __linux__ check assumes system is also x86 and
+  # tries to disable x86/x87-specific extended precision mode
+  # https://github.com/sambayless/monosat/issues/33
+  commonPostPatch = lib.optionalString (!stdenv.hostPlatform.isx86) ''
+    substituteInPlace src/monosat/Main.cc \
+      --replace 'defined(__linux__)' '0'
+  '';
+
   core = stdenv.mkDerivation {
     name = "${pname}-${version}";
     inherit src patches;
-    buildInputs = [ cmake zlib gmp jdk8 ];
+    postPatch = commonPostPatch;
+    nativeBuildInputs = [ cmake ];
+    buildInputs = [ zlib gmp jdk8 ];
 
     cmakeFlags = [
       "-DBUILD_STATIC=OFF"
@@ -50,7 +60,7 @@ let
       description = "SMT solver for Monotonic Theories";
       platforms   = platforms.unix;
       license     = if includeGplCode then licenses.gpl2 else licenses.mit;
-      homepage    = https://github.com/sambayless/monosat;
+      homepage    = "https://github.com/sambayless/monosat";
       maintainers = [ maintainers.acairncross ];
     };
   };
@@ -65,7 +75,7 @@ let
 
     # After patching src, move to where the actually relevant source is. This could just be made
     # the sourceRoot if it weren't for the patch.
-    postPatch = ''
+    postPatch = commonPostPatch + ''
       cd src/monosat/api/python
     '' +
     # The relative paths here don't make sense for our Nix build

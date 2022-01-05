@@ -3,11 +3,11 @@
 
 buildPythonPackage rec {
   pname = "djangoql";
-  version = "0.13.1";
+  version = "0.16.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "366293d7d4e416f9f7d6e2b98775c2129222fbb4dc660f3e6c7b9e35a3cf3fce";
+    sha256 = "23cea52eca76e605fa2f34b13ae8d2bf60240737ee9ed3f60c667a4f64d28adf";
   };
 
   propagatedBuildInputs = [ ply ];
@@ -21,7 +21,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Advanced search language for Django";
-    homepage = https://github.com/ivelum/djangoql;
+    homepage = "https://github.com/ivelum/djangoql";
     license = licenses.mit;
     maintainers = with maintainers; [ earvstedt ];
   };

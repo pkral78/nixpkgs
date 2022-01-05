@@ -1,41 +1,48 @@
 { stdenv
 , lib
 , buildPythonPackage
-, fetchFromGitHub
-, numpy
-, scipy
-, matplotlib
-, pandas
-, astropy
-, parfive
+, fetchPypi
 , pythonOlder
-, sqlalchemy
-, scikitimage
-, glymur
+, asdf
+, astropy
+, setuptools-scm
+, astropy-helpers
+, astropy-extension-helpers
 , beautifulsoup4
 , drms
-, python-dateutil
-, zeep
-, tqdm
-, asdf
-, astropy-helpers
+, glymur
+, h5netcdf
 , hypothesis
+, matplotlib
+, numpy
+, pandas
+, parfive
+, pytestCheckHook
 , pytest-astropy
-, pytestcov
 , pytest-mock
+, python-dateutil
+, scikitimage
+, scipy
+, sqlalchemy
+, towncrier
+, tqdm
+, zeep
 }:
 
 buildPythonPackage rec {
   pname = "sunpy";
-  version = "1.0.6";
+  version = "3.1.2";
   disabled = pythonOlder "3.6";
 
-  src = fetchFromGitHub {
-    owner = "sunpy";
-    repo = pname;
-    rev = "v${version}";
-    sha256 = "0j2yfhfxgi95rig8cfp9lvszb7694gq90jvs0xrb472hwnzgh2sk";
+  src = fetchPypi {
+    inherit pname version;
+    sha256 = "5eeb479c3f2424bf46355165249a1caa849872f8bee525349c4dca4d15b271fd";
   };
+
+  nativeBuildInputs = [
+    setuptools-scm
+    astropy-extension-helpers
+  ];
 
   propagatedBuildInputs = [
     numpy
@@ -44,9 +51,11 @@ buildPythonPackage rec {
     pandas
     astropy
     astropy-helpers
+    h5netcdf
     parfive
     sqlalchemy
     scikitimage
+    towncrier
     glymur
     beautifulsoup4
     drms
@@ -58,26 +67,49 @@ buildPythonPackage rec {
 
   checkInputs = [
     hypothesis
+    pytestCheckHook
     pytest-astropy
-    pytestcov
     pytest-mock
   ];
 
-  preBuild = ''
-    export SETUPTOOLS_SCM_PRETEND_VERSION="${version}"
+  # darwin has write permission issues
+  doCheck = stdenv.isLinux;
+
+  preCheck = ''
     export HOME=$(mktemp -d)
   '';
 
-  # darwin has write permission issues
-  doCheck = stdenv.isLinux;
-  # ignore documentation tests
-  checkPhase = ''
-    pytest sunpy -k 'not rst'
-  '';
+  disabledTests = [
+    "rst"
+  ];
+
+  disabledTestPaths = [
+    "sunpy/io/special/asdf/schemas/sunpy.org/sunpy/coordinates/frames/helioprojective-1.0.0.yaml"
+    "sunpy/io/special/asdf/schemas/sunpy.org/sunpy/coordinates/frames/heliocentric-1.0.0.yaml"
+    # requires mpl-animators package
+    "sunpy/map/tests/test_compositemap.py"
+    "sunpy/map/tests/test_mapbase.py"
+    "sunpy/map/tests/test_mapsequence.py"
+    "sunpy/map/tests/test_plotting.py"
+    "sunpy/map/tests/test_reproject_to.py"
+    "sunpy/net/tests/test_helioviewer.py"
+    "sunpy/timeseries/tests/test_timeseriesbase.py"
+    "sunpy/visualization/animator/tests/test_basefuncanimator.py"
+    "sunpy/visualization/animator/tests/test_mapsequenceanimator.py"
+    "sunpy/visualization/animator/tests/test_wcs.py"
+    "sunpy/visualization/colormaps/tests/test_cm.py"
+    # requires cdflib package
+    "sunpy/timeseries/tests/test_timeseries_factory.py"
+  ];
+
+  pytestFlagsArray = [
+    "--deselect=sunpy/tests/tests/test_self_test.py::test_main_nonexisting_module"
+    "--deselect=sunpy/tests/tests/test_self_test.py::test_main_stdlib_module"
+  ];
 
   meta = with lib; {
     description = "SunPy: Python for Solar Physics";
-    homepage = https://sunpy.org;
+    homepage = "https://sunpy.org";
     license = licenses.bsd2;
     maintainers = [ maintainers.costrouc ];
   };

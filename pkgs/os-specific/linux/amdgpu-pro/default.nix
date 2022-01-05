@@ -1,13 +1,13 @@
-{ stdenv, fetchurl, elfutils
+{ lib, stdenv, fetchurl, elfutils
 , xorg, patchelf, openssl, libdrm, udev
-, libxcb, libxshmfence, epoxy, perl, zlib
+, libxcb, libxshmfence, libepoxy, perl, zlib
 , ncurses
 , libsOnly ? false, kernel ? null
 }:
 
 assert (!libsOnly) -> kernel != null;
 
-with stdenv.lib;
+with lib;
 
 let
 
@@ -101,7 +101,7 @@ in stdenv.mkDerivation rec {
 
   depLibPath = makeLibraryPath [
     stdenv.cc.cc.lib xorg.libXext xorg.libX11 xorg.libXdamage xorg.libXfixes zlib
-    xorg.libXxf86vm libxcb libxshmfence epoxy openssl libdrm elfutils udev ncurses5
+    xorg.libXxf86vm libxcb libxshmfence libepoxy openssl libdrm elfutils udev ncurses5
   ];
 
   installPhase = ''
@@ -171,9 +171,9 @@ in stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "AMDGPU-PRO drivers";
-    homepage =  http://support.amd.com/en-us/kb-articles/Pages/AMDGPU-PRO-Beta-Driver-for-Vulkan-Release-Notes.aspx ;
+    homepage =  "https://www.amd.com/en/support";
     license = licenses.unfree;
     platforms = platforms.linux;
     maintainers = with maintainers; [ corngood ];

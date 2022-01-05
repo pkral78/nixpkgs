@@ -1,21 +1,25 @@
-{ stdenv, fetchFromGitHub, cmake, protozero, expat, zlib, bzip2, boost }:
+{ lib, stdenv, fetchFromGitHub, cmake, protozero, expat, zlib, bzip2, boost, lz4 }:
 
 stdenv.mkDerivation rec {
   pname = "libosmium";
-  version = "2.15.4";
+  version = "2.17.2";
 
   src = fetchFromGitHub {
     owner = "osmcode";
     repo = "libosmium";
     rev = "v${version}";
-    sha256 = "0mlcvqrhp40bzj5r5j9nfc5vbis8hmzcq9xi8jylkciyydaynhz4";
+    sha256 = "sha256-+WeEK7rWoUPAiAsgd5qT2bwDf+5IlP4uuyh7+i2L/HU=";
   };
 
   nativeBuildInputs = [ cmake ];
-  buildInputs = [ protozero zlib bzip2 expat boost ];
 
+  buildInputs = [ protozero zlib bzip2 expat boost lz4 ];
 
-  meta = with stdenv.lib; {
+  cmakeFlags = [ "-DINSTALL_GDALCPP:BOOL=ON" ];
+
+  doCheck = true;
+
+  meta = with lib; {
     description = "Fast and flexible C++ library for working with OpenStreetMap data";
     homepage = "https://osmcode.org/libosmium/";
     license = licenses.boost;

@@ -1,24 +1,37 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, buildGoModule, fetchFromGitHub, installShellFiles }:
 
 buildGoModule rec {
   pname = "fluxctl";
-  version = "1.17.1";
+  version = "1.24.3";
 
   src = fetchFromGitHub {
     owner = "weaveworks";
     repo = "flux";
     rev = version;
-    sha256 = "0kp4xk1b8vxajl3cl6any9gmf3412gsahm5fvkyaclnj20yvq807";
+    sha256 = "sha256-i86WwSR14hxaXWMesvG2mG8nqXd97M3TekK2FLTLL+Y=";
   };
 
-  modSha256 = "0fnlnavw4l3425c9nwjkd98xihrgxi9n5yc9yv15j5xzg47qnqav";
+  vendorSha256 = "sha256-Fw3/SMO66eExlDNcIaHM+G2kB4zb1Cih7kp8xfel/iY=";
+
+  nativeBuildInputs = [ installShellFiles ];
+
+  doCheck = false;
 
   subPackages = [ "cmd/fluxctl" ];
 
-  meta = with stdenv.lib; {
+  ldflags = [ "-s" "-w" "-X main.version=${version}" ];
+
+  postInstall = ''
+    for shell in bash fish zsh; do
+      $out/bin/fluxctl completion $shell > fluxctl.$shell
+      installShellCompletion fluxctl.$shell
+    done
+  '';
+
+  meta = with lib; {
     description = "CLI client for Flux, the GitOps Kubernetes operator";
     homepage = "https://github.com/fluxcd/flux";
     license = licenses.asl20;
-    maintainers = with maintainers; [ Gonzih filalex77 ];
+    maintainers = with maintainers; [ Gonzih Br1ght0ne ];
   };
 }

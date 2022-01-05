@@ -1,21 +1,22 @@
-{ stdenv, fetchurl, zlib, interactive ? false, readline ? null, ncurses ? null }:
+{ lib, stdenv, fetchurl, zlib, interactive ? false, readline, ncurses
+, python3Packages
+, enableDeserialize ? false
+}:
 
-assert interactive -> readline != null && ncurses != null;
-
-with stdenv.lib;
+with lib;
 
 let
-  archiveVersion = import ./archive-version.nix stdenv.lib;
+  archiveVersion = import ./archive-version.nix lib;
 in
 
 stdenv.mkDerivation rec {
   pname = "sqlite";
-  version = "3.31.0";
+  version = "3.37.0";
 
-  # NB! Make sure to update analyzer.nix src (in the same directory).
+  # NB! Make sure to update ./tools.nix src (in the same directory).
   src = fetchurl {
-    url = "https://sqlite.org/2020/sqlite-autoconf-${archiveVersion version}.tar.gz";
-    sha256 = "1w7i954349sjd5a6rvy118prra43k07y9hy8rpajs6vmjmnnx7bw";
+    url = "https://sqlite.org/2021/sqlite-autoconf-${archiveVersion version}.tar.gz";
+    sha256 = "sha256-cxpGUdTUs2/H0h21hrLeTdAK8x/VT7WppLf0kgV0efc=";
   };
 
   outputs = [ "bin" "dev" "out" ];
@@ -23,9 +24,14 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ zlib ] ++ optionals interactive [ readline ncurses ];
 
+  # required for aarch64 but applied for all arches for simplicity
+  preConfigure = ''
+    patchShebangs configure
+  '';
+
   configureFlags = [ "--enable-threadsafe" ] ++ optional interactive "--enable-readline";
 
-  NIX_CFLAGS_COMPILE = toString [
+  NIX_CFLAGS_COMPILE = toString ([
     "-DSQLITE_ENABLE_COLUMN_METADATA"
     "-DSQLITE_ENABLE_DBSTAT_VTAB"
     "-DSQLITE_ENABLE_JSON1"
@@ -41,7 +47,10 @@ stdenv.mkDerivation rec {
     "-DSQLITE_SECURE_DELETE"
     "-DSQLITE_MAX_VARIABLE_NUMBER=250000"
     "-DSQLITE_MAX_EXPR_DEPTH=10000"
-  ];
+  ] ++ lib.optionals enableDeserialize [
+    # Can be removed in v3.36+, as this will become the default
+    "-DSQLITE_ENABLE_DESERIALIZE"
+  ]);
 
   # Test for features which may not be available at compile time
   preBuild = ''
@@ -73,11 +82,16 @@ stdenv.mkDerivation rec {
 
   doCheck = false; # fails to link against tcl
 
+  passthru.tests = {
+    inherit (python3Packages) sqlalchemy;
+  };
+
   meta = {
     description = "A self-contained, serverless, zero-configuration, transactional SQL database engine";
-    downloadPage = https://sqlite.org/download.html;
-    homepage = https://www.sqlite.org/;
+    downloadPage = "https://sqlite.org/download.html";
+    homepage = "https://www.sqlite.org/";
     license = licenses.publicDomain;
+    mainProgram = "sqlite3";
     maintainers = with maintainers; [ eelco np ];
     platforms = platforms.unix ++ platforms.windows;
   };

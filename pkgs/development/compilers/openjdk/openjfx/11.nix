@@ -1,5 +1,5 @@
-{ stdenv, lib, fetchurl, writeText, gradleGen, pkgconfig, perl, cmake
-, gperf, gtk2, gtk3, libXtst, libXxf86vm, glib, alsaLib, ffmpeg, python, ruby
+{ stdenv, lib, fetchurl, writeText, gradle_4, pkg-config, perl, cmake
+, gperf, gtk2, gtk3, libXtst, libXxf86vm, glib, alsa-lib, ffmpeg, python2, ruby
 , openjdk11-bootstrap }:
 
 let
@@ -7,9 +7,9 @@ let
   update = ".0.3";
   build = "1";
   repover = "${major}${update}+${build}";
-  gradle_ = (gradleGen.override {
+  gradle_ = (gradle_4.override {
     java = openjdk11-bootstrap;
-  }).gradle_4_10;
+  });
 
   makePackage = args: stdenv.mkDerivation ({
     version = "${major}${update}-${build}";
@@ -19,15 +19,23 @@ let
       sha256 = "1h7qsylr7rnwnbimqjyn3whszp9kv4h3gpicsrb3mradxc9yv194";
     };
 
-    buildInputs = [ gtk2 gtk3 libXtst libXxf86vm glib alsaLib ffmpeg ];
-    nativeBuildInputs = [ gradle_ perl pkgconfig cmake gperf python ruby ];
+    buildInputs = [ gtk2 gtk3 libXtst libXxf86vm glib alsa-lib ffmpeg ];
+    nativeBuildInputs = [ gradle_ perl pkg-config cmake gperf python2 ruby ];
 
     dontUseCmakeConfigure = true;
+
+    postPatch = ''
+      substituteInPlace buildSrc/linux.gradle \
+        --replace ', "-Werror=implicit-function-declaration"' ""
+    '';
 
     config = writeText "gradle.properties" (''
       CONF = Release
       JDK_HOME = ${openjdk11-bootstrap.home}
     '' + args.gradleProperties or "");
+
+    #avoids errors about deprecation of GTypeDebugFlags, GTimeVal, etc.
+    NIX_CFLAGS_COMPILE = [ "-DGLIB_DISABLE_DEPRECATION_WARNINGS" ];
 
     buildPhase = ''
       runHook preBuild
@@ -100,10 +108,13 @@ in makePackage {
 
   passthru.deps = deps;
 
-  meta = with stdenv.lib; {
-    homepage = http://openjdk.java.net/projects/openjfx/;
+  # Uses a lot of RAM, OOMs otherwise
+  requiredSystemFeatures = [ "big-parallel" ];
+
+  meta = with lib; {
+    homepage = "http://openjdk.java.net/projects/openjfx/";
     license = licenses.gpl2;
-    description = "The next-generation Java client toolkit.";
+    description = "The next-generation Java client toolkit";
     maintainers = with maintainers; [ abbradar ];
     platforms = [ "i686-linux" "x86_64-linux" ];
   };

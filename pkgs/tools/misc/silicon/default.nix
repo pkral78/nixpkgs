@@ -2,45 +2,46 @@
 , stdenv
 , rustPlatform
 , fetchFromGitHub
-, pkgconfig
+, pkg-config
 , cmake
 , llvmPackages
 , expat
 , freetype
 , libxcb
 , python3
+, libiconv
 , AppKit
 , CoreText
 , Security
+, fira-code
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "silicon";
-  version = "0.3.0";
+  version = "0.4.3";
 
   src = fetchFromGitHub {
     owner = "Aloxaf";
     repo = "silicon";
     rev = "v${version}";
-    sha256 = "0j211qrkwgll7rm15dk4fcazmxkcqk2zah0qg2s3y0k7cx65bcxy";
+    sha256 = "sha256-yhs9BEMMFUtptd0cLsaUW02QZVhztvn8cB0nUqPnO+Y=";
   };
 
-  cargoSha256 = "1i0y3x5rmg27gxrr2lv04sqq7qyiv1bnazfy24l5zgb4akvdg3r5";
+  cargoSha256 = "sha256-tj5HPE9EGC7JQ3dyeMPPI0/3r/idrShqfbpnVuaEtDk=";
 
-  buildInputs = [ llvmPackages.libclang expat freetype ]
+  buildInputs = [ llvmPackages.libclang expat freetype fira-code ]
     ++ lib.optionals stdenv.isLinux [ libxcb ]
-    ++ lib.optionals stdenv.isDarwin [ AppKit CoreText Security ];
+    ++ lib.optionals stdenv.isDarwin [ libiconv AppKit CoreText Security ];
 
-  nativeBuildInputs = [ cmake pkgconfig ]
+  nativeBuildInputs = [ cmake pkg-config ]
     ++ lib.optionals stdenv.isLinux [ python3 ];
 
-  LIBCLANG_PATH = "${llvmPackages.libclang}/lib";
+  LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
 
   meta = with lib; {
-    description = "Create beautiful image of your source code.";
+    description = "Create beautiful image of your source code";
     homepage = "https://github.com/Aloxaf/silicon";
     license = with licenses; [ mit /* or */ asl20 ];
     maintainers = with maintainers; [ evanjs ];
-    platforms = platforms.all;
   };
 }

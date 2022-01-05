@@ -1,14 +1,15 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
 , meson
 , ninja
-, pkgconfig
+, pkg-config
 , libxslt
 , docbook-xsl-ns
 , glib
 , gdk-pixbuf
+, gnome
+, withIntrospection ? (stdenv.buildPlatform == stdenv.hostPlatform)
 , gobject-introspection
-, gnome3
 }:
 
 stdenv.mkDerivation rec {
@@ -18,8 +19,8 @@ stdenv.mkDerivation rec {
   outputs = [ "out" "man" "dev" ];
 
   src = fetchurl {
-    url = "mirror://gnome/sources/${pname}/${stdenv.lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
-    sha256 = "ZsBRftFt968ljoMgj6r1Bpcn39ZplcS7xRwWlU1nR2E=";
+    url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
+    sha256 = "0qa7cx6ra5hwqnxw95b9svgjg5q6ynm8y843iqjszxvds5z53h36";
   };
 
   mesonFlags = [
@@ -27,15 +28,24 @@ stdenv.mkDerivation rec {
     "-Dtests=false"
     "-Ddocbook_docs=disabled"
     "-Dgtk_doc=false"
+    "-Dintrospection=${if withIntrospection then "enabled" else "disabled"}"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
-    gobject-introspection
     meson
     ninja
-    pkgconfig
+    pkg-config
     libxslt
     docbook-xsl-ns
+    glib # for glib-mkenums needed during the build
+  ] ++ lib.optionals withIntrospection [
+    gobject-introspection
+  ];
+
+  buildInputs = lib.optionals withIntrospection [
+    gobject-introspection
   ];
 
   propagatedBuildInputs = [
@@ -44,17 +54,17 @@ stdenv.mkDerivation rec {
   ];
 
   passthru = {
-    updateScript = gnome3.updateScript {
+    updateScript = gnome.updateScript {
       packageName = pname;
       versionPolicy = "none";
     };
   };
 
-  meta = with stdenv.lib; {
-    homepage = https://developer.gnome.org/notification-spec/;
+  meta = with lib; {
+    homepage = "https://gitlab.gnome.org/GNOME/libnotify";
     description = "A library that sends desktop notifications to a notification daemon";
     platforms = platforms.unix;
-    maintainers = gnome3.maintainers;
+    maintainers = teams.gnome.members;
     license = licenses.lgpl21;
   };
 }

@@ -1,9 +1,8 @@
-{ stdenv
-, lib
+{ lib
 , buildGoPackage
 , fetchFromGitHub
 , openssl
-, pkgconfig
+, pkg-config
 , libpcap
 }:
 
@@ -17,9 +16,8 @@ let
     "mongostat"
     "mongofiles"
     "mongotop"
-    "mongoreplay"
   ];
-  version = "4.2.0";
+  version = "100.5.1";
 
 in buildGoPackage {
   pname = "mongo-tools";
@@ -29,13 +27,13 @@ in buildGoPackage {
   subPackages = tools;
 
   src = fetchFromGitHub {
-    rev = "r${version}";
+    rev = version;
     owner = "mongodb";
     repo = "mongo-tools";
-    sha256 = "0mjwvx0cxvb6zam6jyr3753xjnwcygxcjzqhhlsq0b3xnwws9yh7";
+    sha256 = "sha256-Qxtb7DJOgrCUvoGVgmKh4qKS4duvEWwW9BLkdt5M5ZY=";
   };
 
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl libpcap ];
 
   # Mongodb incorrectly names all of their binaries main
@@ -44,16 +42,17 @@ in buildGoPackage {
     # move vendored codes so nixpkgs go builder could find it
     runHook preBuild
 
-    ${stdenv.lib.concatMapStrings (t: ''
-      go build -o "$bin/bin/${t}" -tags ssl -ldflags "-s -w" $goPackagePath/${t}/main
+    ${lib.concatMapStrings (t: ''
+      go build -o "$out/bin/${t}" -tags ssl -ldflags "-s -w" $goPackagePath/${t}/main
     '') tools}
 
     runHook postBuild
   '';
 
   meta = {
-    homepage = https://github.com/mongodb/mongo-tools;
+    homepage = "https://github.com/mongodb/mongo-tools";
     description = "Tools for the MongoDB";
+    maintainers = with lib.maintainers; [ bryanasdev000 ];
     license = lib.licenses.asl20;
   };
 }

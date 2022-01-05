@@ -1,23 +1,45 @@
-{ stdenv, buildPythonPackage, fetchPypi
-, pytz }:
+{ lib
+, stdenv
+, buildPythonPackage
+, pythonOlder
+, fetchPypi
+, pytz-deprecation-shim
+, pytest-mock
+, pytestCheckHook
+}:
 
 buildPythonPackage rec {
   pname = "tzlocal";
-  version = "2.0.0";
+  version = "4.1"; # version needs to be compatible with APScheduler
 
-  propagatedBuildInputs = [ pytz ];
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "949b9dd5ba4be17190a80c0268167d7e6c92c62b30026cf9764caf3e308e5590";
+    sha256 = "sha256-DygBWsaKXAZyEEAKkZf8XTa6m8P46vHaPL1ZrN/tngk=";
   };
 
-  # test fail (timezone test fail)
-  doCheck = false;
+  propagatedBuildInputs = [
+    pytz-deprecation-shim
+  ];
 
-  meta = with stdenv.lib; {
+  checkInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  disabledTests = [
+    "test_conflicting"
+    "test_noconflict"
+    "test_symlink_localtime"
+  ] ++ lib.optional stdenv.isDarwin "test_assert_tz_offset";
+
+  pythonImportsCheck = [ "tzlocal" ];
+
+  meta = with lib; {
     description = "Tzinfo object for the local timezone";
-    homepage = https://github.com/regebro/tzlocal;
+    homepage = "https://github.com/regebro/tzlocal";
     license = licenses.cddl;
+    maintainers = with maintainers; [ dotlambda ];
   };
 }

@@ -1,68 +1,82 @@
 { lib
 , buildPythonPackage
+, pythonOlder
 , fetchFromGitHub
+, brotlicffi
 , certifi
-, hstspreload
-, chardet
-, h11
+, charset-normalizer
 , h2
-, idna
+, httpcore
 , rfc3986
 , sniffio
-, isPy27
-, pytest
-, pytestcov
+, python
+, pytestCheckHook
+, pytest-asyncio
+, pytest-trio
+, typing-extensions
 , trustme
 , uvicorn
-, trio
-, brotli
 }:
 
 buildPythonPackage rec {
   pname = "httpx";
-  version = "0.9.5";
-  disabled = isPy27;
+  version = "0.21.1";
+  disabled = pythonOlder "3.6";
 
   src = fetchFromGitHub {
     owner = "encode";
     repo = pname;
     rev = version;
-    sha256 = "140z2j7b5hlcxvfb433hqv5b8irqa88hpq33lzr9m992djbhj2hb";
+    sha256 = "sha256-ayhLP+1hPWAx2ds227CKp5cebVkD5B2Z59L+3dzdINc=";
   };
 
   propagatedBuildInputs = [
+    brotlicffi
     certifi
-    hstspreload
-    chardet
-    h11
+    charset-normalizer
     h2
-    idna
+    httpcore
     rfc3986
     sniffio
   ];
 
   checkInputs = [
-    pytest
-    pytestcov
+    pytestCheckHook
+    pytest-asyncio
+    pytest-trio
     trustme
+    typing-extensions
     uvicorn
-    trio
-    brotli
   ];
 
-  postPatch = ''
-    substituteInPlace setup.py \
-          --replace "h11==0.8.*" "h11"
+  pythonImportsCheck = [ "httpx" ];
+
+  # testsuite wants to find installed packages for testing entrypoint
+  preCheck = ''
+    export PYTHONPATH=$out/${python.sitePackages}:$PYTHONPATH
   '';
 
-  checkPhase = ''
-    PYTHONPATH=.:$PYTHONPATH pytest
-  '';
+  disabledTests = [
+    # httpcore.ConnectError: [Errno 101] Network is unreachable
+    "test_connect_timeout"
+    # httpcore.ConnectError: [Errno -2] Name or service not known
+    "test_async_proxy_close"
+    "test_sync_proxy_close"
+    # sensitive to charset_normalizer output
+    "iso-8859-1"
+    "test_response_no_charset_with_iso_8859_1_content"
+  ];
+
+  disabledTestPaths = [
+    "tests/test_main.py"
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   meta = with lib; {
     description = "The next generation HTTP client";
-    homepage = https://github.com/encode/httpx;
+    homepage = "https://github.com/encode/httpx";
     license = licenses.bsd3;
-    maintainers = [ maintainers.costrouc ];
+    maintainers = with maintainers; [ costrouc fab ];
   };
 }

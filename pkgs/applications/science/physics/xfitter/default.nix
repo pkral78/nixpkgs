@@ -1,4 +1,7 @@
-{ stdenv, fetchurl, apfel, apfelgrid, applgrid, blas, gfortran, lhapdf, liblapack, libyaml, lynx, mela, root5, qcdnum, which }:
+{ lib, stdenv, fetchurl, apfel, apfelgrid, applgrid, blas, gfortran, lhapdf, lapack, libyaml, lynx
+, mela, root5, qcdnum, which, libtirpc
+, memorymappingHook, memstreamHook
+}:
 
 stdenv.mkDerivation rec {
   pname = "xfitter";
@@ -14,15 +17,12 @@ stdenv.mkDerivation rec {
     ./undefined_behavior.patch
   ];
 
-  # patch needs to updated due to version bump
-  #CXXFLAGS = "-Werror=return-type";
-
   preConfigure =
   # Fix F77LD to workaround for a following build error:
   #
   #   gfortran: error: unrecognized command line option '-stdlib=libc++'
   #
-    stdenv.lib.optionalString stdenv.isDarwin ''
+    lib.optionalString stdenv.isDarwin ''
       substituteInPlace src/Makefile.in \
         --replace "F77LD = \$(F77)" "F77LD = \$(CXXLD)" \
     '';
@@ -37,20 +37,21 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ gfortran which ];
   buildInputs =
-    [ apfel apfelgrid applgrid blas lhapdf liblapack mela root5 qcdnum ]
-    # pdf2yaml requires fmemopen and open_memstream which are not readily available on Darwin
-    ++ stdenv.lib.optional (!stdenv.isDarwin) libyaml
+    [ apfel apfelgrid applgrid blas lhapdf libyaml lapack mela root5 qcdnum ]
+    ++ lib.optionals (stdenv.system == "x86_64-darwin") [ memorymappingHook memstreamHook ]
+    ++ lib.optional (stdenv.hostPlatform.libc == "glibc") libtirpc
     ;
   propagatedBuildInputs = [ lynx ];
 
   enableParallelBuilding = true;
 
-  hardeningDisable = [ "format" ];
+  NIX_CFLAGS_COMPILE = lib.optional (stdenv.hostPlatform.libc == "glibc") "-I${libtirpc.dev}/include/tirpc";
+  NIX_LDFLAGS = lib.optional (stdenv.hostPlatform.libc == "glibc") "-ltirpc";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "The xFitter project is an open source QCD fit framework ready to extract PDFs and assess the impact of new data";
     license     = licenses.gpl3;
-    homepage    = https://www.xfitter.org/xFitter;
+    homepage    = "https://www.xfitter.org/xFitter";
     platforms   = platforms.unix;
     maintainers = with maintainers; [ veprbl ];
   };

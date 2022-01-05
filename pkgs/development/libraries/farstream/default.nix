@@ -1,8 +1,8 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
 , fetchpatch
 , libnice
-, pkgconfig
+, pkg-config
 , autoreconfHook
 , gstreamer
 , gst-plugins-base
@@ -14,12 +14,13 @@
 }:
 
 stdenv.mkDerivation rec {
-  name = "farstream-0.2.8";
+  pname = "farstream";
+  version = "0.2.8";
 
   outputs = [ "out" "dev" ];
 
   src = fetchurl {
-    url = "https://www.freedesktop.org/software/farstream/releases/farstream/${name}.tar.gz";
+    url = "https://www.freedesktop.org/software/farstream/releases/farstream/${pname}-${version}.tar.gz";
     sha256 = "0249ncd20x5mf884fd8bw75c3118b9fdml837v4fib349xmrqfrb";
   };
 
@@ -28,6 +29,11 @@ stdenv.mkDerivation rec {
     (fetchpatch {
       url = "https://gitlab.freedesktop.org/farstream/farstream/commit/73891c28fa27d5e65a71762e826f13747d743588.patch";
       sha256 = "19pw1m8xhxyf5yhl6k898w240ra2k0m28gfv858x70c4wl786lrn";
+    })
+    # Fix build with newer gnumake.
+    (fetchpatch {
+      url = "https://gitlab.freedesktop.org/farstream/farstream/-/commit/54987d44.diff";
+      sha256 = "02pka68p2j1wg7768rq7afa5wl9xv82wp86q7izrmwwnxdmz4zyg";
     })
   ];
 
@@ -38,7 +44,7 @@ stdenv.mkDerivation rec {
   ];
 
   nativeBuildInputs = [
-    pkgconfig
+    pkg-config
     autoreconfHook
     gobject-introspection
   ];
@@ -51,7 +57,7 @@ stdenv.mkDerivation rec {
     gst-libav
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://www.freedesktop.org/wiki/Software/Farstream";
     description = "Audio/Video Communications Framework formely known as farsight";
     platforms = platforms.linux;

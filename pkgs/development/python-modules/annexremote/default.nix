@@ -9,7 +9,7 @@
 
 buildPythonPackage rec {
   pname = "annexremote";
-  version = "1.3.1";
+  version = "1.6.0";
 
   # use fetchFromGitHub instead of fetchPypi because the test suite of
   # the package is not included into the PyPI tarball
@@ -17,7 +17,7 @@ buildPythonPackage rec {
     rev = "v${version}";
     owner = "Lykos153";
     repo = "AnnexRemote";
-    sha256 = "13ny7h41430pi9393dw3qgwxvzcxacapjsw0d3vjm7lc4h566alq";
+    sha256 = "08myswj1vqkl4s1glykq6xn76a070nv5mxj0z8ibl6axz89bvypi";
   };
 
   propagatedBuildInputs = [ future ];
@@ -27,7 +27,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Helper module to easily develop git-annex remotes";
-    homepage = https://github.com/Lykos153/AnnexRemote;
+    homepage = "https://github.com/Lykos153/AnnexRemote";
     license = licenses.gpl3;
     maintainers = with maintainers; [ montag451 ];
   };

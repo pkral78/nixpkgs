@@ -1,9 +1,10 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, options, pkgs, ... }:
 
 with lib;
 
 let
   cfg = config.system.nixos;
+  opt = options.system.nixos;
 in
 
 {
@@ -53,6 +54,7 @@ in
     stateVersion = mkOption {
       type = types.str;
       default = cfg.release;
+      defaultText = literalExpression "config.${opt.release}";
       description = ''
         Every once in a while, a new NixOS release may change
         configuration defaults in a way incompatible with stateful
@@ -76,7 +78,7 @@ in
     defaultChannel = mkOption {
       internal = true;
       type = types.str;
-      default = https://nixos.org/channels/nixos-unstable;
+      default = "https://nixos.org/channels/nixos-unstable";
       description = "Default NixOS channel to which the root user is subscribed.";
     };
 
@@ -103,14 +105,15 @@ in
       ''
         NAME=NixOS
         ID=nixos
-        VERSION="${cfg.version} (${cfg.codeName})"
+        VERSION="${cfg.release} (${cfg.codeName})"
         VERSION_CODENAME=${toLower cfg.codeName}
-        VERSION_ID="${cfg.version}"
+        VERSION_ID="${cfg.release}"
+        BUILD_ID="${cfg.version}"
         PRETTY_NAME="NixOS ${cfg.release} (${cfg.codeName})"
         LOGO="nix-snowflake"
         HOME_URL="https://nixos.org/"
-        DOCUMENTATION_URL="https://nixos.org/nixos/manual/index.html"
-        SUPPORT_URL="https://nixos.org/nixos/support.html"
+        DOCUMENTATION_URL="https://nixos.org/learn.html"
+        SUPPORT_URL="https://nixos.org/community.html"
         BUG_REPORT_URL="https://github.com/NixOS/nixpkgs/issues"
       '';
 

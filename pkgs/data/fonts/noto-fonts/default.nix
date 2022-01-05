@@ -2,14 +2,15 @@
 , stdenvNoCC
 , lib
 , fetchFromGitHub
+, fetchurl
 , fetchzip
-, optipng
 , cairo
-, python3Packages
-, pkgconfig
+, python3
+, pkg-config
 , pngquant
 , which
 , imagemagick
+, zopfli
 }:
 
 let
@@ -40,7 +41,7 @@ let
 
       meta = with lib; {
         description = "Beautiful and free fonts for many languages";
-        homepage = https://www.google.com/get/noto/;
+        homepage = "https://www.google.com/get/noto/";
         longDescription =
         ''
           When text is rendered by a computer, sometimes characters are
@@ -89,7 +90,7 @@ in
 
     meta = with lib; {
       description = "Beautiful and free fonts for CJK languages";
-      homepage = https://www.google.com/get/noto/help/cjk/;
+      homepage = "https://www.google.com/get/noto/help/cjk/";
       longDescription =
       ''
         Noto Sans CJK is a sans serif typeface designed as an intermediate style
@@ -109,25 +110,48 @@ in
   };
 
   noto-fonts-emoji = let
-    version = "unstable-2019-10-22";
+    version = "2.034";
+    emojiPythonEnv =
+      python3.withPackages (p: with p; [ fonttools nototools ]);
   in stdenv.mkDerivation {
     pname = "noto-fonts-emoji";
     inherit version;
 
     src = fetchFromGitHub {
-      owner = "googlei18n";
+      owner = "googlefonts";
       repo = "noto-emoji";
-      rev = "018aa149d622a4fea11f01c61a7207079da301bc";
-      sha256 = "0qmnnjpp5lza6g5m3ki6hj46p891h9vl42k3acd0qw8i0jj5yn2c";
+      rev = "v${version}";
+      sha256 = "1d6zzk0ii43iqfnjbldwp8sasyx99lbjp1nfgqjla7ixld6yp98l";
     };
 
-    buildInputs = [ cairo ];
-    nativeBuildInputs = [ pngquant optipng which cairo pkgconfig imagemagick ]
-                     ++ (with python3Packages; [ python fonttools nototools ]);
+    nativeBuildInputs = [
+      cairo
+      imagemagick
+      zopfli
+      pngquant
+      which
+      pkg-config
+      emojiPythonEnv
+    ];
 
     postPatch = ''
-      sed -i 's,^PNGQUANT :=.*,PNGQUANT := ${pngquant}/bin/pngquant,' Makefile
-      patchShebangs flag_glyph_name.py
+      patchShebangs *.py
+      patchShebangs third_party/color_emoji/*.py
+      # remove check for virtualenv, since we handle
+      # python requirements using python.withPackages
+      sed -i '/ifndef VIRTUAL_ENV/,+2d' Makefile
+
+      # Remove check for missing zopfli, it doesn't
+      # work and we guarantee its presence already.
+      sed -i '/ifdef MISSING_ZOPFLI/,+2d' Makefile
+      sed -i '/ifeq (,$(shell which $(ZOPFLIPNG)))/,+4d' Makefile
+
+      sed -i '/ZOPFLIPNG = zopflipng/d' Makefile
+      echo "ZOPFLIPNG = ${zopfli}/bin/zopflipng" >> Makefile
+
+      # Make the build verbose so it won't get culled by Hydra thinking that
+      # it somehow got stuck doing nothing.
+      sed -i 's;\t@;\t;' Makefile
     '';
 
     enableParallelBuilding = true;
@@ -138,12 +162,36 @@ in
     '';
 
     meta = with lib; {
-      inherit version;
       description = "Color and Black-and-White emoji fonts";
-      homepage = https://github.com/googlei18n/noto-emoji;
+      homepage = "https://github.com/googlefonts/noto-emoji";
       license = with licenses; [ ofl asl20 ];
       platforms = platforms.all;
-      maintainers = with maintainers; [ mathnerd314 ];
+      maintainers = with maintainers; [ mathnerd314 sternenseemann ];
     };
   };
+
+  noto-fonts-emoji-blob-bin =
+    let
+      pname = "noto-fonts-emoji-blob-bin";
+      version = "14.0.1";
+    in
+    fetchurl {
+      name = "${pname}-${version}";
+      url = "https://github.com/C1710/blobmoji/releases/download/v${version}/Blobmoji.ttf";
+      sha256 = "sha256-wSH9kRJ8y2i5ZDqzeT96dJcEJnHDSpU8bOhmxaT+UCg=";
+
+      downloadToTemp = true;
+      recursiveHash = true;
+      postFetch = ''
+        install -Dm 444 $downloadedFile $out/share/fonts/blobmoji/Blobmoji.ttf
+      '';
+
+      meta = with lib; {
+        description = "Noto Emoji with extended Blob support";
+        homepage = "https://github.com/C1710/blobmoji";
+        license = with licenses; [ ofl asl20 ];
+        platforms = platforms.all;
+        maintainers = with maintainers; [ rileyinman jk ];
+      };
+    };
 }

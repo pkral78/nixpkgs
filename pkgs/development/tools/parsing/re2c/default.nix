@@ -1,28 +1,36 @@
-{ stdenv, fetchFromGitHub, autoreconfHook }:
+{ lib
+, stdenv
+, fetchFromGitHub
+, autoreconfHook
+, python3
+}:
 
 stdenv.mkDerivation rec {
   pname = "re2c";
-  version = "1.2.1";
+  version = "2.2";
 
   src = fetchFromGitHub {
     owner  = "skvadrik";
     repo   = "re2c";
     rev    = version;
-    sha256 = "1qj0ck9msb9h8g9qb1lr57jmlj8x68ini3y3ccdifjjahhhr0hd4";
+    sha256 = "0snfxk1cf2f4dy4hcxd1fx1grav3di0qjgqqn97k85zsf9f6ys78";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
+  nativeBuildInputs = [
+    autoreconfHook
+    python3
+  ];
 
   doCheck = true;
   enableParallelBuilding = true;
 
   preCheck = ''
-    patchShebangs run_tests.sh
+    patchShebangs run_tests.py
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Tool for writing very fast and very flexible scanners";
-    homepage    = "http://re2c.org";
+    homepage    = "https://re2c.org";
     license     = licenses.publicDomain;
     platforms   = platforms.all;
     maintainers = with maintainers; [ thoughtpolice ];

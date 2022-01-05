@@ -1,72 +1,95 @@
-{ lib, fetchurl, callPackage
+{ lib, fetchurl, fetchFromGitHub, fetchpatch, callPackage
 , storeDir ? "/nix/store"
 , stateDir ? "/nix/var"
 , confDir ? "/etc"
 , boehmgc
-, stdenv, llvmPackages_6
+, Security
 }:
 
 let
 
 common =
-  { lib, stdenv, fetchpatch, perl, curl, bzip2, sqlite, openssl ? null, xz
-  , bash, coreutils, gzip, gnutar
-  , pkgconfig, boehmgc, perlPackages, libsodium, brotli, boost, editline, nlohmann_json
-  , jq, libarchive, rustc, cargo
+  { lib, stdenv, perl, curl, bzip2, sqlite, openssl ? null, xz
+  , bash, coreutils, util-linuxMinimal, gzip, gnutar
+  , pkg-config, boehmgc, libsodium, brotli, boost, editline, nlohmann_json
+  , autoreconfHook, autoconf-archive, bison, flex
+  , jq, libarchive, libcpuid
+  , lowdown, mdbook
+  # Used by tests
+  , gtest
   , busybox-sandbox-shell
   , storeDir
   , stateDir
   , confDir
-  , withLibseccomp ? lib.any (lib.meta.platformMatch stdenv.hostPlatform) libseccomp.meta.platforms, libseccomp
-  , withAWS ? stdenv.isLinux || stdenv.isDarwin, aws-sdk-cpp
-
-  , name, suffix ? "", src, includesPerl ? false
-
+  , withLibseccomp ? lib.meta.availableOn stdenv.hostPlatform libseccomp, libseccomp
+  , withAWS ? !enableStatic && (stdenv.isLinux || stdenv.isDarwin), aws-sdk-cpp
+  , enableStatic ? stdenv.hostPlatform.isStatic
+  , enableDocumentation ? lib.versionOlder version "2.4pre" ||
+                          stdenv.hostPlatform == stdenv.buildPlatform
+  , pname, version, suffix ? "", src
+  , patches ? [ ]
   }:
   let
      sh = busybox-sandbox-shell;
-     nix = stdenv.mkDerivation rec {
-      inherit name src;
-      version = lib.getVersion name;
 
-      is20 = lib.versionAtLeast version "2.0pre";
-      is24 = lib.versionAtLeast version "2.4pre";
-      isExactly23 = lib.versionAtLeast version "2.3" && lib.versionOlder version "2.4";
+    is24 = lib.versionAtLeast version "2.4pre";
+    is25 = lib.versionAtLeast version "2.5pre";
+
+    nix = stdenv.mkDerivation {
+      inherit pname version src patches;
 
       VERSION_SUFFIX = suffix;
 
-      outputs = [ "out" "dev" "man" "doc" ];
+      outputs =
+        [ "out" "dev" ]
+        ++ lib.optionals enableDocumentation [ "man" "doc" ];
+
+      hardeningEnable = [ "pie" ];
 
       nativeBuildInputs =
-        [ pkgconfig ]
-        ++ lib.optionals (!is20) [ curl perl ]
-        ++ lib.optionals is24 [ jq ];
+        [ pkg-config ]
+        ++ lib.optionals stdenv.isLinux [ util-linuxMinimal ]
+        ++ lib.optionals (is24 && enableDocumentation) [
+          (lib.getBin lowdown) mdbook
+        ]
+        ++ lib.optionals is24
+          [ autoreconfHook
+            autoconf-archive
+            bison flex
+            jq
+           ];
 
-      buildInputs = [ curl openssl sqlite xz bzip2 nlohmann_json ]
-        ++ lib.optional (stdenv.isLinux || stdenv.isDarwin) libsodium
-        ++ lib.optionals is20 [ brotli boost editline ]
-        ++ lib.optionals is24 [ libarchive rustc cargo ]
+      buildInputs =
+        [ curl libsodium openssl sqlite xz bzip2
+          brotli boost editline
+        ]
+        ++ lib.optionals stdenv.isDarwin [ Security ]
+        ++ lib.optionals is24 [ libarchive gtest lowdown ]
+        ++ lib.optional (is24 && stdenv.isx86_64) libcpuid
         ++ lib.optional withLibseccomp libseccomp
-        ++ lib.optional (withAWS && is20)
+        ++ lib.optional withAWS
             ((aws-sdk-cpp.override {
               apis = ["s3" "transfer"];
               customMemoryManagement = false;
             }).overrideDerivation (args: {
-              patches = args.patches or [] ++ [(fetchpatch {
-                url = https://github.com/edolstra/aws-sdk-cpp/commit/7d58e303159b2fb343af9a1ec4512238efa147c7.patch;
-                sha256 = "103phn6kyvs1yc7fibyin3lgxz699qakhw671kl207484im55id1";
-              })];
+              patches = args.patches or [] ++ [
+                ./aws-sdk-cpp-TransferManager-ContentEncoding.patch
+              ];
             }));
 
       propagatedBuildInputs = [ boehmgc ];
 
-      # Seems to be required when using std::atomic with 64-bit types
-      NIX_LDFLAGS = lib.optionalString (stdenv.hostPlatform.system == "armv5tel-linux" || stdenv.hostPlatform.system == "armv6l-linux") "-latomic";
+      NIX_LDFLAGS = lib.optionals (!is24) [
+        # https://github.com/NixOS/nix/commit/3e85c57a6cbf46d5f0fe8a89b368a43abd26daba
+        (lib.optionalString enableStatic "-lssl -lbrotlicommon -lssh2 -lz -lnghttp2 -lcrypto")
+        # https://github.com/NixOS/nix/commits/74b4737d8f0e1922ef5314a158271acf81cd79f8
+        (lib.optionalString (stdenv.hostPlatform.system == "armv5tel-linux" || stdenv.hostPlatform.system == "armv6l-linux") "-latomic")
+      ];
 
       preConfigure =
         # Copy libboost_context so we don't get all of Boost in our closure.
         # https://github.com/NixOS/nixpkgs/issues/45462
-        lib.optionalString is20 ''
+        lib.optionalString (!enableStatic) ''
           mkdir -p $out/lib
           cp -pd ${boost}/lib/{libboost_context*,libboost_thread*,libboost_system*} $out/lib
           rm -f $out/lib/*.a
@@ -75,9 +98,13 @@ common =
             patchelf --set-rpath $out/lib:${stdenv.cc.cc.lib}/lib $out/lib/libboost_thread.so.*
           ''}
         '' +
-        # For Nix-2.3, patch around an issue where the Nix configure step pulls in the
-        # build system's bash and other utilities when cross-compiling
-        lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform && isExactly23) ''
+        # On all versions before c9f51e87057652db0013289a95deffba495b35e7, which
+        # removes config.nix entirely and is not present in 2.3.x, we need to
+        # patch around an issue where the Nix configure step pulls in the build
+        # system's bash and other utilities when cross-compiling.
+        lib.optionalString (
+          stdenv.buildPlatform != stdenv.hostPlatform && !is24
+        ) ''
           mkdir tmp/
           substitute corepkgs/config.nix.in tmp/config.nix.in \
             --subst-var-by bash ${bash}/bin/bash \
@@ -94,39 +121,43 @@ common =
         [ "--with-store-dir=${storeDir}"
           "--localstatedir=${stateDir}"
           "--sysconfdir=${confDir}"
-          "--disable-init-state"
           "--enable-gc"
         ]
-        ++ lib.optionals (!is20) [
-          "--with-dbi=${perlPackages.DBI}/${perl.libPrefix}"
-          "--with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}"
-          "--with-www-curl=${perlPackages.WWWCurl}/${perl.libPrefix}"
-          "BDW_GC_LIBS=\"-lgc -lgccpp\""
-        ] ++ lib.optionals (is20 && stdenv.isLinux) [
+        ++ lib.optional (!enableDocumentation) "--disable-doc-gen"
+        ++ lib.optionals (!is24) [
+          # option was removed in 2.4
+          "--disable-init-state"
+        ]
+        ++ lib.optionals stdenv.isLinux [
           "--with-sandbox-shell=${sh}/bin/busybox"
         ]
         ++ lib.optional (
             stdenv.hostPlatform != stdenv.buildPlatform && stdenv.hostPlatform ? nix && stdenv.hostPlatform.nix ? system
-        ) ''--with-system=${stdenv.hostPlatform.nix.system}''
+        ) "--with-system=${stdenv.hostPlatform.nix.system}"
            # RISC-V support in progress https://github.com/seccomp/libseccomp/pull/50
         ++ lib.optional (!withLibseccomp) "--disable-seccomp-sandboxing";
 
-      makeFlags = [ "profiledir=$(out)/etc/profile.d" ];
+      makeFlags = [ "profiledir=$(out)/etc/profile.d" ]
+        ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "PRECOMPILE_HEADERS=0";
 
       installFlags = [ "sysconfdir=$(out)/etc" ];
 
       doInstallCheck = true; # not cross
 
       # socket path becomes too long otherwise
-      preInstallCheck = lib.optional stdenv.isDarwin ''
+      preInstallCheck = lib.optionalString stdenv.isDarwin ''
         export TMPDIR=$NIX_BUILD_TOP
+      ''
+      # See https://github.com/NixOS/nix/issues/5687
+      + lib.optionalString (is25 && stdenv.isDarwin) ''
+        echo "exit 99" > tests/gc-non-blocking.sh
       '';
 
-      separateDebugInfo = stdenv.isLinux;
+      separateDebugInfo = stdenv.isLinux && (is24 -> !enableStatic);
 
       enableParallelBuilding = true;
 
-      meta = {
+      meta = with lib; {
         description = "Powerful package manager that makes package management reliable and reproducible";
         longDescription = ''
           Nix is a powerful package manager for Linux and other Unix systems that
@@ -135,15 +166,18 @@ common =
           a package, multi-user package management and easy setup of build
           environments.
         '';
-        homepage = https://nixos.org/;
-        license = stdenv.lib.licenses.lgpl2Plus;
-        maintainers = [ stdenv.lib.maintainers.eelco ];
-        platforms = stdenv.lib.platforms.unix;
-        outputsToInstall = [ "out" "man" ];
+        homepage = "https://nixos.org/";
+        license = licenses.lgpl2Plus;
+        maintainers = with maintainers; [ eelco lovesegfault ];
+        platforms = platforms.unix;
+        outputsToInstall = [ "out" ] ++ optional enableDocumentation "man";
       };
 
       passthru = {
-        perl-bindings = if includesPerl then nix else stdenv.mkDerivation {
+        is24 = lib.warn ''nix package: attribute .is24 is deprecated. Please use lib.versionAtLeast X.version "2.4pre".'' is24;
+        is25 = lib.warn ''nix package: attribute .is25 is deprecated. Please use lib.versionAtLeast X.version "2.5pre".'' is25;
+
+        perl-bindings = perl.pkgs.toPerlModule (stdenv.mkDerivation {
           pname = "nix-perl";
           inherit version;
 
@@ -154,71 +188,116 @@ common =
           # This is not cross-compile safe, don't have time to fix right now
           # but noting for future travellers.
           nativeBuildInputs =
-            [ perl pkgconfig curl nix libsodium ]
-            ++ lib.optional is20 boost;
+            [ perl pkg-config curl nix libsodium boost autoreconfHook autoconf-archive nlohmann_json ];
 
           configureFlags =
-            [ "--with-dbi=${perlPackages.DBI}/${perl.libPrefix}"
-              "--with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}"
+            [ "--with-dbi=${perl.pkgs.DBI}/${perl.libPrefix}"
+              "--with-dbd-sqlite=${perl.pkgs.DBDSQLite}/${perl.libPrefix}"
             ];
 
           preConfigure = "export NIX_STATE_DIR=$TMPDIR";
 
           preBuild = "unset NIX_INDENT_MAKE";
-        };
+        });
+        inherit boehmgc;
       };
     };
   in nix;
+
+  boehmgc_nix_2_3 = boehmgc.override {
+    enableLargeConfig = true;
+  };
+
+  boehmgc_nix = boehmgc_nix_2_3.overrideAttrs (drv: {
+    patches = (drv.patches or []) ++ [
+      # Part of the GC solution in https://github.com/NixOS/nix/pull/4944
+      (fetchpatch {
+        url = "https://github.com/hercules-ci/nix/raw/5c58d84a76d96f269e3ff1e72c9c9ba5f68576af/boehmgc-coroutine-sp-fallback.diff";
+        sha256 = "sha256-JvnWVTlkltmQUs/0qApv/LPZ690UX1/2hEP+LYRwKbI=";
+      })
+    ];
+  });
+
+  # master: https://github.com/NixOS/nix/pull/5536
+  # 2.4: https://github.com/NixOS/nix/pull/5537
+  installNlohmannJsonPatch = fetchpatch {
+    url = "https://github.com/NixOS/nix/pull/5536.diff";
+    sha256 = "sha256-SPnam4xNIjbMgnq6IP1AaM1V62X0yZNo4DEVmI8sHOo=";
+  };
 
 in rec {
 
   nix = nixStable;
 
-  nix1 = callPackage common rec {
-    name = "nix-1.11.16";
+  nixStable = nix_2_5;
+
+  nix_2_3 = callPackage common (rec {
+    pname = "nix";
+    version = "2.3.16";
     src = fetchurl {
-      url = "http://nixos.org/releases/nix/${name}/${name}.tar.xz";
-      sha256 = "0ca5782fc37d62238d13a620a7b4bff6a200bab1bd63003709249a776162357c";
+      url = "https://nixos.org/releases/nix/${pname}-${version}/${pname}-${version}.tar.xz";
+      sha256 = "sha256-fuaBtp8FtSVJLSAsO+3Nne4ZYLuBj2JpD2xEk7fCqrw=";
     };
 
-    # Nix1 has the perl bindings by default, so no need to build the manually.
-    includesPerl = true;
+    boehmgc = boehmgc_nix_2_3;
 
-    inherit storeDir stateDir confDir boehmgc;
-  };
+    inherit storeDir stateDir confDir;
+  });
 
-  nixStable = callPackage common (rec {
-    name = "nix-2.3.3";
-    src = fetchurl {
-      url = "http://nixos.org/releases/nix/${name}/${name}.tar.xz";
-      sha256 = "332fffb8dfc33eab854c136ef162a88cec15b701def71fa63714d160831ba224";
+  nix_2_4 = callPackage common (rec {
+    pname = "nix";
+    version = "2.4";
+
+    src = fetchFromGitHub {
+      owner = "NixOS";
+      repo = "nix";
+      rev = version;
+      sha256 = "sha256-op48CCDgLHK0qV1Batz4Ln5FqBiRjlE6qHTiZgt3b6k=";
     };
 
-    inherit storeDir stateDir confDir boehmgc;
-  } // stdenv.lib.optionalAttrs stdenv.cc.isClang {
-    stdenv = llvmPackages_6.stdenv;
+    boehmgc = boehmgc_nix;
+
+    patches = [ installNlohmannJsonPatch ];
+
+    inherit storeDir stateDir confDir;
+  });
+
+  nix_2_5 = callPackage common (rec {
+    pname = "nix";
+    version = "2.5.1";
+
+    src = fetchFromGitHub {
+      owner = "NixOS";
+      repo = "nix";
+      rev = version;
+      sha256 = "sha256-GOsiqy9EaTwDn2PLZ4eFj1VkXcBUbqrqHehRE9GuGdU=";
+    };
+
+    boehmgc = boehmgc_nix;
+
+    patches = [ installNlohmannJsonPatch ];
+
+    inherit storeDir stateDir confDir;
   });
 
   nixUnstable = lib.lowPrio (callPackage common rec {
-    name = "nix-2.4${suffix}";
-    suffix = "pre7250_94c93437";
-    src = fetchurl {
-      url = "https://hydra.nixos.org/build/112193977/download/3/nix-2.4${suffix}.tar.xz";
-      sha256 = "f9baf241c9449c1e3e5c9610adbcd2ce9e5fbcab16aff3ba3030d2fad7b34d7b";
+    pname = "nix";
+    version = "2.6${suffix}";
+    suffix = "pre20211217_${lib.substring 0 7 src.rev}";
+
+    src = fetchFromGitHub {
+      owner = "NixOS";
+      repo = "nix";
+      rev = "6e6e998930f0d7361d64644eb37d9134e74e8501";
+      sha256 = "sha256-RZSWOJUPkXIlMNYMC5a+WNrOjpqAHyhzyqD57BGfNY8=";
     };
 
-    inherit storeDir stateDir confDir boehmgc;
-  });
+    boehmgc = boehmgc_nix;
 
-  nixFlakes = lib.lowPrio (callPackage common rec {
-    name = "nix-2.4${suffix}";
-    suffix = "pre20200220_4a4521f";
-    src = fetchurl {
-      url = "https://hydra.nixos.org/build/113373394/download/3/nix-2.4${suffix}.tar.xz";
-      sha256 = "31fe87c40f40a590bc8f575283725d5f04ecb9aebb6b404f679d77438d75265d";
-    };
+    patches = [ installNlohmannJsonPatch ];
 
-    inherit storeDir stateDir confDir boehmgc;
+    inherit storeDir stateDir confDir;
+
   });
 
 }

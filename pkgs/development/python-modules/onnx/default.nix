@@ -1,64 +1,56 @@
 { lib
-, fetchpatch
 , buildPythonPackage
-, fetchPypi
-, pythonOlder
-, isPy27
 , cmake
-, protobuf
-, numpy
-, six
-, typing-extensions
-, typing
-, pytestrunner
-, pytest
+, fetchPypi
+, isPy27
 , nbval
+, numpy
+, protobuf
+, pytestCheckHook
+, six
 , tabulate
+, typing-extensions
 }:
 
 buildPythonPackage rec {
   pname = "onnx";
-  version = "1.6.0";
+  version = "1.10.2";
+  format = "setuptools";
 
-  # Due to Protobuf packaging issues this build of Onnx with Python 2 gives
-  # errors on import
   disabled = isPy27;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0ig33jl3591041lyylxp52yi20rfrcqx3i030hd6al8iabzc721v";
+    sha256 = "sha256-JNc8p9/X5sczmUT4lVS0AQcZiZM3kk/KFEfY8bXbUNY=";
   };
 
-  # Remove the unqualified requirement for the typing package for running the
-  # tests. typing is already required for the installation, where it is
-  # correctly qualified so as to only be required for sufficiently old Python
-  # versions.
-  # This patch should be in the next release (>1.6).
-  patches = [
-    (fetchpatch {
-      url = "https://github.com/onnx/onnx/commit/c963586d0f8dd5740777b2fd06f04ec60816de9f.patch";
-      sha256 = "1hl26cw5zckc91gmh0bdah87jyprccxiw0f4i5h1gwkq28hm6wbj";
-    })
+  nativeBuildInputs = [
+    cmake
   ];
-
-  nativeBuildInputs = [ cmake ];
 
   propagatedBuildInputs = [
     protobuf
     numpy
     six
     typing-extensions
-  ] ++ lib.optional (pythonOlder "3.5") [ typing ];
+  ];
 
   checkInputs = [
-    pytestrunner
-    pytest
     nbval
+    pytestCheckHook
     tabulate
   ];
 
   postPatch = ''
-    patchShebangs tools/protoc-gen-mypy.py
+    chmod +x tools/protoc-gen-mypy.sh.in
+    patchShebangs tools/protoc-gen-mypy.sh.in tools/protoc-gen-mypy.py
+
+    substituteInPlace setup.py \
+      --replace "setup_requires.append('pytest-runner')" ""
+  '';
+
+  preBuild = ''
+    export MAX_JOBS=$NIX_BUILD_CORES
   '';
 
   # The executables are just utility scripts that aren't too important
@@ -66,13 +58,17 @@ buildPythonPackage rec {
     rm -r $out/bin
   '';
 
-  # The setup.py does all the configuration (running CMake)
-  dontConfigure = true;
+  # The setup.py does all the configuration
+  dontUseCmakeConfigure = true;
 
-  meta = {
-    homepage    = http://onnx.ai;
+  pythonImportsCheck = [
+    "onnx"
+  ];
+
+  meta = with lib; {
     description = "Open Neural Network Exchange";
-    license     = lib.licenses.mit;
-    maintainers = [ lib.maintainers.acairncross ];
+    homepage = "https://onnx.ai";
+    license = licenses.asl20;
+    maintainers = with maintainers; [ acairncross ];
   };
 }

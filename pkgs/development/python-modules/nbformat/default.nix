@@ -12,11 +12,11 @@
 
 buildPythonPackage rec {
   pname = "nbformat";
-  version = "5.0.4";
+  version = "5.1.3";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "562de41fc7f4f481b79ab5d683279bf3a168858268d4387b489b7b02be0b324a";
+    sha256 = "b516788ad70771c6250977c1374fcca6edebe6126fd2adb5a69aa5c2356fd1c8";
   };
 
   LC_ALL="en_US.utf8";
@@ -34,7 +34,7 @@ buildPythonPackage rec {
 
   meta = {
     description = "The Jupyter Notebook format";
-    homepage = https://jupyter.org/;
+    homepage = "https://jupyter.org/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fridh globin ];
   };

@@ -1,28 +1,61 @@
-{ stdenv, buildPythonPackage, fetchPypi
-, itsdangerous, hypothesis
-, pytest, requests
+{ lib
+, stdenv
+, buildPythonPackage
+, pythonOlder
+, fetchPypi
+, watchdog
+, dataclasses
 , pytest-timeout
- }:
+, pytest-xprocess
+, pytestCheckHook
+}:
 
 buildPythonPackage rec {
-  pname = "Werkzeug";
-  version = "0.16.1";
+  pname = "werkzeug";
+  version = "2.0.2";
+  format = "setuptools";
+
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
-    inherit pname version;
-    sha256 = "b353856d37dec59d6511359f97f6a4b2468442e454bd1c98298ddce53cac1f04";
+    pname = "Werkzeug";
+    inherit version;
+    sha256 = "sha256-qiu2/I3ujWxQTArB5/X33FgQqZA+eTtvcVqfAVva25o=";
   };
 
-  propagatedBuildInputs = [ itsdangerous ];
-  checkInputs = [ pytest requests hypothesis pytest-timeout ];
+  propagatedBuildInputs = lib.optionals (!stdenv.isDarwin) [
+    # watchdog requires macos-sdk 10.13+
+    watchdog
+  ] ++ lib.optionals (pythonOlder "3.7") [
+    dataclasses
+  ];
 
-  checkPhase = ''
-    pytest ${stdenv.lib.optionalString stdenv.isDarwin "-k 'not test_get_machine_id'"}
-  '';
+  checkInputs = [
+    pytest-timeout
+    pytest-xprocess
+    pytestCheckHook
+  ];
 
-  meta = with stdenv.lib; {
+  disabledTests = lib.optionals stdenv.isDarwin [
+    "test_get_machine_id"
+  ];
+
+  pytestFlagsArray = [
+    # don't run tests that are marked with filterwarnings, they fail with
+    # warnings._OptionError: unknown warning category: 'pytest.PytestUnraisableExceptionWarning'
+    "-m 'not filterwarnings'"
+  ];
+
+  meta = with lib; {
     homepage = "https://palletsprojects.com/p/werkzeug/";
-    description = "A WSGI utility library for Python";
+    description = "The comprehensive WSGI web application library";
+    longDescription = ''
+      Werkzeug is a comprehensive WSGI web application library. It
+      began as a simple collection of various utilities for WSGI
+      applications and has become one of the most advanced WSGI
+      utility libraries.
+    '';
     license = licenses.bsd3;
+    maintainers = with maintainers; [ ];
   };
 }

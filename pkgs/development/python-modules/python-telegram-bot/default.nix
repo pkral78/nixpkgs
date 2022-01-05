@@ -1,44 +1,60 @@
-{ stdenv
-, fetchPypi
+{ lib
+, APScheduler
 , buildPythonPackage
+, cachetools
 , certifi
+, decorator
+, fetchPypi
 , future
-, urllib3
 , tornado
-, pytest
+, urllib3
+, pythonOlder
 }:
 
 buildPythonPackage rec {
   pname = "python-telegram-bot";
-  version = "12.3.0";
+  version = "13.8.1";
+  format = "setuptools";
+
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0yrg5342zz0hpf2pc85ffwx57msa6jpcmvvjfkzh8nh2lc98aq21";
+    sha256 = "sha256-sGaR5Vw1lDJn7mNtmqcCs1eRVdLzLg4tbX8R8LXnJ/A=";
   };
 
-  prePatch = ''
-    rm -rf telegram/vendor
-    substituteInPlace telegram/utils/request.py \
-      --replace "import telegram.vendor.ptb_urllib3.urllib3 as urllib3" "import urllib3 as urllib3" \
-      --replace "import telegram.vendor.ptb_urllib3.urllib3.contrib.appengine as appengine" "import urllib3.contrib.appengine as appengine" \
-      --replace "from telegram.vendor.ptb_urllib3.urllib3.connection import HTTPConnection" "from urllib3.connection import HTTPConnection" \
-      --replace "from telegram.vendor.ptb_urllib3.urllib3.util.timeout import Timeout" "from urllib3.util.timeout import Timeout" \
-      --replace "from telegram.vendor.ptb_urllib3.urllib3.fields import RequestField" "from urllib3.fields import RequestField"
+  propagatedBuildInputs = [
+    APScheduler
+    cachetools
+    certifi
+    decorator
+    future
+    tornado
+    urllib3
+  ];
 
-    touch LICENSE.dual
+  # --with-upstream-urllib3 is not working properly
+  postPatch = ''
+    rm -r telegram/vendor
+
+    substituteInPlace requirements.txt \
+      --replace "APScheduler==3.6.3" "APScheduler" \
+      --replace "cachetools==4.2.2" "cachetools"
   '';
 
-  checkInputs = [ pytest ];
-  propagatedBuildInputs = [ certifi future urllib3 tornado ];
+  setupPyGlobalFlags = "--with-upstream-urllib3";
 
   # tests not included with release
   doCheck = false;
 
-  meta = with stdenv.lib; {
-    description = "This library provides a pure Python interface for the Telegram Bot API.";
-    homepage = https://python-telegram-bot.org;
-    license = licenses.lgpl3;
+  pythonImportsCheck = [
+    "telegram"
+  ];
+
+  meta = with lib; {
+    description = "Python library to interface with the Telegram Bot API";
+    homepage = "https://python-telegram-bot.org";
+    license = licenses.lgpl3Only;
     maintainers = with maintainers; [ veprbl pingiun ];
   };
 }

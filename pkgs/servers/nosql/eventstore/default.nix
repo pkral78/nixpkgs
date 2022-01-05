@@ -1,13 +1,15 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , fetchurl
 , makeWrapper
-, dotnet-sdk
+, dotnetCorePackages
 , mono
 , Nuget
 }:
 
 let
+
+  dotnet-sdk = dotnetCorePackages.sdk_5_0;
 
   deps = import ./deps.nix { inherit fetchurl; };
 
@@ -16,13 +18,13 @@ in
 stdenv.mkDerivation rec {
 
   pname = "EventStore";
-  version = "5.0.6";
+  version = "5.0.8";
 
   src = fetchFromGitHub {
     owner = "EventStore";
     repo = "EventStore";
     rev = "oss-v${version}";
-    sha256 = "0jlyyqs1z2xrw0dkai2k2zr3dsdbdsvmhx81qa92k7ga9hv04sqj";
+    sha256 = "021m610gzmrp2drywl1q3y6xxpy4qayn580d855ag952z9s6w9nj";
   };
 
   buildInputs = [
@@ -74,9 +76,9 @@ stdenv.mkDerivation rec {
   meta = {
     homepage = "https://geteventstore.com/";
     description = "Event sourcing database with processing logic in JavaScript";
-    license = stdenv.lib.licenses.bsd3;
-    maintainers = with stdenv.lib.maintainers; [ puffnfresh ];
-    platforms = [ "x86_64-linux" ];
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ puffnfresh ];
+    platforms = [ "x86_64-linux" "x86_64-darwin" ];
   };
 
 }

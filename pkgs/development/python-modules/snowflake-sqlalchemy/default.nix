@@ -7,11 +7,11 @@
 
 buildPythonPackage rec {
   pname = "snowflake-sqlalchemy";
-  version = "1.1.17";
+  version = "1.3.3";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1pmmwkw29944zh044azwbc1gf4s04fm55920d9if2a3zpjm6c5d7";
+    sha256 = "d1c087ce0a90bbce77f2308b9c4aeb14efeb26a3ae9da7c3d5a153341cd8ef34";
   };
 
   propagatedBuildInputs = [
@@ -19,9 +19,14 @@ buildPythonPackage rec {
     snowflake-connector-python
   ];
 
+  # Pypi does not include tests
+  doCheck = false;
+  pythonImportsCheck = [ "snowflake.sqlalchemy" ];
+
   meta = with lib; {
     description = "Snowflake SQLAlchemy Dialect";
     homepage = "https://www.snowflake.net/";
     license = licenses.asl20;
+    maintainers = [ ];
   };
 }

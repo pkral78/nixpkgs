@@ -1,6 +1,6 @@
-{ stdenv, fetchurl
-, buildPackages
-, pkgconfig, which, makeWrapper
+{ lib, stdenv, fetchurl
+, buildPackages, pkgsHostHost
+, pkg-config, which, makeWrapper
 , zlib, bzip2, libpng, gnumake, glib
 
 , # FreeType supports LCD filtering (colloquially referred to as sub-pixel rendering).
@@ -9,44 +9,26 @@
   useEncumberedCode ? true
 }:
 
-let
-  inherit (stdenv.lib) optional optionalString;
 
-in stdenv.mkDerivation rec {
+stdenv.mkDerivation rec {
   pname = "freetype";
-  version = "2.10.1";
-
-  meta = with stdenv.lib; {
-    description = "A font rendering engine";
-    longDescription = ''
-      FreeType is a portable and efficient library for rendering fonts. It
-      supports TrueType, Type 1, CFF fonts, and WOFF, PCF, FNT, BDF and PFR
-      fonts. It has a bytecode interpreter and has an automatic hinter called
-      autofit which can be used instead of hinting instructions included in
-      fonts.
-    '';
-    homepage = https://www.freetype.org/;
-    license = licenses.gpl2Plus; # or the FreeType License (BSD + advertising clause)
-    platforms = platforms.all;
-    maintainers = with maintainers; [ ttuegel ];
-  };
+  version = "2.11.0";
 
   src = fetchurl {
     url = "mirror://savannah/${pname}/${pname}-${version}.tar.xz";
-    sha256 = "0vx2dg1jh5kq34dd6ifpjywkpapp8a7p1bvyq9yq5zi1i94gmnqn";
+    sha256 = "sha256-i+45vTloxIBLcGFKCjrVlyma0OgkvIqtXOiq9IBnvec=";
   };
 
   propagatedBuildInputs = [ zlib bzip2 libpng ]; # needed when linking against freetype
 
   # dependence on harfbuzz is looser than the reverse dependence
-  nativeBuildInputs = [ pkgconfig which makeWrapper ]
+  nativeBuildInputs = [ pkg-config which makeWrapper ]
     # FreeType requires GNU Make, which is not part of stdenv on FreeBSD.
-    ++ optional (!stdenv.isLinux) gnumake;
+    ++ lib.optional (!stdenv.isLinux) gnumake;
 
-  patches =
-    [ ./enable-table-validation.patch
-    ] ++
-    optional useEncumberedCode ./enable-subpixel-rendering.patch;
+  patches = [
+    ./enable-table-validation.patch
+  ] ++ lib.optional useEncumberedCode ./enable-subpixel-rendering.patch;
 
   outputs = [ "out" "dev" ];
 
@@ -56,7 +38,7 @@ in stdenv.mkDerivation rec {
   CC_BUILD = "${buildPackages.stdenv.cc}/bin/cc";
 
   # The asm for armel is written with the 'asm' keyword.
-  CFLAGS = optionalString stdenv.isAarch32 "-std=gnu99";
+  CFLAGS = lib.optionalString stdenv.isAarch32 "-std=gnu99";
 
   enableParallelBuilding = true;
 
@@ -64,10 +46,24 @@ in stdenv.mkDerivation rec {
 
   postInstall = glib.flattenInclude + ''
     substituteInPlace $dev/bin/freetype-config \
-      --replace ${buildPackages.pkgconfig} ${pkgconfig}
+      --replace ${buildPackages.pkg-config} ${pkgsHostHost.pkg-config}
 
     wrapProgram "$dev/bin/freetype-config" \
       --set PKG_CONFIG_PATH "$PKG_CONFIG_PATH:$dev/lib/pkgconfig"
   '';
 
+  meta = with lib; {
+    description = "A font rendering engine";
+    longDescription = ''
+      FreeType is a portable and efficient library for rendering fonts. It
+      supports TrueType, Type 1, CFF fonts, and WOFF, PCF, FNT, BDF and PFR
+      fonts. It has a bytecode interpreter and has an automatic hinter called
+      autofit which can be used instead of hinting instructions included in
+      fonts.
+    '';
+    homepage = "https://www.freetype.org/";
+    license = licenses.gpl2Plus; # or the FreeType License (BSD + advertising clause)
+    platforms = platforms.all;
+    maintainers = with maintainers; [ ttuegel ];
+  };
 }

@@ -1,35 +1,56 @@
-{ buildPythonApplication, lib, fetchPypi, isPy3k
-, cli-helpers, click, configobj, humanize, prompt_toolkit, psycopg2
-, pygments, sqlparse, pgspecial, setproctitle, keyring, pytest, mock
+{ lib, stdenv
+, buildPythonApplication
+, fetchPypi
+, isPy3k
+, cli-helpers
+, click
+, configobj
+, humanize
+, prompt-toolkit
+, psycopg2
+, pygments
+, sqlparse
+, pgspecial
+, setproctitle
+, keyring
+, pendulum
+, pytestCheckHook
+, mock
 }:
 
 buildPythonApplication rec {
   pname = "pgcli";
-  version = "2.2.0";
+  version = "3.2.0";
 
   disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "54138a31e6736a34c63b84a6d134c9292c9a73543cc0f66e80a0aaf79259d39b";
+    sha256 = "6cde97e71996bf910a40b579e5285483c10ea04962a08def01c12433d5f7c6b7";
   };
 
   propagatedBuildInputs = [
-    cli-helpers click configobj humanize prompt_toolkit psycopg2
-    pygments sqlparse pgspecial setproctitle keyring
+    cli-helpers
+    click
+    configobj
+    humanize
+    prompt-toolkit
+    psycopg2
+    pygments
+    sqlparse
+    pgspecial
+    setproctitle
+    keyring
+    pendulum
   ];
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace "prompt_toolkit>=2.0.6,<3.0.0" "prompt_toolkit"
-  '';
+  checkInputs = [ pytestCheckHook mock ];
 
-  checkInputs = [ pytest mock ];
-
-  # `test_application_name_db_uri` fails: https://github.com/dbcli/pgcli/issues/1104
-  checkPhase = ''
-    pytest --deselect=tests/test_main.py::test_application_name_db_uri
-  '';
+  disabledTests = [
+    # tests that expect output from an older version of cli-helpers
+    "test_format_output"
+    "test_format_output_auto_expand"
+  ] ++ lib.optionals stdenv.isDarwin [ "test_application_name_db_uri" ];
 
   meta = with lib; {
     description = "Command-line interface for PostgreSQL";
@@ -37,7 +58,8 @@ buildPythonApplication rec {
       Rich command-line interface for PostgreSQL with auto-completion and
       syntax highlighting.
     '';
-    homepage = https://pgcli.com;
+    homepage = "https://pgcli.com";
+    changelog = "https://github.com/dbcli/pgcli/raw/v${version}/changelog.rst";
     license = licenses.bsd3;
     maintainers = with maintainers; [ dywedir ];
   };

@@ -6,11 +6,11 @@
 
 buildPythonPackage rec {
   pname = "invoke";
-  version = "1.3.0";
+  version = "1.6.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1nn7gad0rvy492acpyhkrp01zsk86acf34qhsvq4xmm6x39788n5";
+    sha256 = "374d1e2ecf78981da94bfaf95366216aaec27c2d6a7b7d5818d92da55aa258d3";
   };
 
   patchPhase = ''

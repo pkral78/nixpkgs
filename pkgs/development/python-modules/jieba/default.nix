@@ -27,7 +27,8 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Chinese Words Segementation Utilities";
-    homepage = https://github.com/fxsjy/jieba;
+    homepage = "https://github.com/fxsjy/jieba";
     license = licenses.mit;
+    maintainers = teams.tts.members;
   };
 }

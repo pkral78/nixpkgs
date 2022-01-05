@@ -1,70 +1,77 @@
-import ./make-test-python.nix ({ pkgs, ... }:
+import ./make-test-python.nix ({ pkgs, lib, ... }:
 
 let
   configDir = "/var/lib/foobar";
-  apiPassword = "some_secret";
-  mqttPassword = "another_secret";
-  hassCli = "hass-cli --server http://hass:8123 --password '${apiPassword}'";
+  mqttUsername = "homeassistant";
+  mqttPassword = "secret";
 in {
   name = "home-assistant";
-  meta = with pkgs.stdenv.lib; {
-    maintainers = with maintainers; [ dotlambda ];
-  };
+  meta.maintainers = lib.teams.home-assistant.members;
 
-  nodes = {
-    hass =
-      { pkgs, ... }:
-      {
-        environment.systemPackages = with pkgs; [
-          mosquitto home-assistant-cli
-        ];
-        services.home-assistant = {
-          inherit configDir;
-          enable = true;
-          package = pkgs.home-assistant.override {
-            extraPackages = ps: with ps; [ hbmqtt ];
+  nodes.hass = { pkgs, ... }: {
+    environment.systemPackages = with pkgs; [ mosquitto ];
+    services.mosquitto = {
+      enable = true;
+      listeners = [ {
+        users = {
+          "${mqttUsername}" = {
+            acl = [ "readwrite #" ];
+            password = mqttPassword;
           };
-          config = {
-            homeassistant = {
-              name = "Home";
-              time_zone = "UTC";
-              latitude = "0.0";
-              longitude = "0.0";
-              elevation = 0;
-              auth_providers = [
-                {
-                  type = "legacy_api_password";
-                  api_password = apiPassword;
-                }
-              ];
-            };
-            frontend = { };
-            mqtt = { # Use hbmqtt as broker
-              password = mqttPassword;
-            };
-            binary_sensor = [
-              {
-                platform = "mqtt";
-                state_topic = "home-assistant/test";
-                payload_on = "let_there_be_light";
-                payload_off = "off";
-              }
-            ];
-          };
-          lovelaceConfig = {
-            title = "My Awesome Home";
-            views = [ {
-              title = "Example";
-              cards = [ {
-                type = "markdown";
-                title = "Lovelace";
-                content = "Welcome to your **Lovelace UI**.";
-              } ];
-            } ];
-          };
-          lovelaceConfigWritable = true;
+        };
+      } ];
+    };
+    services.home-assistant = {
+      inherit configDir;
+      enable = true;
+      package = (pkgs.home-assistant.override {
+        extraComponents = [ "zha" ];
+      }).overrideAttrs (oldAttrs: {
+        doInstallCheck = false;
+      });
+      config = {
+        homeassistant = {
+          name = "Home";
+          time_zone = "UTC";
+          latitude = "0.0";
+          longitude = "0.0";
+          elevation = 0;
+        };
+        frontend = {};
+        mqtt = {
+          broker = "127.0.0.1";
+          username = mqttUsername;
+          password = mqttPassword;
+        };
+        binary_sensor = [{
+          platform = "mqtt";
+          state_topic = "home-assistant/test";
+          payload_on = "let_there_be_light";
+          payload_off = "off";
+        }];
+        # tests component-based capability assignment (CAP_NET_BIND_SERVICE)
+        emulated_hue = {
+          host_ip = "127.0.0.1";
+          listen_port = 80;
+        };
+        logger = {
+          default = "info";
+          logs."homeassistant.components.mqtt" = "debug";
         };
       };
+      lovelaceConfig = {
+        title = "My Awesome Home";
+        views = [{
+          title = "Example";
+          cards = [{
+            type = "markdown";
+            title = "Lovelace";
+            content = "Welcome to your **Lovelace UI**.";
+          }];
+        }];
+      };
+      lovelaceConfigWritable = true;
+    };
   };
 
   testScript = ''
@@ -76,30 +83,17 @@ in {
         hass.succeed("test -f ${configDir}/ui-lovelace.yaml")
     with subtest("Check that Home Assistant's web interface and API can be reached"):
         hass.wait_for_open_port(8123)
-        hass.succeed("curl --fail http://localhost:8123/states")
-        assert "API running" in hass.succeed(
-            "curl --fail -H 'x-ha-access: ${apiPassword}' http://localhost:8123/api/"
-        )
+        hass.succeed("curl --fail http://localhost:8123/lovelace")
     with subtest("Toggle a binary sensor using MQTT"):
-        assert '"state": "off"' in hass.succeed(
-            "curl http://localhost:8123/api/states/binary_sensor.mqtt_binary_sensor -H 'x-ha-access: ${apiPassword}'"
-        )
-        hass.wait_until_succeeds(
-            "mosquitto_pub -V mqttv311 -t home-assistant/test -u homeassistant -P '${mqttPassword}' -m let_there_be_light"
-        )
-        assert '"state": "on"' in hass.succeed(
-            "curl http://localhost:8123/api/states/binary_sensor.mqtt_binary_sensor -H 'x-ha-access: ${apiPassword}'"
-        )
-    with subtest("Toggle a binary sensor using hass-cli"):
-        assert '"state": "on"' in hass.succeed(
-            "${hassCli} --output json state get binary_sensor.mqtt_binary_sensor"
-        )
+        hass.wait_for_open_port(1883)
         hass.succeed(
-            "${hassCli} state edit binary_sensor.mqtt_binary_sensor --json='{\"state\": \"off\"}'"
+            "mosquitto_pub -V mqttv5 -t home-assistant/test -u ${mqttUsername} -P '${mqttPassword}' -m let_there_be_light"
         )
-        assert '"state": "off"' in hass.succeed(
-            "curl http://localhost:8123/api/states/binary_sensor.mqtt_binary_sensor -H 'x-ha-access: ${apiPassword}'"
-        )
+    with subtest("Check that capabilities are passed for emulated_hue to bind to port 80"):
+        hass.wait_for_open_port(80)
+        hass.succeed("curl --fail http://localhost:80/description.xml")
+    with subtest("Check extra components are considered in systemd unit hardening"):
+        hass.succeed("systemctl show -p DeviceAllow home-assistant.service | grep -q char-ttyUSB")
     with subtest("Print log to ease debugging"):
         output_log = hass.succeed("cat ${configDir}/home-assistant.log")
         print("\n### home-assistant.log ###\n")
@@ -107,5 +101,13 @@ in {
 
     with subtest("Check that no errors were logged"):
         assert "ERROR" not in output_log
+
+    # example line: 2020-06-20 10:01:32 DEBUG (MainThread) [homeassistant.components.mqtt] Received message on home-assistant/test: b'let_there_be_light'
+    with subtest("Check we received the mosquitto message"):
+        assert "let_there_be_light" in output_log
+
+    with subtest("Check systemd unit hardening"):
+        hass.log(hass.succeed("systemctl show home-assistant.service"))
+        hass.log(hass.succeed("systemd-analyze security home-assistant.service"))
   '';
 })

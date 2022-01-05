@@ -1,14 +1,24 @@
-{ python3Packages, fetchurl, lib,
-  yubikey-personalization, libu2f-host, libusb1 }:
+{ python3Packages, fetchFromGitHub, lib, yubikey-personalization, libu2f-host, libusb1, procps }:
 
 python3Packages.buildPythonPackage rec {
   pname = "yubikey-manager";
-  version = "3.1.0";
+  version = "4.0.7";
 
-  srcs = fetchurl {
-    url = "https://developers.yubico.com/${pname}/Releases/${pname}-${version}.tar.gz";
-    sha256 = "0nb3qzpggyp61lchvprnklby5mf5n0xpn9z8vlhh99pz1k9sqdq1";
+  src = fetchFromGitHub {
+    repo = "yubikey-manager";
+    rev = version;
+    owner = "Yubico";
+    sha256 = "sha256-PG/mIM1rcs1SAz2kfQtfUWoMBIwLz2ASZM0YQrz9w5I=";
   };
+
+  postPatch = ''
+    substituteInPlace "ykman/pcsc/__init__.py" \
+      --replace '/usr/bin/pkill' '${procps}/bin/pkill'
+  '';
+
+  format = "pyproject";
+
+  nativeBuildInputs = with python3Packages; [ poetry-core ];
 
   propagatedBuildInputs =
     with python3Packages; [
@@ -42,12 +52,11 @@ python3Packages.buildPythonPackage rec {
       --replace 'compdef _ykman_completion ykman;' '_ykman_completion "$@"'
   '';
 
-  # See https://github.com/NixOS/nixpkgs/issues/29169
-  doCheck = false;
+  checkInputs = with python3Packages; [ pytestCheckHook makefun ];
 
   meta = with lib; {
-    homepage = https://developers.yubico.com/yubikey-manager;
-    description = "Command line tool for configuring any YubiKey over all USB transports.";
+    homepage = "https://developers.yubico.com/yubikey-manager";
+    description = "Command line tool for configuring any YubiKey over all USB transports";
 
     license = licenses.bsd2;
     platforms = platforms.unix;

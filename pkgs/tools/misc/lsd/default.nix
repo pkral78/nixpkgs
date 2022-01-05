@@ -1,31 +1,47 @@
-{ stdenv, fetchFromGitHub, rustPlatform }:
+{ lib
+, fetchFromGitHub
+, rustPlatform
+, installShellFiles
+}:
 
 rustPlatform.buildRustPackage rec {
   pname = "lsd";
-  version = "0.16.0";
+  version = "0.20.1";
 
   src = fetchFromGitHub {
     owner = "Peltoche";
     repo = pname;
     rev = version;
-    sha256 = "0fh5rz6slyjzz03bpjcl9gplk36vm7qcc0i0gvhsikwvw0cf3hym";
+    sha256 = "sha256-r/Rllu+tgKqz+vkxA8BSN+3V0lUUd6dEATfickQp4+s=";
   };
 
-  cargoSha256 = "1z7sg9b7qsjw1hhc7dkvxz8xgf4k8jddr7gbnjr4d2569g97jf3f";
+  cargoSha256 = "sha256-O8P29eYlHgmmAADZ/DgTBmj0ZOa+4u/Oee+TMF+/4Ro=";
 
-  preFixup = ''
-    install -Dm644 -t $out/share/zsh/site-functions/ target/release/build/lsd-*/out/_lsd
-    install -Dm644 -t $out/share/fish/vendor_completions.d/ target/release/build/lsd-*/out/lsd.fish
-    install -Dm644 -t $out/share/bash-completion/completions/ target/release/build/lsd-*/out/lsd.bash
+  nativeBuildInputs = [ installShellFiles ];
+  postInstall = ''
+    installShellCompletion $releaseDir/build/lsd-*/out/{_lsd,lsd.{bash,fish}}
   '';
 
-  # Some tests fail, but Travis ensures a proper build
+  # Found argument '--test-threads' which wasn't expected, or isn't valid in this context
   doCheck = false;
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/Peltoche/lsd;
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    testFile=$(mktemp /tmp/lsd-test.XXXX)
+    echo 'abc' > $testFile
+    $out/bin/lsd --classic --blocks "size,name" -l $testFile | grep "4 B $testFile"
+    $out/bin/lsd --version | grep "${version}"
+    rm $testFile
+
+    runHook postInstallCheck
+  '';
+
+  meta = with lib; {
+    homepage = "https://github.com/Peltoche/lsd";
     description = "The next gen ls command";
     license = licenses.asl20;
-    maintainers = [ maintainers.marsam ];
+    maintainers = with maintainers; [ Br1ght0ne marsam zowoq SuperSandro2000 ];
   };
 }

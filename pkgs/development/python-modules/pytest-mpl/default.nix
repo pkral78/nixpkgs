@@ -1,22 +1,25 @@
-{ stdenv
+{ lib
 , buildPythonPackage
 , fetchPypi
 , pytest
 , matplotlib
 , nose
 , pillow
+, pytestCheckHook
 }:
 
 buildPythonPackage rec {
   pname = "pytest-mpl";
-  version = "0.11";
+  version = "0.13";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "26c5a47a8fdbc04652f18b65c587da642c6cc0354680ee44b16c161d9800a2ce";
+    sha256 = "582db6e14315f9b08cbd2df39b136dc344bfe8a27c2f05b995460fb0969ec19e";
   };
 
-  buildInputs = [ pytest ];
+  buildInputs = [
+    pytest
+  ];
 
   propagatedBuildInputs = [
     matplotlib
@@ -25,21 +28,25 @@ buildPythonPackage rec {
   ];
 
   checkInputs = [
-    pytest
+    pytestCheckHook
   ];
 
-  checkPhase = ''
+  # Broken since b6e98f18950c2b5dbdc725c1181df2ad1be19fee
+  disabledTests = [
+    "test_hash_fails"
+    "test_hash_missing"
+  ];
+
+  preCheck = ''
     export HOME=$(mktemp -d)
     mkdir -p $HOME/.config/matplotlib
     echo "backend: ps" > $HOME/.config/matplotlib/matplotlibrc
     ln -s $HOME/.config/matplotlib $HOME/.matplotlib
-
-    pytest
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Pytest plugin to help with testing figures output from Matplotlib";
-    homepage = https://github.com/matplotlib/pytest-mpl;
+    homepage = "https://github.com/matplotlib/pytest-mpl";
     license = licenses.bsd3;
     maintainers = [ maintainers.costrouc ];
   };

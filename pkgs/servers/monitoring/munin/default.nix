@@ -1,16 +1,16 @@
-{ stdenv, fetchFromGitHub, makeWrapper, which, coreutils, rrdtool, perlPackages
-, python, ruby, jre, nettools, bc
+{ lib, stdenv, fetchFromGitHub, makeWrapper, which, coreutils, rrdtool, perlPackages
+, python2, ruby, jre, nettools, bc
 }:
 
 stdenv.mkDerivation rec {
-  version = "2.0.49";
+  version = "2.0.69";
   pname = "munin";
 
   src = fetchFromGitHub {
     owner = "munin-monitoring";
     repo = "munin";
     rev = version;
-    sha256 = "13m56wh5cq82pwvv4ngav1zyn2sajxxjigljrz8ycjriw0wvncsf";
+    sha256 = "sha256-p273O5JLFX1dA2caV3lVVL9YNTcGMSrC7DWieUfUmqI=";
   };
 
   buildInputs = [
@@ -38,7 +38,7 @@ stdenv.mkDerivation rec {
     perlPackages.ListMoreUtils
     perlPackages.LWP
     perlPackages.DBDPg
-    python
+    python2
     ruby
     jre
     # tests
@@ -54,7 +54,7 @@ stdenv.mkDerivation rec {
   # needs to find a local perl module during build
   PERL_USE_UNSAFE_INC = "1";
 
-  # TODO: tests are failing http://munin-monitoring.org/ticket/1390#comment:1
+  # TODO: tests are failing https://munin-monitoring.org/ticket/1390#comment:1
   # NOTE: important, test command always exits with 0, think of a way to abort the build once tests pass
   doCheck = false;
 
@@ -97,7 +97,7 @@ stdenv.mkDerivation rec {
     "DESTDIR=$(out)"
     "PERLLIB=$(out)/${perlPackages.perl.libPrefix}"
     "PERL=${perlPackages.perl.outPath}/bin/perl"
-    "PYTHON=${python.outPath}/bin/python"
+    "PYTHON=${python2.outPath}/bin/python"
     "RUBY=${ruby.outPath}/bin/ruby"
     "JAVARUN=${jre.outPath}/bin/java"
     "PLUGINUSER=munin"
@@ -126,7 +126,7 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Networked resource monitoring tool";
     longDescription = ''
       Munin is a monitoring tool that surveys all your computers and remembers
@@ -134,9 +134,9 @@ stdenv.mkDerivation rec {
       interface. Munin can help analyze resource trends and 'what just happened
       to kill our performance?' problems.
     '';
-    homepage = http://munin-monitoring.org/;
+    homepage = "https://munin-monitoring.org/";
     license = licenses.gpl2;
-    maintainers = [ maintainers.domenkozar maintainers.bjornfor ];
+    maintainers = [ maintainers.bjornfor ];
     platforms = platforms.linux;
   };
 }

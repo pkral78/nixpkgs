@@ -1,5 +1,7 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchFromGitHub
+, nix-update-script
 , meson
 , ninja
 , vala
@@ -9,22 +11,25 @@
 , gettext
 , glib
 , gtk3
-, bamf
-, libwnck3
+, libwnck
 , libgee
 , libgtop
+, libhandy
+, sassc
+, udisks2
 , wrapGAppsHook
 }:
 
 stdenv.mkDerivation rec {
   pname = "monitor";
-  version = "0.6.2";
+  version = "0.11.0";
 
   src = fetchFromGitHub {
     owner = "stsdc";
     repo = "monitor";
     rev = version;
-    sha256 = "0cqzxlzdbij26qgbbngqx6njcpcymkgvm29b7ipldgkssxp1mkkg";
+    sha256 = "sha256-xWhhjn7zk/juXx50wLG2TpB5aqU+588kWBBquWrVJbM=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -38,14 +43,16 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
-    bamf
     glib
     gtk3
     pantheon.granite
     pantheon.wingpanel
     libgee
     libgtop
-    libwnck3
+    libhandy
+    libwnck
+    sassc
+    udisks2
   ];
 
   postPatch = ''
@@ -54,16 +61,22 @@ stdenv.mkDerivation rec {
   '';
 
   passthru = {
-    updateScript = pantheon.updateScript {
+    updateScript = nix-update-script {
       attrPath = pname;
     };
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Manage processes and monitor system resources";
+    longDescription = ''
+      Manage processes and monitor system resources.
+      To use the wingpanel indicator in this application, see the Pantheon
+      section in the NixOS manual.
+    '';
     homepage = "https://github.com/stsdc/monitor";
-    maintainers = with maintainers; [ kjuvi ] ++ pantheon.maintainers;
+    maintainers = with maintainers; [ xiorcale ] ++ teams.pantheon.members;
     platforms = platforms.linux;
     license = licenses.gpl3;
+    mainProgram = "com.github.stsdc.monitor";
   };
 }

@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, fetchFromGitHub, zlib, boost }:
+{ lib, stdenv, fetchurl, fetchFromGitHub, zlib, boost }:
 
 let
   glucose' = fetchurl {
@@ -8,7 +8,8 @@ let
 in
 
 stdenv.mkDerivation {
-  name = "aspino-unstable-2017-03-09";
+  pname = "aspino";
+  version = "unstable-2017-03-09";
 
   src = fetchFromGitHub {
     owner = "alviano";
@@ -38,12 +39,12 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "SAT/PseudoBoolean/MaxSat/ASP solver using glucose";
     maintainers = with maintainers; [ gebner ];
     platforms = platforms.unix;
     license = licenses.asl20;
-    homepage = https://alviano.net/software/maxino/;
+    homepage = "https://alviano.net/software/maxino/";
     # See pkgs/applications/science/logic/glucose/default.nix
     badPlatforms = [ "aarch64-linux" ];
   };

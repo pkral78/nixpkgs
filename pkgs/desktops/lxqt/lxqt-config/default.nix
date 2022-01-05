@@ -1,25 +1,41 @@
-{ lib, mkDerivation, fetchFromGitHub, cmake, pkgconfig, lxqt-build-tools, qtbase,
-  qtx11extras, qttools, qtsvg, kwindowsystem, libkscreen, liblxqt,
-  libqtxdg, xorg }:
+{ lib
+, mkDerivation
+, fetchFromGitHub
+, cmake
+, pkg-config
+, glib
+, lxqt-build-tools
+, qtbase
+, qtx11extras
+, qttools
+, qtsvg
+, kwindowsystem
+, libkscreen
+, liblxqt
+, libqtxdg
+, xorg
+, lxqtUpdateScript
+}:
 
 mkDerivation rec {
   pname = "lxqt-config";
-  version = "0.14.1";
+  version = "1.0.0";
 
   src = fetchFromGitHub {
     owner = "lxqt";
     repo = pname;
     rev = version;
-    sha256 = "0x1k08587i2pakxlrj2n0l82r179sfywnzn2cphxiy89r5zpn7vi";
+    sha256 = "0yllqjmj4xbqi5681ffjxmlwlf9k9bpy3hgs7li6lnn90yy46qmr";
   };
 
   nativeBuildInputs = [
     cmake
-    pkgconfig
+    pkg-config
     lxqt-build-tools
   ];
 
   buildInputs = [
+    glib.bin
     qtbase
     qtx11extras
     qttools
@@ -38,13 +54,17 @@ mkDerivation rec {
   ];
 
   postPatch = ''
-    sed -i "/\''${XORG_LIBINPUT_INCLUDE_DIRS}/a ${xorg.xf86inputlibinput.dev}/include/xorg" lxqt-config-input/CMakeLists.txt
+    substituteInPlace lxqt-config-appearance/configothertoolkits.cpp \
+      --replace 'QStringLiteral("gsettings' \
+                'QStringLiteral("${glib.bin}/bin/gsettings'
   '';
 
+  passthru.updateScript = lxqtUpdateScript { inherit pname version src; };
+
   meta = with lib; {
+    homepage = "https://github.com/lxqt/lxqt-config";
     description = "Tools to configure LXQt and the underlying operating system";
-    homepage = https://github.com/lxqt/lxqt-config;
-    license = licenses.lgpl21;
+    license = licenses.lgpl21Plus;
     platforms = platforms.linux;
     maintainers = with maintainers; [ romildo ];
   };

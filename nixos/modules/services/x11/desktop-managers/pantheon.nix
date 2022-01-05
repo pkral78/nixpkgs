@@ -18,7 +18,7 @@ in
 
   meta = {
     doc = ./pantheon.xml;
-    maintainers = pkgs.pantheon.maintainers;
+    maintainers = teams.pantheon.members;
   };
 
   options = {
@@ -42,7 +42,8 @@ in
 
       sessionPath = mkOption {
         default = [];
-        example = literalExample "[ pkgs.gnome3.gpaste ]";
+        type = types.listOf types.package;
+        example = literalExpression "[ pkgs.gnome.gpaste ]";
         description = ''
           Additional list of packages to be added to the session search path.
           Useful for GSettings-conditional autostart.
@@ -85,7 +86,7 @@ in
 
     environment.pantheon.excludePackages = mkOption {
       default = [];
-      example = literalExample "[ pkgs.pantheon.elementary-camera ]";
+      example = literalExpression "[ pkgs.pantheon.elementary-camera ]";
       type = types.listOf types.package;
       description = "Which packages pantheon should exclude from the default environment";
     };
@@ -109,7 +110,7 @@ in
 
       # Without this, elementary LightDM greeter will pre-select non-existent `default` session
       # https://github.com/elementary/greeter/issues/368
-      services.xserver.displayManager.defaultSession = "pantheon";
+      services.xserver.displayManager.defaultSession = mkDefault "pantheon";
 
       services.xserver.displayManager.sessionCommands = ''
         if test "$XDG_CURRENT_DESKTOP" = "Pantheon"; then
@@ -133,6 +134,9 @@ in
       services.accounts-daemon.enable = true;
       services.bamf.enable = true;
       services.colord.enable = mkDefault true;
+      services.fwupd.enable = mkDefault true;
+      services.touchegg.enable = mkDefault true;
+      services.touchegg.package = pkgs.pantheon.touchegg;
       services.tumbler.enable = mkDefault true;
       services.system-config-printer.enable = (mkIf config.services.printing.enable (mkDefault true));
       services.dbus.packages = with pkgs.pantheon; [
@@ -141,12 +145,12 @@ in
       ];
       services.pantheon.apps.enable = mkDefault true;
       services.pantheon.contractor.enable = mkDefault true;
-      services.gnome3.at-spi2-core.enable = true;
-      services.gnome3.evolution-data-server.enable = true;
-      services.gnome3.glib-networking.enable = true;
-      services.gnome3.gnome-keyring.enable = true;
+      services.gnome.at-spi2-core.enable = true;
+      services.gnome.evolution-data-server.enable = true;
+      services.gnome.glib-networking.enable = true;
+      services.gnome.gnome-keyring.enable = true;
       services.gvfs.enable = true;
-      services.gnome3.rygel.enable = mkDefault true;
+      services.gnome.rygel.enable = mkDefault true;
       services.gsignond.enable = mkDefault true;
       services.gsignond.plugins = with pkgs.gsignondPlugins; [ lastfm mail oauth ];
       services.udisks2.enable = true;
@@ -161,12 +165,11 @@ in
         isAllowed = true;
         isSystem = true;
       };
-      # Use gnome-settings-daemon fork
       services.udev.packages = [
-        pkgs.pantheon.elementary-settings-daemon
+        pkgs.gnome.gnome-settings-daemon338
       ];
       systemd.packages = [
-        pkgs.pantheon.elementary-settings-daemon
+        pkgs.gnome.gnome-settings-daemon338
       ];
       programs.dconf.enable = true;
       networking.networkmanager.enable = mkDefault true;
@@ -176,12 +179,10 @@ in
         desktop-file-utils
         glib
         gnome-menus
-        gnome3.adwaita-icon-theme
+        gnome.adwaita-icon-theme
         gtk3.out
         hicolor-icon-theme
-        lightlocker
         onboard
-        plank
         qgnomeplatform
         shared-mime-info
         sound-theme-freedesktop
@@ -195,6 +196,7 @@ in
 
         # Desktop
         elementary-default-settings
+        elementary-dock
         elementary-session-settings
         elementary-shortcut-overlay
         gala
@@ -206,25 +208,30 @@ in
         })
 
         # Services
-        cerbere
         elementary-capnet-assist
-        elementary-dpms-helper
+        elementary-notifications
         elementary-settings-daemon
         pantheon-agent-geoclue2
         pantheon-agent-polkit
-      ]) ++ (gnome3.removePackagesByName [
-        gnome3.geary
-        gnome3.epiphany
-        gnome3.gnome-font-viewer
+      ]) ++ (gnome.removePackagesByName [
+        gnome.gnome-font-viewer
+        gnome.gnome-settings-daemon338
       ] config.environment.pantheon.excludePackages);
 
       programs.evince.enable = mkDefault true;
+      programs.evince.package = pkgs.pantheon.evince;
       programs.file-roller.enable = mkDefault true;
+      programs.file-roller.package = pkgs.pantheon.file-roller;
 
       # Settings from elementary-default-settings
       environment.sessionVariables.GTK_CSD = "1";
-      environment.sessionVariables.GTK3_MODULES = [ "pantheon-filechooser-module" ];
       environment.etc."gtk-3.0/settings.ini".source = "${pkgs.pantheon.elementary-default-settings}/etc/gtk-3.0/settings.ini";
+
+      xdg.portal.extraPortals = with pkgs.pantheon; [
+        elementary-files
+        elementary-settings-daemon
+        xdg-desktop-portal-pantheon
+      ];
 
       # Override GSettings schemas
       environment.sessionVariables.NIX_GSETTINGS_OVERRIDES_DIR = "${nixos-gsettings-desktop-schemas}/share/gsettings-schemas/nixos-gsettings-overrides/glib-2.0/schemas";
@@ -239,6 +246,8 @@ in
       # Otherwise you can't store NetworkManager Secrets with
       # "Store the password only for this user"
       programs.nm-applet.enable = true;
+      # Pantheon has its own network indicator
+      programs.nm-applet.indicator = false;
 
       # Shell integration for VTE terminals
       programs.bash.vteIntegration = mkDefault true;
@@ -251,40 +260,46 @@ in
 
       # Default Fonts
       fonts.fonts = with pkgs; [
+        inter
+        open-dyslexic
         open-sans
         roboto-mono
       ];
 
       fonts.fontconfig.defaultFonts = {
         monospace = [ "Roboto Mono" ];
-        sansSerif = [ "Open Sans" ];
+        sansSerif = [ "Inter" ];
       };
     })
 
     (mkIf serviceCfg.apps.enable {
-      environment.systemPackages = (with pkgs.pantheon; pkgs.gnome3.removePackagesByName [
+      environment.systemPackages = (with pkgs.pantheon; pkgs.gnome.removePackagesByName [
         elementary-calculator
         elementary-calendar
         elementary-camera
         elementary-code
         elementary-files
+        elementary-mail
         elementary-music
         elementary-photos
-        elementary-screenshot-tool
+        elementary-screenshot
+        elementary-tasks
         elementary-terminal
         elementary-videos
+        epiphany
       ] config.environment.pantheon.excludePackages);
 
-      # needed by screenshot-tool
+      # needed by screenshot
       fonts.fonts = [
         pkgs.pantheon.elementary-redacted-script
       ];
     })
 
     (mkIf serviceCfg.contractor.enable {
-      environment.systemPackages = with  pkgs.pantheon; [
+      environment.systemPackages = with pkgs.pantheon; [
         contractor
-        extra-elementary-contracts
+        file-roller-contract
+        gnome-bluetooth-contract
       ];
 
       environment.pathsToLink = [

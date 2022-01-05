@@ -1,24 +1,26 @@
-{ stdenv, fetchPypi, buildPythonPackage
-, setuptools, six, traits, wxPython
+{ lib, fetchPypi, buildPythonPackage
+, importlib-metadata, importlib-resources, six, traits
 }:
 
 buildPythonPackage rec {
   pname = "pyface";
-  version = "6.1.2";
+  version = "7.3.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1g2g3za64rfffbivlihbf5njrqbv63ln62rv9d8fi1gcrgaw6akw";
+    sha256 = "a7031ec4cfff034affc822e47ff5e6c1a0272e576d79465cdbbe25f721740322";
   };
 
-  propagatedBuildInputs = [ setuptools six traits wxPython ];
+  propagatedBuildInputs = [ importlib-metadata importlib-resources six traits ];
 
   doCheck = false; # Needs X server
 
-  meta = with stdenv.lib; {
+  pythonImportsCheck = [ "pyface" ];
+
+  meta = with lib; {
     description = "Traits-capable windowing framework";
     homepage = "https://github.com/enthought/pyface";
-    maintainers = with stdenv.lib.maintainers; [ knedlsepp ];
+    maintainers = with maintainers; [ knedlsepp ];
     license = licenses.bsdOriginal;
   };
 }

@@ -1,4 +1,4 @@
-{ lib, buildGoModule, buildGoPackage, fetchFromGitHub }:
+{ lib, buildGoModule, buildGoPackage, fetchFromGitHub, installShellFiles }:
 
 let
   # Argo can package a static server in the CLI using the `staticfiles` go module.
@@ -19,18 +19,22 @@ let
 in
 buildGoModule rec {
   pname = "argo";
-  version = "2.6.1";
+  version = "3.2.4";
 
   src = fetchFromGitHub {
     owner = "argoproj";
     repo = "argo";
     rev = "v${version}";
-    sha256 = "12wq79h4m8wlzf18r66965mbbjjb62kvnxdj50ra7nxa8jjxpsmf";
+    sha256 = "sha256-uymE+Eq4jsqWIhDsbALzV+xAKF22DddPFzKtn3tV2EA=";
   };
 
-  modSha256 = "1394bav1k1xv9n1rvji0j9a09mibk97xpha24640jkgmy9bnmg45";
+  vendorSha256 = "sha256-2b+PvD5IKgobBzFrubjRl2NvFxw91dXYpnWO8dqDG+U=";
+
+  doCheck = false;
 
   subPackages = [ "cmd/argo" ];
+
+  nativeBuildInputs = [ installShellFiles ];
 
   preBuild = ''
     mkdir -p ui/dist/app
@@ -39,9 +43,25 @@ buildGoModule rec {
     ${staticfiles}/bin/staticfiles -o server/static/files.go ui/dist/app
   '';
 
+  ldflags = [
+    "-s" "-w"
+    "-X github.com/argoproj/argo-workflows/v3.buildDate=unknown"
+    "-X github.com/argoproj/argo-workflows/v3.gitCommit=${src.rev}"
+    "-X github.com/argoproj/argo-workflows/v3.gitTag=${src.rev}"
+    "-X github.com/argoproj/argo-workflows/v3.gitTreeState=clean"
+    "-X github.com/argoproj/argo-workflows/v3.version=${version}"
+  ];
+
+  postInstall = ''
+    for shell in bash zsh; do
+      $out/bin/argo completion $shell > argo.$shell
+      installShellCompletion argo.$shell
+    done
+  '';
+
   meta = with lib; {
     description = "Container native workflow engine for Kubernetes";
-    homepage = https://github.com/argoproj/argo;
+    homepage = "https://github.com/argoproj/argo";
     license = licenses.asl20;
     maintainers = with maintainers; [ groodt ];
     platforms = platforms.unix;

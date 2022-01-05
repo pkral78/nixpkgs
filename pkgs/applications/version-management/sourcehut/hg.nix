@@ -1,20 +1,22 @@
-{ stdenv, fetchhg, buildPythonPackage
+{ lib
+, fetchhg
+, buildPythonPackage
+, srht
+, hglib
+, scmsrht
+, unidiff
 , python
-, srht, hglib, scmsrht, unidiff }:
+}:
 
 buildPythonPackage rec {
   pname = "hgsrht";
-  version = "0.21.1";
+  version = "0.29.3";
 
   src = fetchhg {
     url = "https://hg.sr.ht/~sircmpwn/hg.sr.ht";
     rev = version;
-    sha256 = "19r8zcy4xf9imqifqw3b7ylxd46i025ncns69kn5xp11damilz66";
+    sha256 = "y8gKaamwD5lsYqO1SkxMcn3E2TWidHAo2slvEU+8ovg=";
   };
-
-  patches = [
-    ./use-srht-path.patch
-  ];
 
   nativeBuildInputs = srht.nativeBuildInputs;
 
@@ -30,10 +32,12 @@ buildPythonPackage rec {
     export SRHT_PATH=${srht}/${python.sitePackages}/srht
   '';
 
-  meta = with stdenv.lib; {
-    homepage = https://git.sr.ht/~sircmpwn/hg.sr.ht;
+  pythonImportsCheck = [ "hgsrht" ];
+
+  meta = with lib; {
+    homepage = "https://git.sr.ht/~sircmpwn/hg.sr.ht";
     description = "Mercurial repository hosting service for the sr.ht network";
-    license = licenses.agpl3;
+    license = licenses.agpl3Only;
     maintainers = with maintainers; [ eadwu ];
   };
 }

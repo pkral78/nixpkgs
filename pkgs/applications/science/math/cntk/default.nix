@@ -1,11 +1,13 @@
 { lib, stdenv, fetchgit, fetchFromGitHub, cmake
-, openblas, opencv3, libzip, boost, protobuf, openmpi
+, fetchpatch
+, openblas, blas, lapack, opencv3, libzip, boost, protobuf, mpi
 , onebitSGDSupport ? false
 , cudaSupport ? false, addOpenGLRunpath, cudatoolkit, nvidia_x11
 , cudnnSupport ? cudaSupport, cudnn
 }:
 
 assert cudnnSupport -> cudaSupport;
+assert blas.implementation == "openblas" && lapack.implementation == "openblas";
 
 let
   # Old specific version required for CNTK.
@@ -27,22 +29,45 @@ in stdenv.mkDerivation rec {
     sha256 = "18l9k7s966a26ywcf7flqyhm61788pcb9fj3wk61jrmgkhy2pcns";
   };
 
+  patches = [
+    # Fix build with protobuf 3.18+
+    # Remove with onnx submodule bump to 1.9+
+    (fetchpatch {
+      url = "https://github.com/onnx/onnx/commit/d3bc82770474761571f950347560d62a35d519d7.patch";
+      extraPrefix = "Source/CNTKv2LibraryDll/proto/onnx/onnx_repo/";
+      stripLen = 1;
+      sha256 = "00raqj8wx30b06ky6cdp5vvc1mrzs7hglyi6h58hchw5lhrwkzxp";
+    })
+  ];
+
+  postPatch = ''
+    # Fix build with protobuf 3.18+
+    substituteInPlace Source/CNTKv2LibraryDll/Serialization.cpp \
+      --replace 'SetTotalBytesLimit(INT_MAX, INT_MAX)' \
+                'SetTotalBytesLimit(INT_MAX)' \
+      --replace 'SetTotalBytesLimit(limit, limit)' \
+                'SetTotalBytesLimit(limit)'
+  '';
+
   nativeBuildInputs = [ cmake ] ++ lib.optional cudaSupport addOpenGLRunpath;
 
   # Force OpenMPI to use g++ in PATH.
   OMPI_CXX = "g++";
 
-  buildInputs = [ openblas opencv3 libzip boost protobuf openmpi ]
+  # Uses some deprecated tensorflow functions
+  NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
+
+  buildInputs = [ openblas opencv3 libzip boost protobuf mpi ]
              ++ lib.optional cudaSupport cudatoolkit
              ++ lib.optional cudnnSupport cudnn;
 
   configureFlags = [
     "--with-opencv=${opencv3}"
     "--with-libzip=${libzip.dev}"
-    "--with-openblas=${openblas}"
+    "--with-openblas=${openblas.dev}"
     "--with-boost=${boost.dev}"
     "--with-protobuf=${protobuf}"
-    "--with-mpi=${openmpi}"
+    "--with-mpi=${mpi}"
     "--cuda=${if cudaSupport then "yes" else "no"}"
     # FIXME
     "--asgd=no"
@@ -89,13 +114,11 @@ in stdenv.mkDerivation rec {
     done
   '';
 
-  enableParallelBuilding = true;
-
   meta = with lib; {
     # Newer cub is included with cudatoolkit now and it breaks the build.
     # https://github.com/Microsoft/CNTK/issues/3191
     broken = cudaSupport;
-    homepage = https://github.com/Microsoft/CNTK;
+    homepage = "https://github.com/Microsoft/CNTK";
     description = "An open source deep-learning toolkit";
     license = if onebitSGDSupport then licenses.unfreeRedistributable else licenses.mit;
     platforms = [ "x86_64-linux" ];

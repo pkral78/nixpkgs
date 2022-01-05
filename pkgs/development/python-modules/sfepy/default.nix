@@ -1,6 +1,6 @@
 { lib
 , buildPythonPackage
-, fetchurl
+, fetchFromGitHub
 , numpy
 , scipy
 , matplotlib
@@ -9,15 +9,23 @@
 , cython
 , python
 , sympy
+, meshio
+, mpi4py
+, psutil
+, openssh
+, pythonOlder
 }:
 
 buildPythonPackage rec {
-  name = "sfepy_${version}";
-  version = "2019.2";
+  pname = "sfepy";
+  version = "2021.2";
+  disabled = pythonOlder "3.8";
 
-  src = fetchurl {
-    url="https://github.com/sfepy/sfepy/archive/release_${version}.tar.gz";
-    sha256 = "17dj0wbchcfa6x27yx4d4jix4z4nk6r2640xkqcsw0mf62x5l1pj";
+  src = fetchFromGitHub {
+    owner = "sfepy";
+    repo = "sfepy";
+    rev = "release_${version}";
+    sha256 = "sha256-zFtm4KrpqjYfxVHcMrTU4tMyHYnD9VPEvuId2lR1MHU=";
   };
 
   propagatedBuildInputs = [
@@ -28,11 +36,15 @@ buildPythonPackage rec {
     pyparsing
     tables
     sympy
+    meshio
+    mpi4py
+    psutil
+    openssh
   ];
 
   postPatch = ''
-    # broken test
-    rm tests/test_homogenization_perfusion.py
+    # broken tests
+    rm tests/test_meshio.py
 
     # slow tests
     rm tests/test_input_*.py
@@ -46,6 +58,7 @@ buildPythonPackage rec {
   '';
 
   checkPhase = ''
+    export OMPI_MCA_plm_rsh_agent=${openssh}/bin/ssh
     export HOME=$TMPDIR
     mv sfepy sfepy.hidden
     mkdir -p $HOME/.matplotlib
@@ -54,7 +67,7 @@ buildPythonPackage rec {
   '';
 
   meta = with lib; {
-    homepage = https://sfepy.org/;
+    homepage = "https://sfepy.org/";
     description = "Simple Finite Elements in Python";
     license = licenses.bsd3;
     maintainers = with maintainers; [ wd15 ];

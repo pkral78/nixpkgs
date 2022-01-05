@@ -42,12 +42,16 @@ let
       ${cfg.postInit}
     fi
   '' + ''
-    borg create $extraArgs \
-      --compression ${cfg.compression} \
-      --exclude-from ${mkExcludeFile cfg} \
-      $extraCreateArgs \
-      "::$archiveName$archiveSuffix" \
-      ${escapeShellArgs cfg.paths}
+    (
+      set -o pipefail
+      ${optionalString (cfg.dumpCommand != null) ''${escapeShellArg cfg.dumpCommand} | \''}
+      borg create $extraArgs \
+        --compression ${cfg.compression} \
+        --exclude-from ${mkExcludeFile cfg} \
+        $extraCreateArgs \
+        "::$archiveName$archiveSuffix" \
+        ${if cfg.paths == null then "-" else escapeShellArgs cfg.paths}
+    )
   '' + optionalString cfg.appendFailedSuffix ''
     borg rename $extraArgs \
       "::$archiveName$archiveSuffix" "$archiveName"
@@ -102,7 +106,7 @@ let
   mkWrapperDrv = {
       original, name, set ? {}
     }:
-    pkgs.runCommandNoCC "${name}-wrapper" {
+    pkgs.runCommand "${name}-wrapper" {
       buildInputs = [ pkgs.makeWrapper ];
     } (with lib; ''
       makeWrapper "${original}" "$out/bin/${name}" \
@@ -169,6 +173,8 @@ let
         (map (mkAuthorizedKey cfg false) cfg.authorizedKeys
         ++ map (mkAuthorizedKey cfg true) cfg.authorizedKeysAppendOnly);
       useDefaultShell = true;
+      group = cfg.group;
+      isSystemUser = true;
     };
     groups.${cfg.group} = { };
   };
@@ -180,6 +186,14 @@ let
       + " without at least one public key";
   };
 
+  mkSourceAssertions = name: cfg: {
+    assertion = count isNull [ cfg.dumpCommand cfg.paths ] == 1;
+    message = ''
+      Exactly one of borgbackup.jobs.${name}.paths or borgbackup.jobs.${name}.dumpCommand
+      must be set.
+    '';
+  };
+
   mkRemovableDeviceAssertions = name: cfg: {
     assertion = !(isLocalPath cfg.repo) -> !cfg.removableDevice;
     message = ''
@@ -189,6 +203,7 @@ let
 
 in {
   meta.maintainers = with maintainers; [ dotlambda ];
+  meta.doc = ./borgbackup.xml;
 
   ###### interface
 
@@ -197,10 +212,11 @@ in {
       Deduplicating backups using BorgBackup.
       Adding a job will cause a borg-job-NAME wrapper to be added
       to your system path, so that you can perform maintenance easily.
+      See also the chapter about BorgBackup in the NixOS manual.
     '';
     default = { };
-    example = literalExample ''
-      {
+    example = literalExpression ''
+      { # for a local backup
         rootBackup = {
           paths = "/";
           exclude = [ "/nix" ];
@@ -213,15 +229,46 @@ in {
           startAt = "weekly";
         };
       }
+      { # Root backing each day up to a remote backup server. We assume that you have
+        #   * created a password less key: ssh-keygen -N "" -t ed25519 -f /path/to/ssh_key
+        #     best practices are: use -t ed25519, /path/to = /run/keys
+        #   * the passphrase is in the file /run/keys/borgbackup_passphrase
+        #   * you have initialized the repository manually
+        paths = [ "/etc" "/home" ];
+        exclude = [ "/nix" "'**/.cache'" ];
+        doInit = false;
+        repo =  "user3@arep.repo.borgbase.com:repo";
+        encryption = {
+          mode = "repokey-blake2";
+          passCommand = "cat /path/to/passphrase";
+        };
+        environment = { BORG_RSH = "ssh -i /path/to/ssh_key"; };
+        compression = "auto,lzma";
+        startAt = "daily";
+    };
     '';
     type = types.attrsOf (types.submodule (let globalConfig = config; in
       { name, config, ... }: {
         options = {
 
           paths = mkOption {
-            type = with types; coercedTo str lib.singleton (listOf str);
-            description = "Path(s) to back up.";
+            type = with types; nullOr (coercedTo str lib.singleton (listOf str));
+            default = null;
+            description = ''
+              Path(s) to back up.
+              Mutually exclusive with <option>dumpCommand</option>.
+            '';
             example = "/home/user";
+          };
+
+          dumpCommand = mkOption {
+            type = with types; nullOr path;
+            default = null;
+            description = ''
+              Backup the stdout of this program instead of filesystem paths.
+              Mutually exclusive with <option>paths</option>.
+            '';
+            example = "/path/to/createZFSsend.sh";
           };
 
           repo = mkOption {
@@ -239,7 +286,7 @@ in {
           archiveBaseName = mkOption {
             type = types.strMatching "[^/{}]+";
             default = "${globalConfig.networking.hostName}-${name}";
-            defaultText = "\${config.networking.hostName}-<name>";
+            defaultText = literalExpression ''"''${config.networking.hostName}-<name>"'';
             description = ''
               How to name the created archives. A timestamp, whose format is
               determined by <option>dateFormat</option>, will be appended. The full
@@ -268,6 +315,8 @@ in {
               <manvolnum>7</manvolnum></citerefentry>.
               If you do not want the backup to start
               automatically, use <literal>[ ]</literal>.
+              It will generate a systemd service borgbackup-job-NAME.
+              You may trigger it manually via systemctl restart borgbackup-job-NAME.
             '';
           };
 
@@ -303,6 +352,7 @@ in {
               you to specify a <option>passCommand</option>
               or a <option>passphrase</option>.
             '';
+            example = "repokey-blake2";
           };
 
           encryption.passCommand = mkOption {
@@ -410,7 +460,7 @@ in {
               for the available options.
             '';
             default = { };
-            example = literalExample ''
+            example = literalExpression ''
               {
                 within = "1d"; # Keep all archives from the last day
                 daily = 7;
@@ -428,7 +478,7 @@ in {
               Use <literal>""</literal> to consider all archives.
             '';
             default = config.archiveBaseName;
-            defaultText = "\${archiveBaseName}";
+            defaultText = literalExpression "archiveBaseName";
           };
 
           environment = mkOption {
@@ -538,6 +588,7 @@ in {
     description = ''
       Serve BorgBackup repositories to given public SSH keys,
       restricting their access to the repository only.
+      See also the chapter about BorgBackup in the NixOS manual.
       Also, clients do not need to specify the absolute path when accessing the repository,
       i.e. <literal>user@machine:.</literal> is enough. (Note colon and dot.)
     '';
@@ -632,6 +683,7 @@ in {
       assertions =
         mapAttrsToList mkPassAssertion jobs
         ++ mapAttrsToList mkKeysAssertion repos
+        ++ mapAttrsToList mkSourceAssertions jobs
         ++ mapAttrsToList mkRemovableDeviceAssertions jobs;
 
       system.activationScripts = mapAttrs' mkActivationScript jobs;

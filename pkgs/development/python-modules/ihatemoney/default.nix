@@ -1,8 +1,13 @@
-{ buildPythonPackage, lib, fetchFromGitHub, isPy27, nixosTests
+{ buildPythonPackage
+, lib
+, isPy27
+, nixosTests
+, fetchPypi
 , alembic
 , aniso8601
 , Babel
 , blinker
+, cachetools
 , click
 , dnspython
 , email_validator
@@ -12,41 +17,63 @@
 , flask_mail
 , flask_migrate
 , flask-restful
-, flask_script
 , flask_sqlalchemy
+, flask-talisman
 , flask_wtf
+, debts
 , idna
 , itsdangerous
 , jinja2
 , Mako
 , markupsafe
-, mock
 , python-dateutil
 , pytz
+, requests
 , six
 , sqlalchemy
+, sqlalchemy-utils
+, sqlalchemy-continuum
+, sqlalchemy-i18n
 , werkzeug
 , wtforms
 , psycopg2 # optional, for postgresql support
 , flask_testing
+, pytestCheckHook
 }:
+
+# ihatemoney is not really a library. It will only ever be imported
+# by the interpreter of uwsgi. So overrides for its depencies are fine.
+let
+  # sqlalchemy-continuum requires sqlalchemy < 1.4
+  pinned_sqlalchemy = sqlalchemy.overridePythonAttrs (
+    old: rec {
+      pname = "SQLAlchemy";
+      version = "1.3.24";
+
+      src = fetchPypi {
+        inherit pname version;
+        sha256 = "06bmxzssc66cblk1hamskyv5q3xf1nh1py3vi6dka4lkpxy7gfzb";
+      };
+    }
+  );
+in
 
 buildPythonPackage rec {
   pname = "ihatemoney";
-  version = "4.1";
+  version = "5.1.1";
 
-  src = fetchFromGitHub {
-    owner = "spiral-project";
-    repo = pname;
-    rev = version;
-    sha256 = "1ai7v2i2rvswzv21nwyq51fvp8lr2x2cl3n34p11br06kc1pcmin";
+  src = fetchPypi {
+    inherit pname version;
+    sha256 = "0gsqba9qbs1dpmfys8qpiahy4pbn4khcc6mgmdnhssmkjsb94sx6";
   };
 
+  disabled = isPy27;
+
   propagatedBuildInputs = [
-    alembic
     aniso8601
     Babel
     blinker
+    cachetools
     click
     dnspython
     email_validator
@@ -54,10 +81,18 @@ buildPythonPackage rec {
     flask-babel
     flask-cors
     flask_mail
-    flask_migrate
+    (
+      flask_migrate.override {
+        flask_sqlalchemy = flask_sqlalchemy.override {
+          sqlalchemy = pinned_sqlalchemy;
+        };
+        alembic = alembic.override {
+          sqlalchemy = pinned_sqlalchemy;
+        };
+      }
+    )
     flask-restful
-    flask_script
-    flask_sqlalchemy
+    flask-talisman
     flask_wtf
     idna
     itsdangerous
@@ -66,27 +101,63 @@ buildPythonPackage rec {
     markupsafe
     python-dateutil
     pytz
+    requests
     six
-    sqlalchemy
+    (
+      (
+        sqlalchemy-continuum.override {
+          sqlalchemy = pinned_sqlalchemy;
+          sqlalchemy-utils = sqlalchemy-utils.override {
+            sqlalchemy = pinned_sqlalchemy;
+          };
+          sqlalchemy-i18n = sqlalchemy-i18n.override {
+            sqlalchemy = pinned_sqlalchemy;
+            sqlalchemy-utils = sqlalchemy-utils.override {
+              sqlalchemy = pinned_sqlalchemy;
+            };
+          };
+          flask_sqlalchemy = flask_sqlalchemy.override {
+            sqlalchemy = pinned_sqlalchemy;
+          };
+        }
+      ).overridePythonAttrs (
+        old: {
+          doCheck = false;
+        }
+      )
+    )
     werkzeug
     wtforms
     psycopg2
+    debts
   ];
+
+  # upstream performed the update without needing to patch the code
+  # the original patch does not apply, sadly
+  # https://github.com/spiral-project/ihatemoney/pull/912
+  postPatch = ''
+    substituteInPlace setup.cfg --replace "Flask-WTF>=0.14.3,<1" "Flask-WTF>=0.14.3,<2"
+  '';
 
   checkInputs = [
     flask_testing
-  ] ++ lib.optionals isPy27 [ mock ];
+    pytestCheckHook
+  ];
+
+  disabledTests = [
+    "test_notifications"  # requires running service.
+    "test_invite"         # requires running service.
+    "test_invitation_email_failure" # requires dns resolution
+  ];
 
   passthru.tests = {
-    inherit (nixosTests) ihatemoney;
+    inherit (nixosTests.ihatemoney) ihatemoney-postgresql ihatemoney-sqlite;
   };
+
   meta = with lib; {
     homepage = "https://ihatemoney.org";
     description = "A simple shared budget manager web application";
-    platforms = platforms.linux;
     license = licenses.beerware;
     maintainers = [ maintainers.symphorien ];
   };
 }
-
-

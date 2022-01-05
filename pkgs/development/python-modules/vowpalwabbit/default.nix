@@ -6,20 +6,23 @@
 , python
 , zlib
 , ncurses
-, pytest
 , docutils
 , pygments
 , numpy
 , scipy
-, scikitlearn }:
+, scikit-learn
+, spdlog
+, fmt
+, rapidjson
+}:
 
 buildPythonPackage rec {
   pname = "vowpalwabbit";
-  version = "8.8.0";
+  version = "8.11.0";
 
   src = fetchPypi{
     inherit pname version;
-    sha256 = "bd4c7e49a6ddaa1afedf97b22b822c7322328d686d45151b47a5127fc409c2af";
+    sha256 = "cfde0515a3fa4d224aad5461135372f3441ae1a64717ae6bff5e23509d70b0bd";
   };
 
   nativeBuildInputs = [
@@ -32,11 +35,18 @@ buildPythonPackage rec {
     pygments
     python.pkgs.boost
     zlib.dev
+    spdlog
+    fmt
+    rapidjson
   ];
+
+  # As we disable configure via cmake, pass explicit global options to enable
+  # spdlog and fmt packages
+  setupPyGlobalFlags = [ "--cmake-options=\"-DSPDLOG_SYS_DEP=ON;-DFMT_SYS_DEP=ON\"" ];
 
   propagatedBuildInputs = [
     numpy
-    scikitlearn
+    scikit-learn
     scipy
   ];
 

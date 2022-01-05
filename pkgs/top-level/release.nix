@@ -28,12 +28,13 @@ let
   supportDarwin = builtins.elem "x86_64-darwin" systemsWithAnySupport;
 
   jobs =
-    { tarball = import ./make-tarball.nix { inherit pkgs nixpkgs officialRelease; };
+    { tarball = import ./make-tarball.nix { inherit pkgs nixpkgs officialRelease supportedSystems; };
 
       metrics = import ./metrics.nix { inherit pkgs nixpkgs; };
 
       manual = import ../../doc { inherit pkgs nixpkgs; };
       lib-tests = import ../../lib/tests/release.nix { inherit pkgs; };
+      pkgs-lib-tests = import ../pkgs-lib/tests { inherit pkgs; };
 
       darwin-tested = if supportDarwin then pkgs.releaseTools.aggregate
         { name = "nixpkgs-darwin-${jobs.tarball.version}";
@@ -92,7 +93,10 @@ let
               jobs.metrics
               jobs.manual
               jobs.lib-tests
+              jobs.pkgs-lib-tests
               jobs.stdenv.x86_64-linux
+              jobs.cargo.x86_64-linux
+              jobs.go.x86_64-linux
               jobs.linux.x86_64-linux
               jobs.pandoc.x86_64-linux
               jobs.python.x86_64-linux
@@ -103,7 +107,7 @@ let
               jobs.nix-info.x86_64-linux
               jobs.nix-info-tested.x86_64-linux
               # Ensure that X11/GTK are in order.
-              jobs.thunderbird.x86_64-linux
+              jobs.thunderbird-unwrapped.x86_64-linux
               jobs.cachix.x86_64-linux
 
               /*
@@ -128,6 +132,8 @@ let
             ++ lib.collect lib.isDerivation jobs.stdenvBootstrapTools
             ++ lib.optionals supportDarwin [
               jobs.stdenv.x86_64-darwin
+              jobs.cargo.x86_64-darwin
+              jobs.go.x86_64-darwin
               jobs.python.x86_64-darwin
               jobs.python3.x86_64-darwin
               jobs.nixpkgs-review.x86_64-darwin
@@ -175,12 +181,26 @@ let
               # Test a full stdenv bootstrap from the bootstrap tools definition
               inherit (bootstrap.test-pkgs) stdenv;
             };
+
+          # Cross compiled bootstrap tools
+          aarch64-darwin =
+            let
+              bootstrap = import ../stdenv/darwin/make-bootstrap-tools.nix { system = "x86_64-darwin"; crossSystem = "aarch64-darwin"; };
+            in {
+              # Distribution only for now
+              inherit (bootstrap) dist;
+            };
           };
 
     } // (mapTestOn ((packagePlatforms pkgs) // {
       haskell.compiler = packagePlatforms pkgs.haskell.compiler;
       haskellPackages = packagePlatforms pkgs.haskellPackages;
       idrisPackages = packagePlatforms pkgs.idrisPackages;
+      agdaPackages = packagePlatforms pkgs.agdaPackages;
+
+      pkgsLLVM.stdenv = [ "x86_64-linux" "aarch64-linux" ];
+      pkgsMusl.stdenv = [ "x86_64-linux" "aarch64-linux" ];
+      pkgsStatic.stdenv = [ "x86_64-linux" "aarch64-linux" ];
 
       tests = packagePlatforms pkgs.tests;
 

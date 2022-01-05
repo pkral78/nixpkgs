@@ -1,30 +1,30 @@
-{ stdenv, fetchurl, unzip }:
+{ lib, stdenv, fetchurl, unzip, makeWrapper, gawk, glibc }:
 
 let
-  version = "1.3.0";
+  version = "1.9.1";
 
   sources = let
     base = "https://releases.hashicorp.com/vault/${version}";
   in {
     x86_64-linux = fetchurl {
       url = "${base}/vault_${version}_linux_amd64.zip";
-      sha256 = "1crfj4gd1qwwa2xidd0pjffv0n6hf5hbhv6568m6zc1ig0qqm6yq";
+      sha256 = "sha256-kP1wLbkktVCTZopVaT0h/WKqAG3Pd9g7qeruk4MIWJM=";
     };
     i686-linux = fetchurl {
       url = "${base}/vault_${version}_linux_386.zip";
-      sha256 = "0pyf0kyvxpmx3fwfvin1r0x30r9byx9lyi81894q06xrhiwbqc0l";
+      sha256 = "sha256-cTZ/hek8wQo9FxIRQ/cc23h7Nqjfonvprf492/lSzLw=";
     };
     x86_64-darwin = fetchurl {
       url = "${base}/vault_${version}_darwin_amd64.zip";
-      sha256 = "113vnpz9n6y7z2k9jqpfpxqxqbrmd9bhny79yaxqzkfdqw8vyv3g";
+      sha256 = "sha256-uKW9Yl4PjxWJ886OVAHl1sbPhgYWoL6IJK44vczLQsY=";
     };
-    i686-darwin = fetchurl {
-      url = "${base}/vault_${version}_darwin_386.zip";
-      sha256 = "0d191qai0bpl7cyivca26wqgycsj2dz08809z147d1vnrz321v6w";
+    aarch64-darwin = fetchurl {
+      url = "${base}/vault_${version}_darwin_arm64.zip";
+      sha256 = "sha256-J0qwUBcnZRZU5TTQB3K8wNE6rdQC1Boy/gKNQRvUYEI=";
     };
     aarch64-linux = fetchurl {
       url = "${base}/vault_${version}_linux_arm64.zip";
-      sha256 = "1bk5y3knc42mh07gnnn6p109qz908014620h1s0348wp4qfdy49w";
+      sha256 = "sha256-eU5s15tBuZFThJGNtnjOV07tiBoVjSSHMS9sY2WqO1o=";
     };
   };
 
@@ -34,21 +34,30 @@ in stdenv.mkDerivation {
 
   src = sources.${stdenv.hostPlatform.system} or (throw "unsupported system: ${stdenv.hostPlatform.system}");
 
-  nativeBuildInputs = [ unzip ];
+  nativeBuildInputs = [ makeWrapper unzip ];
 
   sourceRoot = ".";
 
   installPhase = ''
+    runHook preInstall
+
     mkdir -p $out/bin $out/share/bash-completion/completions
     mv vault $out/bin
     echo "complete -C $out/bin/vault vault" > $out/share/bash-completion/completions/vault
+  '' + lib.optionalString stdenv.isLinux ''
+    wrapProgram $out/bin/vault \
+      --prefix PATH : ${lib.makeBinPath [ gawk glibc ]}
+
+    runHook postInstall
   '';
 
-  meta = with stdenv.lib; {
-    homepage = https://www.vaultproject.io;
+  dontStrip = stdenv.isDarwin;
+
+  meta = with lib; {
+    homepage = "https://www.vaultproject.io";
     description = "A tool for managing secrets, this binary includes the UI";
-    platforms = [ "x86_64-linux" "i686-linux" "x86_64-darwin" "aarch64-linux" "i686-darwin" ];
+    platforms = [ "x86_64-linux" "i686-linux" "x86_64-darwin" "aarch64-darwin" "aarch64-linux" ];
     license = licenses.mpl20;
-    maintainers = with maintainers; [ offline psyanticy mkaito ];
+    maintainers = with maintainers; teams.serokell.members ++ [ offline psyanticy Chili-Man ];
   };
 }

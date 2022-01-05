@@ -5,10 +5,12 @@
 , makeDesktopItem
 , makeWrapper
 , stdenv
+, lib
 , udev
 , wrapGAppsHook
 , cpio
 , xar
+, libdbusmenu
 }:
 
 let
@@ -20,16 +22,16 @@ let
   pname = "wire-desktop";
 
   version = {
-    x86_64-darwin = "3.12.3490";
-    x86_64-linux = "3.12.2916";
+    x86_64-darwin = "3.26.4145";
+    x86_64-linux = "3.26.2941";
   }.${system} or throwSystem;
 
   sha256 = {
-    x86_64-darwin = "0xvhx3r99fl1v1cdqj6sk46kzxv9qi7j754amkhv7knrpmgyp55z";
-    x86_64-linux = "0xx03cpy6kapbjpygwranxjg1a0p8s1xq3cpapvi55rnkbk0qvjw";
+    x86_64-darwin = "1ck74a9z2mrwmljrqm347bqhjiaf1v0bf1jfnp58cqngh5ygqnf2";
+    x86_64-linux = "01gy84gr0gw5ap7hpy72azaf6hlzac7vxkn5cgad5sfbyzxgjgc9";
   }.${system} or throwSystem;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A modern, secure messenger for everyone";
     longDescription = ''
       Wire Personal is a secure, privacy-friendly messenger. It combines useful
@@ -49,7 +51,6 @@ let
       arianvp
       kiwi
       toonn
-      worldofpeace
     ];
     platforms = [
       "x86_64-darwin"
@@ -75,7 +76,7 @@ let
       icon = "wire-desktop";
       name = "wire-desktop";
       extraEntries = ''
-        StartupWMClass="Wire"
+        StartupWMClass=Wire
       '';
     };
 
@@ -93,9 +94,17 @@ let
 
     buildInputs = atomEnv.packages;
 
-    unpackPhase = "dpkg-deb -x $src .";
+    unpackPhase = ''
+      runHook preUnpack
+
+      dpkg-deb -x $src .
+
+      runHook postUnpack
+    '';
 
     installPhase = ''
+      runHook preInstall
+
       mkdir -p "$out/bin"
       cp -R "opt" "$out"
       cp -R "usr/share" "$out/share"
@@ -104,10 +113,13 @@ let
       # Desktop file
       mkdir -p "$out/share/applications"
       cp "${desktopItem}/share/applications/"* "$out/share/applications"
+
+      runHook postInstall
     '';
 
     runtimeDependencies = [
-      udev.lib
+      (lib.getLib udev)
+      libdbusmenu
     ];
 
     postFixup = ''
@@ -121,7 +133,7 @@ let
 
     src = fetchurl {
       url = "https://github.com/wireapp/wire-desktop/releases/download/"
-      + "macos%2F${version}/Wire.pkg";
+          + "macos%2F${version}/Wire.pkg";
       inherit sha256;
     };
 
@@ -131,17 +143,29 @@ let
     ];
 
     unpackPhase = ''
+      runHook preUnpack
+
       xar -xf $src
       cd com.wearezeta.zclient.mac.pkg
+
+      runHook postUnpack
     '';
 
     buildPhase = ''
+      runHook preBuild
+
       cat Payload | gunzip -dc | cpio -i
+
+      runHook postBuild
     '';
 
     installPhase = ''
+      runHook preInstall
+
       mkdir -p $out/Applications
       cp -r Wire.app $out/Applications
+
+      runHook postInstall
     '';
   };
 

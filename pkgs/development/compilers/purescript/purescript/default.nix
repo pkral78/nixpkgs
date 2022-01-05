@@ -18,19 +18,20 @@ let
 
 in stdenv.mkDerivation rec {
   pname = "purescript";
-  version = "0.13.6";
+  version = "0.14.5";
 
+  # These hashes can be updated automatically by running the ./update.sh script.
   src =
     if stdenv.isDarwin
     then
     fetchurl {
       url = "https://github.com/${pname}/${pname}/releases/download/v${version}/macos.tar.gz";
-      sha256 = "04kwjjrriyizpvhs96jgyx21ppyd1ynblk24i5825ywxlw9hja25";
+      sha256 = "1brvbpzr3cwls809fl0sjrm9cbh8v7maf5d7ic2mha0xapabgfpv";
     }
     else
     fetchurl {
       url = "https://github.com/${pname}/${pname}/releases/download/v${version}/linux64.tar.gz";
-      sha256 = "012znrj32aq96qh1g2hscdvhl3flgihhimiz40agk0dykpksblns";
+      sha256 = "1mvxvn30iyrq0ck6g08f925gxnnhbfgl29b2gjjsmm3m9mpll7ws";
     };
 
 
@@ -47,19 +48,24 @@ in stdenv.mkDerivation rec {
     install -D -m555 -T purs $PURS
     ${patchelf libPath}
 
-    mkdir -p $out/etc/bash_completion.d/
-    $PURS --bash-completion-script $PURS > $out/etc/bash_completion.d/purs-completion.bash
+    mkdir -p $out/share/bash-completion/completions
+    $PURS --bash-completion-script $PURS > $out/share/bash-completion/completions/purs-completion.bash
   '';
 
-  passthru.tests = {
-    minimal-module = pkgs.callPackage ./test-minimal-module {};
+  passthru = {
+    updateScript = ./update.sh;
+    tests = {
+      minimal-module = pkgs.callPackage ./test-minimal-module {};
+    };
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A strongly-typed functional programming language that compiles to JavaScript";
-    homepage = http://www.purescript.org/;
+    homepage = "https://www.purescript.org/";
     license = licenses.bsd3;
-    maintainers = [ maintainers.justinwoo maintainers.mbbx6spp ];
+    maintainers = with maintainers; [ justinwoo mbbx6spp cdepillabout ];
     platforms = [ "x86_64-linux" "x86_64-darwin" ];
+    mainProgram = "purs";
+    changelog = "https://github.com/purescript/purescript/releases/tag/v${version}";
   };
 }

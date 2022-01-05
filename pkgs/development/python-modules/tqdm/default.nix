@@ -1,39 +1,57 @@
 { lib
+, stdenv
 , buildPythonPackage
 , fetchPypi
-, nose
-, coverage
-, glibcLocales
-, flake8
+, setuptools-scm
+, pytestCheckHook
+, pytest-asyncio
+, pytest-timeout
+, numpy
+, pandas
+, rich
+, tkinter
 }:
 
 buildPythonPackage rec {
   pname = "tqdm";
-  version = "4.42.1";
+  version = "4.62.3";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "251ee8440dbda126b8dfa8a7c028eb3f13704898caaef7caa699b35e119301e2";
+    sha256 = "d359de7217506c9851b7869f3708d8ee53ed70a1b8edbba4dbcb47442592920d";
   };
 
-  checkInputs = [ nose coverage glibcLocales flake8 ];
+  nativeBuildInputs = [
+    setuptools-scm
+  ];
 
-  postPatch = ''
-    # Remove performance testing.
-    # Too sensitive for on Hydra.
-    rm tqdm/tests/tests_perf.py
-  '';
+  checkInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-timeout
+    # tests of optional features
+    numpy
+    rich
+    tkinter
+  ] ++
+    # pandas is not supported on i686 or risc-v
+    lib.optional (!stdenv.isi686 && !stdenv.hostPlatform.isRiscV) pandas;
+
+  # Remove performance testing.
+  # Too sensitive for on Hydra.
+  disabledTests = [
+    "perf"
+  ];
 
   LC_ALL="en_US.UTF-8";
 
-#   doCheck = !stdenv.isDarwin;
-  # Test suite is too big and slow.
-  doCheck = false;
+  pythonImportsCheck = [ "tqdm" ];
 
-  meta = {
+  meta = with lib; {
     description = "A Fast, Extensible Progress Meter";
-    homepage = https://github.com/tqdm/tqdm;
-    license = with lib.licenses; [ mit ];
-    maintainers = with lib.maintainers; [ fridh ];
+    homepage = "https://github.com/tqdm/tqdm";
+    changelog = "https://tqdm.github.io/releases/";
+    license = with licenses; [ mit ];
+    maintainers = with maintainers; [ fridh ];
   };
 }

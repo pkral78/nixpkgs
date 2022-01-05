@@ -69,6 +69,11 @@ let
         if-carrier-up = "";
       }.${cfg.wait}}
 
+      ${optionalString (config.networking.enableIPv6 == false) ''
+        # Don't solicit or accept IPv6 Router Advertisements and DHCPv6 if disabled IPv6
+        noipv6
+      ''}
+
       ${cfg.extraConfig}
     '';
 
@@ -81,7 +86,7 @@ let
           # anything ever again ("couldn't resolve ..., giving up on
           # it"), so we silently lose time synchronisation. This also
           # applies to openntpd.
-          ${config.systemd.package}/bin/systemctl try-reload-or-restart ntpd.service openntpd.service chronyd.service || true
+          /run/current-system/systemd/bin/systemctl try-reload-or-restart ntpd.service openntpd.service chronyd.service || true
       fi
 
       ${cfg.runHook}
@@ -186,9 +191,8 @@ in
       { description = "DHCP Client";
 
         wantedBy = [ "multi-user.target" ] ++ optional (!hasDefaultGatewaySet) "network-online.target";
-        wants = [ "network.target" "systemd-udev-settle.service" ];
+        wants = [ "network.target" ];
         before = [ "network-online.target" ];
-        after = [ "systemd-udev-settle.service" ];
 
         restartTriggers = [ exitHook ];
 
@@ -203,12 +207,19 @@ in
 
         serviceConfig =
           { Type = "forking";
-            PIDFile = "/run/dhcpcd.pid";
+            PIDFile = "/run/dhcpcd/pid";
+            RuntimeDirectory = "dhcpcd";
             ExecStart = "@${dhcpcd}/sbin/dhcpcd dhcpcd --quiet ${optionalString cfg.persistent "--persistent"} --config ${dhcpcdConf}";
             ExecReload = "${dhcpcd}/sbin/dhcpcd --rebind";
             Restart = "always";
           };
       };
+
+    users.users.dhcpcd = {
+      isSystemUser = true;
+      group = "dhcpcd";
+    };
+    users.groups.dhcpcd = {};
 
     environment.systemPackages = [ dhcpcd ];
 
@@ -217,7 +228,7 @@ in
     powerManagement.resumeCommands = mkIf config.systemd.services.dhcpcd.enable
       ''
         # Tell dhcpcd to rebind its interfaces if it's running.
-        ${config.systemd.package}/bin/systemctl reload dhcpcd.service
+        /run/current-system/systemd/bin/systemctl reload dhcpcd.service
       '';
 
   };

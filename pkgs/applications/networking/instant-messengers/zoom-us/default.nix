@@ -1,132 +1,130 @@
-{ stdenv, fetchurl, mkDerivation, autoPatchelfHook, bash
-, fetchFromGitHub
-# Dynamic libraries
-, dbus, glib, libGL, libX11, libXfixes, libuuid, libxcb, qtbase, qtdeclarative
-, qtgraphicaleffects, qtimageformats, qtlocation, qtquickcontrols
-, qtquickcontrols2, qtscript, qtsvg , qttools, qtwayland, qtwebchannel
-, qtwebengine
-# Runtime
-, coreutils, libjpeg_turbo, pciutils, procps, utillinux
-, pulseaudioSupport ? true, libpulseaudio ? null
+{ stdenv
+, lib
+, fetchurl
+, makeWrapper
+  # Dynamic libraries
+, alsa-lib
+, atk
+, cairo
+, dbus
+, libGL
+, fontconfig
+, freetype
+, gtk3
+, gdk-pixbuf
+, glib
+, pango
+, wayland
+, xorg
+, libxkbcommon
+, zlib
+  # Runtime
+, coreutils
+, pciutils
+, procps
+, util-linux
+, pulseaudioSupport ? true
+, libpulseaudio
 }:
 
-assert pulseaudioSupport -> libpulseaudio != null;
-
 let
-  inherit (stdenv.lib) concatStringsSep makeBinPath optional;
-
-  version = "3.5.361976.0301";
+  version = "5.8.6.739";
   srcs = {
     x86_64-linux = fetchurl {
-      url = "https://zoom.us/client/${version}/zoom_x86_64.tar.xz";
-      sha256 = "12pqs4pk73d7y9b49vq6f4fryph27k45zm1rjrpijnbi6ln2w993";
+      url = "https://zoom.us/client/${version}/zoom_x86_64.pkg.tar.xz";
+      sha256 = "12gzdfxf6xy558smsfazvjj4g1rnaiw7l2lznzlh2qazyaq6f3mq";
     };
   };
 
-  # Used for icons, appdata, and desktop file.
-  desktopIntegration = fetchFromGitHub {
-    owner = "flathub";
-    repo = "us.zoom.Zoom";
-    rev = "0d294e1fdd2a4ef4e05d414bc680511f24d835d7";
-    sha256 = "0rm188844a10v8d6zgl2pnwsliwknawj09b02iabrvjw5w1lp6wl";
-  };
+  libs = lib.makeLibraryPath ([
+    # $ LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH:$PWD ldd zoom | grep 'not found'
+    alsa-lib
+    atk
+    cairo
+    dbus
+    libGL
+    fontconfig
+    freetype
+    gtk3
+    gdk-pixbuf
+    glib
+    pango
+    stdenv.cc.cc
+    wayland
+    xorg.libX11
+    xorg.libxcb
+    xorg.libXcomposite
+    xorg.libXext
+    libxkbcommon
+    xorg.libXrender
+    zlib
+    xorg.xcbutilimage
+    xorg.xcbutilkeysyms
+    xorg.libXfixes
+    xorg.libXtst
+  ] ++ lib.optional (pulseaudioSupport) libpulseaudio);
 
-in mkDerivation {
-  pname = "zoom-us";
+in
+stdenv.mkDerivation rec {
+  pname = "zoom";
   inherit version;
 
   src = srcs.${stdenv.hostPlatform.system};
 
-  nativeBuildInputs = [ autoPatchelfHook ];
+  dontUnpack = true;
 
-  buildInputs = [
-    dbus glib libGL libX11 libXfixes libuuid libxcb libjpeg_turbo qtbase
-    qtdeclarative qtgraphicaleffects qtlocation qtquickcontrols qtquickcontrols2
-    qtscript qtwebchannel qtwebengine qtimageformats qtsvg qttools qtwayland
+  nativeBuildInputs = [
+    makeWrapper
   ];
 
-  runtimeDependencies = optional pulseaudioSupport libpulseaudio;
-
-  installPhase =
-    let
-      files = concatStringsSep " " [
-        "*.pcm"
-        "*.png"
-        "ZoomLauncher"
-        "config-dump.sh"
-        "timezones"
-        "translations"
-        "version.txt"
-        "zcacert.pem"
-        "zoom"
-        "zoom.sh"
-        "zoomlinux"
-        "zopen"
-      ];
-    in ''
-      runHook preInstall
-
-      mkdir -p $out/{bin,share/zoom-us}
-
-      cp -ar ${files} $out/share/zoom-us
-
-      # TODO Patch this somehow; tries to dlopen './libturbojpeg.so' from cwd
-      ln -s $(readlink -e "${libjpeg_turbo.out}/lib/libturbojpeg.so") $out/share/zoom-us/libturbojpeg.so
-
-      runHook postInstall
-    '';
-
-  postInstall = ''
-    mkdir -p $out/share/{applications,appdata,icons}
-
-    # Desktop File
-    cp ${desktopIntegration}/us.zoom.Zoom.desktop $out/share/applications
-    substituteInPlace $out/share/applications/us.zoom.Zoom.desktop \
-        --replace "Exec=zoom" "Exec=$out/bin/zoom-us"
-
-    # Appdata
-    cp ${desktopIntegration}/us.zoom.Zoom.appdata.xml $out/share/appdata
-
-    # Icons
-    for icon_size in 64 96 128 256; do
-        path=$icon_size'x'$icon_size
-        icon=${desktopIntegration}/us.zoom.Zoom.$icon_size.png
-
-        mkdir -p $out/share/icons/hicolor/$path/apps
-        cp $icon $out/share/icons/hicolor/$path/apps/us.zoom.Zoom.png
-    done
+  installPhase = ''
+    runHook preInstall
+    mkdir $out
+    tar -C $out -xf $src
+    mv $out/usr/* $out/
+    runHook postInstall
   '';
-
-  # $out/share/zoom-us isn't in auto-wrap directories list, need manual wrapping
-  dontWrapQtApps = true;
-
-  qtWrapperArgs = [
-    ''--prefix PATH : ${makeBinPath [ coreutils glib.dev pciutils procps qttools.dev utillinux ]}''
-    # --run "cd ${placeholder "out"}/share/zoom-us"
-    # ^^ unfortunately, breaks run arg into multiple array elements, due to
-    # some bad array propagation. We'll do that in bash below
-  ];
 
   postFixup = ''
-    # Zoom expects "zopen" executable (needed for web login) to be present in CWD. Or does it expect
-    # everybody runs Zoom only after cd to Zoom package directory? Anyway, :facepalm:
-    qtWrapperArgs+=( --run "cd ${placeholder "out"}/share/zoom-us" )
+    # Desktop File
+    substituteInPlace $out/share/applications/Zoom.desktop \
+        --replace "Exec=/usr/bin/zoom" "Exec=$out/bin/zoom"
 
-    for app in ZoomLauncher zopen zoom; do
-      wrapQtApp $out/share/zoom-us/$app
+    for i in zopen zoom ZoomLauncher; do
+      patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/opt/zoom/$i
     done
 
-    ln -s $out/share/zoom-us/ZoomLauncher $out/bin/zoom-us
+    # ZoomLauncher sets LD_LIBRARY_PATH before execing zoom
+    wrapProgram $out/opt/zoom/zoom \
+      --prefix LD_LIBRARY_PATH ":" ${libs}
+
+    rm $out/bin/zoom
+    # Zoom expects "zopen" executable (needed for web login) to be present in CWD. Or does it expect
+    # everybody runs Zoom only after cd to Zoom package directory? Anyway, :facepalm:
+    # Clear Qt paths to prevent tripping over "foreign" Qt resources.
+    # Clear Qt screen scaling settings to prevent over-scaling.
+    makeWrapper $out/opt/zoom/ZoomLauncher $out/bin/zoom \
+      --run "cd $out/opt/zoom" \
+      --unset QML2_IMPORT_PATH \
+      --unset QT_PLUGIN_PATH \
+      --unset QT_SCREEN_SCALE_FACTORS \
+      --prefix PATH : ${lib.makeBinPath [ coreutils glib.dev pciutils procps util-linux ]} \
+      --prefix LD_LIBRARY_PATH ":" ${libs}
+
+    # Backwards compatiblity: we used to call it zoom-us
+    ln -s $out/bin/{zoom,zoom-us}
   '';
+
+  # already done
+  dontPatchELF = true;
 
   passthru.updateScript = ./update.sh;
 
-  meta = {
+  meta = with lib; {
     homepage = "https://zoom.us/";
     description = "zoom.us video conferencing application";
-    license = stdenv.lib.licenses.unfree;
+    license = licenses.unfree;
     platforms = builtins.attrNames srcs;
-    maintainers = with stdenv.lib.maintainers; [ danbst tadfisher ];
+    maintainers = with maintainers; [ danbst tadfisher doronbehar ];
   };
-
 }

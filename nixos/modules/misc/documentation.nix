@@ -1,4 +1,4 @@
-{ config, lib, pkgs, baseModules, extraModules, modules, modulesPath, ... }:
+{ config, lib, pkgs, extendModules, noUserModules, ... }:
 
 with lib;
 
@@ -6,7 +6,8 @@ let
 
   cfg = config.documentation;
 
-  manualModules = baseModules ++ optionals cfg.nixos.includeAllModules (extraModules ++ modules);
+  /* Modules for which to show options even when not imported. */
+  extraDocModules = [ ../virtualisation/qemu-vm.nix ];
 
   /* For the purpose of generating docs, evaluate options with each derivation
     in `pkgs` (recursively) replaced by a fake with path "\${pkgs.attribute.path}".
@@ -17,15 +18,13 @@ let
     inherit pkgs config;
     version = config.system.nixos.release;
     revision = "release-${version}";
+    extraSources = cfg.nixos.extraModuleSources;
     options =
       let
-        scrubbedEval = evalModules {
-          modules = [ { nixpkgs.localSystem = config.nixpkgs.localSystem; } ] ++ manualModules;
-          args = (config._module.args) // { modules = [ ]; };
-          specialArgs = {
-            pkgs = scrubDerivations "pkgs" pkgs;
-            inherit modulesPath;
-          };
+        extendNixOS = if cfg.nixos.includeAllModules then extendModules else noUserModules.extendModules;
+        scrubbedEval = extendNixOS {
+          modules = extraDocModules;
+          specialArgs.pkgs = scrubDerivations "pkgs" pkgs;
         };
         scrubDerivations = namePrefix: pkgSet: mapAttrs
           (name: value:
@@ -39,9 +38,9 @@ let
       in scrubbedEval.options;
   };
 
-  helpScript = pkgs.writeScriptBin "nixos-help"
-    ''
-      #! ${pkgs.runtimeShell} -e
+
+  nixos-help = let
+    helpScript = pkgs.writeShellScriptBin "nixos-help" ''
       # Finds first executable browser in a colon-separated list.
       # (see how xdg-open defines BROWSER)
       browser="$(
@@ -58,14 +57,22 @@ let
       exec "$browser" ${manual.manualHTMLIndex}
     '';
 
-  desktopItem = pkgs.makeDesktopItem {
-    name = "nixos-manual";
-    desktopName = "NixOS Manual";
-    genericName = "View NixOS documentation in a web browser";
-    icon = "nix-snowflake";
-    exec = "${helpScript}/bin/nixos-help";
-    categories = "System";
-  };
+    desktopItem = pkgs.makeDesktopItem {
+      name = "nixos-manual";
+      desktopName = "NixOS Manual";
+      genericName = "View NixOS documentation in a web browser";
+      icon = "nix-snowflake";
+      exec = "nixos-help";
+      categories = "System";
+    };
+
+    in pkgs.symlinkJoin {
+      name = "nixos-help";
+      paths = [
+        helpScript
+        desktopItem
+      ];
+    };
 
 in
 
@@ -89,15 +96,34 @@ in
 
           See "Multiple-output packages" chapter in the nixpkgs manual for more info.
         '';
-        # which is at ../../../doc/multiple-output.xml
+        # which is at ../../../doc/multiple-output.chapter.md
       };
 
       man.enable = mkOption {
         type = types.bool;
         default = true;
         description = ''
-          Whether to install manual pages and the <command>man</command> command.
-          This also includes "man" outputs.
+          Whether to install manual pages.
+          This also includes <literal>man</literal> outputs.
+        '';
+      };
+
+      man.generateCaches = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Whether to generate the manual page index caches.
+          This allows searching for a page or
+          keyword using utilities like
+          <citerefentry>
+            <refentrytitle>apropos</refentrytitle>
+            <manvolnum>1</manvolnum>
+          </citerefentry>
+          and the <literal>-k</literal> option of
+          <citerefentry>
+            <refentrytitle>man</refentrytitle>
+            <manvolnum>1</manvolnum>
+          </citerefentry>.
         '';
       };
 
@@ -126,11 +152,11 @@ in
         description = ''
           Whether to install documentation targeted at developers.
           <itemizedlist>
-          <listitem><para>This includes man pages targeted at developers if <option>man.enable</option> is
+          <listitem><para>This includes man pages targeted at developers if <option>documentation.man.enable</option> is
                     set (this also includes "devman" outputs).</para></listitem>
-          <listitem><para>This includes info pages targeted at developers if <option>info.enable</option>
+          <listitem><para>This includes info pages targeted at developers if <option>documentation.info.enable</option>
                     is set (this also includes "devinfo" outputs).</para></listitem>
-          <listitem><para>This includes other pages targeted at developers if <option>doc.enable</option>
+          <listitem><para>This includes other pages targeted at developers if <option>documentation.doc.enable</option>
                     is set (this also includes "devdoc" outputs).</para></listitem>
           </itemizedlist>
         '';
@@ -144,10 +170,10 @@ in
           <itemizedlist>
           <listitem><para>This includes man pages like
                     <citerefentry><refentrytitle>configuration.nix</refentrytitle>
-                    <manvolnum>5</manvolnum></citerefentry> if <option>man.enable</option> is
+                    <manvolnum>5</manvolnum></citerefentry> if <option>documentation.man.enable</option> is
                     set.</para></listitem>
           <listitem><para>This includes the HTML manual and the <command>nixos-help</command> command if
-                    <option>doc.enable</option> is set.</para></listitem>
+                    <option>documentation.doc.enable</option> is set.</para></listitem>
           </itemizedlist>
         '';
       };
@@ -163,17 +189,40 @@ in
         '';
       };
 
+      nixos.extraModuleSources = mkOption {
+        type = types.listOf (types.either types.path types.str);
+        default = [ ];
+        description = ''
+          Which extra NixOS module paths the generated NixOS's documentation should strip
+          from options.
+        '';
+        example = literalExpression ''
+          # e.g. with options from modules in ''${pkgs.customModules}/nix:
+          [ pkgs.customModules ]
+        '';
+      };
+
     };
 
   };
 
   config = mkIf cfg.enable (mkMerge [
+    {
+      assertions = [
+        {
+          assertion = !(cfg.man.man-db.enable && cfg.man.mandoc.enable);
+          message = ''
+            man-db and mandoc can't be used as the default man page viewer at the same time!
+          '';
+        }
+      ];
+    }
 
+    # The actual implementation for this lives in man-db.nix or mandoc.nix,
+    # depending on which backend is active.
     (mkIf cfg.man.enable {
-      environment.systemPackages = [ pkgs.man-db ];
       environment.pathsToLink = [ "/share/man" ];
       environment.extraOutputsToInstall = [ "man" ] ++ optional cfg.dev.enable "devman";
-      environment.etc."man.conf".source = "${pkgs.man-db}/etc/man_db.conf";
     })
 
     (mkIf cfg.info.enable {
@@ -200,13 +249,10 @@ in
 
       environment.systemPackages = []
         ++ optional cfg.man.enable manual.manpages
-        ++ optionals cfg.doc.enable ([ manual.manualHTML helpScript ]
-           ++ optionals config.services.xserver.enable [ desktopItem pkgs.nixos-icons ]);
+        ++ optionals cfg.doc.enable [ manual.manualHTML nixos-help ];
 
-      services.mingetty.helpLine = mkIf cfg.doc.enable (
-          "\nRun `nixos-help` "
-        + optionalString config.services.nixosManual.showManual "or press <Alt-F${toString config.services.nixosManual.ttyNumber}> "
-        + "for the NixOS manual."
+      services.getty.helpLine = mkIf cfg.doc.enable (
+          "\nRun 'nixos-help' for the NixOS manual."
       );
     })
 

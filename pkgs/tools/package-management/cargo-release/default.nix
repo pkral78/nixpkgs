@@ -1,26 +1,27 @@
-{ stdenv, rustPlatform, fetchFromGitHub, Security, openssl, pkg-config }:
+{ lib, stdenv, rustPlatform, fetchFromGitHub, libiconv, Security, openssl, pkg-config }:
 
 rustPlatform.buildRustPackage rec {
   pname = "cargo-release";
-  version = "0.13.0";
+  version = "0.18.6";
 
   src = fetchFromGitHub {
-    owner = "sunng87";
+    owner = "crate-ci";
     repo = "cargo-release";
     rev = "v${version}";
-    sha256 = "1w9w43i5br94vg5m4idabh67p4ffsx2lmc2g0ak2k961vl46wr0q";
+    sha256 = "sha256-4ZXur3Hja5nlJ2GLGei9r7ZPz+bvw41rm9xzaIo68gw=";
   };
 
-  cargoSha256 = "1x54c6wk5cbnqcy1qpsff8lwqxs0d4qf0v71r7wl0kjp8mrmmhl4";
+  cargoSha256 = "sha256-vBr3RYBFoeCJquS8ugVpl29J7CUraN/HuxtKv8Dqi/k=";
 
   nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ openssl ] ++ stdenv.lib.optional stdenv.isDarwin Security;
 
-  meta = with stdenv.lib; {
+  buildInputs = [ openssl ]
+    ++ lib.optionals stdenv.isDarwin [ libiconv Security ];
+
+  meta = with lib; {
     description = ''Cargo subcommand "release": everything about releasing a rust crate'';
-    homepage = https://github.com/sunng87/cargo-release;
-    license = with licenses; [ mit ];
+    homepage = "https://github.com/sunng87/cargo-release";
+    license = with licenses; [ asl20 /* or */ mit ];
     maintainers = with maintainers; [ gerschtli ];
-    platforms = platforms.all;
   };
 }

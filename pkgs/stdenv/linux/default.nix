@@ -16,13 +16,12 @@
       armv7l-linux = import ./bootstrap-files/armv7l.nix;
       aarch64-linux = import ./bootstrap-files/aarch64.nix;
       mipsel-linux = import ./bootstrap-files/loongson2f.nix;
-      powerpc64le-linux = import ./bootstrap-files/ppc64le.nix;
+      riscv64-linux = import ./bootstrap-files/riscv64.nix;
     };
     musl = {
       aarch64-linux = import ./bootstrap-files/aarch64-musl.nix;
       armv6l-linux  = import ./bootstrap-files/armv6l-musl.nix;
       x86_64-linux  = import ./bootstrap-files/x86_64-musl.nix;
-      powerpc64le-linux = import ./bootstrap-files/ppc64le-musl.nix;
     };
   };
 
@@ -44,7 +43,7 @@
 assert crossSystem == localSystem;
 
 let
-  inherit (localSystem) system platform;
+  inherit (localSystem) system;
 
   commonPreHook =
     ''
@@ -63,7 +62,16 @@ let
 
 
   # Download and unpack the bootstrap tools (coreutils, GCC, Glibc, ...).
-  bootstrapTools = import (if localSystem.libc == "musl" then ./bootstrap-tools-musl else ./bootstrap-tools) { inherit system bootstrapFiles; };
+  bootstrapTools = import (if localSystem.libc == "musl" then ./bootstrap-tools-musl else ./bootstrap-tools) {
+    inherit system bootstrapFiles;
+    extraAttrs = lib.optionalAttrs
+      (config.contentAddressedByDefault or false)
+      {
+        __contentAddressed = true;
+        outputHashAlgo = "sha256";
+        outputHashMode = "recursive";
+      };
+  };
 
   getLibc = stage: stage.${localSystem.libc};
 
@@ -109,15 +117,11 @@ let
           bintools = prevStage.binutils;
           isGNU = true;
           libc = getLibc prevStage;
+          inherit lib;
           inherit (prevStage) coreutils gnugrep;
           stdenvNoCC = prevStage.ccWrapperStdenv;
         };
 
-        extraAttrs = {
-          # Having the proper 'platform' in all the stdenvs allows getting proper
-          # linuxHeaders for example.
-          inherit platform;
-        };
         overrides = self: super: (overrides self super) // { fetchurl = thisStdenv.fetchurlBoot; };
       };
 
@@ -156,7 +160,8 @@ in
       # create a dummy Glibc here, which will be used in the stdenv of
       # stage1.
       ${localSystem.libc} = self.stdenv.mkDerivation {
-        name = "bootstrap-stage0-${localSystem.libc}";
+        pname = "bootstrap-stage0-${localSystem.libc}";
+        version = "bootstrap";
         buildCommand = ''
           mkdir -p $out
           ln -s ${bootstrapTools}/lib $out/lib
@@ -173,6 +178,7 @@ in
         nativeLibc = false;
         buildPackages = { };
         libc = getLibc self;
+        inherit lib;
         inherit (self) stdenvNoCC coreutils gnugrep;
         bintools = bootstrapTools;
       };
@@ -253,8 +259,31 @@ in
         # Rewrap the binutils with the new glibc, so both the next
         # stage's wrappers use it.
         libc = getLibc self;
+
+        # Unfortunately, when building gcc in the next stage, its LTO plugin
+        # would use the final libc but `ld` would use the bootstrap one,
+        # and that can fail to load.  Therefore we upgrade `ld` to use newer libc;
+        # apparently the interpreter needs to match libc, too.
+        bintools = self.stdenvNoCC.mkDerivation {
+          inherit (prevStage.bintools.bintools) name;
+          dontUnpack = true;
+          dontBuild = true;
+          # We wouldn't need to *copy* all, but it's easier and the result is temporary anyway.
+          installPhase = ''
+            mkdir -p "$out"/bin
+            cp -a '${prevStage.bintools.bintools}'/bin/* "$out"/bin/
+            chmod +w "$out"/bin/ld.bfd
+            patchelf --set-interpreter '${getLibc self}'/lib/ld*.so.? \
+              --set-rpath "${getLibc self}/lib:$(patchelf --print-rpath "$out"/bin/ld.bfd)" \
+              "$out"/bin/ld.bfd
+          '';
+        };
       };
     };
+
+    # `libtool` comes with obsolete config.sub/config.guess that don't recognize Risc-V.
+    extraNativeBuildInputs =
+      lib.optional (localSystem.isRiscV) prevStage.updateAutotoolsGnuConfigScriptsHook;
   })
 
 
@@ -276,9 +305,13 @@ in
       gmp = super.gmp.override { stdenv = self.makeStaticLibraries self.stdenv; };
       mpfr = super.mpfr.override { stdenv = self.makeStaticLibraries self.stdenv; };
       libmpc = super.libmpc.override { stdenv = self.makeStaticLibraries self.stdenv; };
-      isl_0_17 = super.isl_0_17.override { stdenv = self.makeStaticLibraries self.stdenv; };
+      isl_0_20 = super.isl_0_20.override { stdenv = self.makeStaticLibraries self.stdenv; };
       gcc-unwrapped = super.gcc-unwrapped.override {
-        isl = isl_0_17;
+        isl = isl_0_20;
+        # Use a deterministically built compiler
+        # see https://github.com/NixOS/nixpkgs/issues/108475 for context
+        reproducibleBuild = true;
+        profiledCompiler = false;
       };
     };
     extraNativeBuildInputs = [ prevStage.patchelf ] ++
@@ -319,6 +352,7 @@ in
         cc = prevStage.gcc-unwrapped;
         bintools = self.binutils;
         libc = getLibc self;
+        inherit lib;
         inherit (self) stdenvNoCC coreutils gnugrep;
         shell = self.bash + "/bin/bash";
       };
@@ -346,12 +380,7 @@ in
       targetPlatform = localSystem;
       inherit config;
 
-      preHook = ''
-        # Make "strip" produce deterministic output, by setting
-        # timestamps etc. to a fixed value.
-        commonStripFlags="--enable-deterministic-archives"
-        ${commonPreHook}
-      '';
+      preHook = commonPreHook;
 
       initialPath =
         ((import ../common-path.nix) {pkgs = prevStage;});
@@ -371,7 +400,7 @@ in
         # TODO: remove this!
         inherit (prevStage) glibc;
 
-        inherit platform bootstrapTools;
+        inherit bootstrapTools;
         shellPackage = prevStage.bash;
       };
 

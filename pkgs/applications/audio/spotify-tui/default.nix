@@ -1,29 +1,35 @@
-{ stdenv, fetchFromGitHub, rustPlatform, pkgconfig, openssl, python3, libxcb, AppKit, Security }:
+{ lib, stdenv, fetchFromGitHub, rustPlatform, installShellFiles, pkg-config, openssl, python3, libxcb, AppKit, Security }:
 
 rustPlatform.buildRustPackage rec {
   pname = "spotify-tui";
-  version = "0.15.0";
+  version = "0.25.0";
 
   src = fetchFromGitHub {
     owner = "Rigellute";
     repo = "spotify-tui";
     rev = "v${version}";
-    sha256 = "19mnnpsidwr5y6igs478gfp7rq76378f66nzfhj4mraqd2jc4nzj";
+    sha256 = "sha256-L5gg6tjQuYoAC89XfKE38KCFONwSAwfNoFEUPH4jNAI=";
   };
 
-  cargoSha256 = "1zhv3sla92z7pjdnf0r4x85n7z9spi70vgy4kw72rdc5v9bmj7q8";
+  cargoSha256 = "sha256-iucI4/iMF+uXRlnMttobu4xo3IQXq7tGiSSN8eCrLM0=";
 
-  nativeBuildInputs = [ pkgconfig ] ++ stdenv.lib.optionals stdenv.isLinux [ python3 ];
-  buildInputs = [ openssl ]
-    ++ stdenv.lib.optional stdenv.isLinux libxcb
-    ++ stdenv.lib.optionals stdenv.isDarwin [ AppKit Security ];
+  nativeBuildInputs = [ installShellFiles ] ++ lib.optionals stdenv.isLinux [ pkg-config python3 ];
+  buildInputs = [ ]
+    ++ lib.optionals stdenv.isLinux [ openssl libxcb ]
+    ++ lib.optionals stdenv.isDarwin [ AppKit Security ];
 
-  meta = with stdenv.lib; {
+  postInstall = ''
+    for shell in bash fish zsh; do
+      $out/bin/spt --completions $shell > spt.$shell
+      installShellCompletion spt.$shell
+    done
+  '';
+
+  meta = with lib; {
     description = "Spotify for the terminal written in Rust";
-    homepage = https://github.com/Rigellute/spotify-tui;
-    changelog = "https://github.com/Rigellute/spotify-tui/releases/tag/v${version}";
+    homepage = "https://github.com/Rigellute/spotify-tui";
+    changelog = "https://github.com/Rigellute/spotify-tui/blob/v${version}/CHANGELOG.md";
     license = licenses.mit;
     maintainers = with maintainers; [ jwijenbergh ];
-    platforms = platforms.all;
   };
 }

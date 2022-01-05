@@ -1,19 +1,19 @@
-{ lib, buildPythonPackage, fetchPypi, isPy27, isPy34
-, enum34, functools32, typing
+{ lib, buildPythonPackage, fetchPypi, isPy27
+, enum34, functools32, typing ? null
 }:
 
 buildPythonPackage rec {
   pname = "tomlkit";
-  version = "0.5.11";
+  version = "0.7.2";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1kq1663iqxgwrmb883n55ypi5axnixla2hrby9g2x227asifsi7h";
+    sha256 = "d7a454f319a7e9bd2e249f239168729327e4dd2d27b17dc68be264ad1ce36754";
   };
 
   propagatedBuildInputs =
     lib.optionals isPy27 [ enum34 functools32 ]
-    ++ lib.optional (isPy27 || isPy34) typing;
+    ++ lib.optional isPy27 typing;
 
   # The Pypi tarball doesn't include tests, and the GitHub source isn't
   # buildable until we bootstrap poetry, see

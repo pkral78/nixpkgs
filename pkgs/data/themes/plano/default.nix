@@ -1,32 +1,45 @@
-{ stdenv, fetchFromGitHub, gdk-pixbuf, gtk_engines, gtk-engine-murrine, librsvg }:
+{ lib, stdenv
+, fetchFromGitHub
+, meson
+, ninja
+, gdk-pixbuf
+, gtk_engines
+, gtk-engine-murrine
+, librsvg
+, sassc
+}:
 
 stdenv.mkDerivation rec {
   pname = "plano-theme";
-  version = "3.34-2";
+  version = "3.38-1";
 
   src = fetchFromGitHub {
     owner = "lassekongo83";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0spbyvzb47vyfhcn3gr0z1gdb5xrprynm6442y1z32znai2bgpnd";
+    sha256 = "0g2mwvzc04z3dsdfhwqgw9s7987406pv22s9rbazfvprk4ddc5b6";
   };
 
-  buildInputs = [ gdk-pixbuf gtk_engines librsvg ];
+  nativeBuildInputs = [
+    meson
+    ninja
+    sassc
+  ];
 
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+  buildInputs = [
+    gdk-pixbuf
+    gtk_engines
+    librsvg
+  ];
 
-  dontBuild = true;
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
 
-  installPhase = ''
-    install -dm 755 $out/share/themes/Plano
-    cp -a * $out/share/themes/Plano/
-    rm $out/share/themes/Plano/{LICENSE,README.md}
-  '';
-
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Flat theme for GNOME and Xfce";
     homepage = "https://github.com/lassekongo83/plano-theme";
-    license = licenses.gpl3;
+    license = licenses.gpl3Only;
     platforms = platforms.unix;
     maintainers = [ maintainers.romildo ];
   };

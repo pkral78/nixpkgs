@@ -4,8 +4,7 @@ with haskellLib;
 
 self: super: {
 
-  # This compiler version needs llvm 7.x.
-  llvmPackages = pkgs.llvmPackages_7;
+  llvmPackages = pkgs.lib.dontRecurseIntoAttrs self.ghc.llvmPackages;
 
   # Disable GHC 8.8.x core libraries.
   array = null;
@@ -41,13 +40,24 @@ self: super: {
   unix = null;
   xhtml = null;
 
+  # GHC 8.8.x can build haddock version 2.23.*
+  haddock = self.haddock_2_23_1;
+  haddock-api = self.haddock-api_2_23_1;
+
+  # This build needs a newer version of Cabal.
+  cabal2spec = super.cabal2spec.override { Cabal = self.Cabal_3_2_1_0; };
+
+  # cabal-install needs more recent versions of Cabal and random, but an older
+  # version of base16-bytestring.
+  cabal-install = super.cabal-install.overrideScope (self: super: {
+    Cabal = self.Cabal_3_6_2_0;
+  });
+
   # Ignore overly restrictive upper version bounds.
   aeson-diff = doJailbreak super.aeson-diff;
   async = doJailbreak super.async;
-  cabal-install = doJailbreak super.cabal-install;
   ChasingBottoms = doJailbreak super.ChasingBottoms;
   chell = doJailbreak super.chell;
-  cryptohash-sha256 = doJailbreak super.cryptohash-sha256;
   Diff = dontCheck super.Diff;
   doctest = doJailbreak super.doctest;
   hashable = doJailbreak super.hashable;
@@ -56,7 +66,6 @@ self: super: {
   integer-logarithms = doJailbreak super.integer-logarithms;
   lucid = doJailbreak super.lucid;
   parallel = doJailbreak super.parallel;
-  quickcheck-instances = doJailbreak super.quickcheck-instances;
   setlocale = doJailbreak super.setlocale;
   split = doJailbreak super.split;
   system-fileio = doJailbreak super.system-fileio;
@@ -67,31 +76,58 @@ self: super: {
   # TODO: remove when upstream accepts https://github.com/snapframework/io-streams-haproxy/pull/17
   io-streams-haproxy = doJailbreak super.io-streams-haproxy; # base >=4.5 && <4.13
   snap-server = doJailbreak super.snap-server;
-  xmobar = doJailbreak super.xmobar;
   exact-pi = doJailbreak super.exact-pi;
   time-compat = doJailbreak super.time-compat;
-  http-media = doJailbreak super.http-media;
-  servant-server = doJailbreak super.servant-server;
-
-  # These packages don't work and need patching and/or an update.
-  hackage-security = appendPatch (doJailbreak super.hackage-security) (pkgs.fetchpatch {
-    url = "https://raw.githubusercontent.com/hvr/head.hackage/master/patches/hackage-security-0.5.3.0.patch";
-    sha256 = "0l8x0pbsn18fj5ak5q0g5rva4xw1s9yc4d86a1pfyaz467b9i5a4";
-  });
+  http-media = unmarkBroken (doJailbreak super.http-media);
+  servant-server = unmarkBroken (doJailbreak super.servant-server);
   foundation = dontCheck super.foundation;
   vault = dontHaddock super.vault;
 
   # https://github.com/snapframework/snap-core/issues/288
-  snap-core = overrideCabal super.snap-core (drv: { prePatch = "substituteInPlace src/Snap/Internal/Core.hs --replace 'fail   = Fail.fail' ''"; });
+  snap-core = overrideCabal (drv: { prePatch = "substituteInPlace src/Snap/Internal/Core.hs --replace 'fail   = Fail.fail' ''"; }) super.snap-core;
 
   # Upstream ships a broken Setup.hs file.
-  csv = overrideCabal super.csv (drv: { prePatch = "rm Setup.hs"; });
+  csv = overrideCabal (drv: { prePatch = "rm Setup.hs"; }) super.csv;
 
   # https://github.com/kowainik/relude/issues/241
   relude = dontCheck super.relude;
 
-  # The tests for semver-range need to be updated for the MonadFail change in
-  # ghc-8.8:
-  # https://github.com/adnelson/semver-range/issues/15
-  semver-range = dontCheck super.semver-range;
+  # The current version 2.14.2 does not compile with ghc-8.8.x or newer because
+  # of issues with Cabal 3.x.
+  darcs = dontDistribute super.darcs;
+
+  # The package needs the latest Cabal version.
+  cabal-install-parsers = super.cabal-install-parsers.overrideScope (self: super: { Cabal = self.Cabal_3_6_2_0; });
+
+  # cabal-fmt requires Cabal3
+  cabal-fmt = super.cabal-fmt.override { Cabal = self.Cabal_3_2_1_0; };
+
+  # liquidhaskell does not support ghc version 8.8.x.
+  liquid = markBroken super.liquid;
+  liquid-base = markBroken super.liquid-base;
+  liquid-bytestring = markBroken super.liquid-bytestring;
+  liquid-containers = markBroken super.liquid-containers;
+  liquid-ghc-prim = markBroken super.liquid-ghc-prim;
+  liquid-parallel = markBroken super.liquid-parallel;
+  liquid-platform = markBroken super.liquid-platform;
+  liquid-prelude = markBroken super.liquid-prelude;
+  liquid-vector = markBroken super.liquid-vector;
+  liquidhaskell = markBroken super.liquidhaskell;
+
+  # This became a core library in ghc 8.10., so we don‘t have an "exception" attribute anymore.
+  exceptions = super.exceptions_0_10_4;
+
+  # ghc versions which don‘t match the ghc-lib-parser-ex version need the
+  # additional dependency to compile successfully.
+  ghc-lib-parser-ex = addBuildDepend self.ghc-lib-parser super.ghc-lib-parser-ex;
+
+  # Older compilers need the latest ghc-lib to build this package.
+  hls-hlint-plugin = addBuildDepend self.ghc-lib super.hls-hlint-plugin;
+
+  # vector 0.12.2 indroduced doctest checks that don‘t work on older compilers
+  vector = dontCheck super.vector;
+
+  ghc-api-compat = doDistribute super.ghc-api-compat_8_6;
+
+  mime-string = disableOptimization super.mime-string;
 }

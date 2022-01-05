@@ -1,41 +1,54 @@
-{ stdenv, buildGoPackage, fetchFromGitHub, buildPackages }:
+{ lib, stdenv, buildGoModule, fetchFromGitHub, buildPackages, installShellFiles
+, makeWrapper
+, enableCmount ? true, fuse, macfuse-stubs
+}:
 
-buildGoPackage rec {
+buildGoModule rec {
   pname = "rclone";
-  version = "1.51.0";
+  version = "1.57.0";
 
   src = fetchFromGitHub {
     owner = pname;
     repo = pname;
     rev = "v${version}";
-    sha256 = "0z4kaq6wnj5dgl52g7f86phxlvnk5pbpda7prgh3hahpyhxj0z7d";
+    sha256 = "0pwbprbkx5y0c93b61k8znan4aimk7dkssapjhkhzw4c38xd4lza";
   };
 
-  goPackagePath = "github.com/rclone/rclone";
+  vendorSha256 = "0353pff07lwpa1jmi095kb2izcw09z73x6nninnnpyqppwzas6ha";
 
   subPackages = [ "." ];
 
-  outputs = [ "bin" "out" "man" ];
+  outputs = [ "out" "man" ];
+
+  buildInputs = lib.optional enableCmount (if stdenv.isDarwin then macfuse-stubs else fuse);
+  nativeBuildInputs = [ installShellFiles makeWrapper ];
+
+  tags = lib.optionals enableCmount [ "cmount" ];
+
+  ldflags = [ "-s" "-w" "-X github.com/rclone/rclone/fs.Version=${version}" ];
 
   postInstall =
     let
       rcloneBin =
         if stdenv.buildPlatform == stdenv.hostPlatform
-        then "$bin"
-        else stdenv.lib.getBin buildPackages.rclone;
+        then "$out"
+        else lib.getBin buildPackages.rclone;
     in
-      ''
-        install -D -m644 $src/rclone.1 $man/share/man/man1/rclone.1
-        mkdir -p $bin/share/zsh/site-functions $bin/share/bash-completion/completions/
-        ${rcloneBin}/bin/rclone genautocomplete zsh $bin/share/zsh/site-functions/_rclone
-        ${rcloneBin}/bin/rclone genautocomplete bash $bin/share/bash-completion/completions/rclone.bash
-      '';
+    ''
+      installManPage rclone.1
+      for shell in bash zsh fish; do
+        ${rcloneBin}/bin/rclone genautocomplete $shell rclone.$shell
+        installShellCompletion rclone.$shell
+      done
+    '' + lib.optionalString (enableCmount && !stdenv.isDarwin) ''
+      wrapProgram $out/bin/rclone --prefix LD_LIBRARY_PATH : "${fuse}/lib"
+    '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Command line program to sync files and directories to and from major cloud storage";
-    homepage = https://rclone.org;
+    homepage = "https://rclone.org";
+    changelog = "https://github.com/rclone/rclone/blob/v${version}/docs/content/changelog.md";
     license = licenses.mit;
-    maintainers = with maintainers; [ danielfullmer ];
-    platforms = platforms.all;
+    maintainers = with maintainers; [ danielfullmer marsam SuperSandro2000 ];
   };
 }

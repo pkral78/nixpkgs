@@ -1,17 +1,19 @@
 { buildGoModule, fetchFromGitHub, lib }:
 
-buildGoModule {
+buildGoModule rec {
   pname = "protoc-gen-doc-unstable";
-  version = "2019-04-22";
+  version = "1.5.0";
 
   src = fetchFromGitHub {
     owner = "pseudomuto";
     repo = "protoc-gen-doc";
-    rev = "f824a8908ce33f213b2dba1bf7be83384c5c51e8";
-    sha256 = "004axh2gqc4f115mdxxg59d19hph3rr0bq9d08n3nyl315f590kj";
+    rev = "v${version}";
+    sha256 = "1bpb5wv76p0sjffh5d1frbygp3q1p07sdh5c8pznl5bdh5pd7zxq";
   };
 
-  modSha256 = "1952ycdkgl00q2s3qmhislhhim15nn6nmlkwbfdvrsfzznqj47rd";
+  vendorSha256 = "08pk9nxsl28dw3qmrlb7vsm8xbdzmx98qwkxgg93ykrhzx235k1b";
+
+  doCheck = false;
 
   meta = with lib; {
     description = "Documentation generator plugin for Google Protocol Buffers";

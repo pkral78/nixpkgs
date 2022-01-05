@@ -1,6 +1,7 @@
 { lib
 , buildPythonPackage
 , fetchPypi
+, isPy3k
 , ipython
 , traitlets
 , glibcLocales
@@ -11,11 +12,12 @@
 
 buildPythonPackage rec {
   pname = "jupyter_core";
-  version = "4.6.1";
+  version = "4.9.1";
+  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "a183e0ec2e8f6adddf62b0a3fc6a2237e3e0056d381e536d3e7c7ecc3067e244";
+    sha256 = "dce8a7499da5a53ae3afd5a9f4b02e5df1d57250cf48f3ad79da23b4778cd6fa";
   };
 
   checkInputs = [ pytest mock glibcLocales nose ];
@@ -29,7 +31,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Jupyter core package. A base package on which Jupyter projects rely";
-    homepage = https://jupyter.org/;
+    homepage = "https://jupyter.org/";
     license = licenses.bsd3;
     maintainers = with maintainers; [ fridh ];
   };

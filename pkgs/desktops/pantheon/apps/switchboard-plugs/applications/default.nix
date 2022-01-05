@@ -1,29 +1,31 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchFromGitHub
-, pantheon
+, nix-update-script
 , meson
 , ninja
-, pkgconfig
+, pkg-config
 , vala
 , libgee
 , granite
 , gtk3
 , switchboard
+, flatpak
 }:
 
 stdenv.mkDerivation rec {
   pname = "switchboard-plug-applications";
-  version = "2.1.6";
+  version = "6.0.1";
 
   src = fetchFromGitHub {
     owner = "elementary";
     repo = pname;
     rev = version;
-    sha256 = "19l979sdn9jzibvn98ag3ys28ka7zqlsbs0gj2gs9jcxhzngrxvg";
+    sha256 = "18izmzhqp6x5ivha9yl8gyz9adyrsylw7w5p0cwm1bndgqbi7yh5";
   };
 
   passthru = {
-    updateScript = pantheon.updateScript {
+    updateScript = nix-update-script {
       attrPath = "pantheon.${pname}";
     };
   };
@@ -31,22 +33,23 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     meson
     ninja
-    pkgconfig
+    pkg-config
     vala
   ];
 
   buildInputs = [
+    flatpak
     granite
     gtk3
     libgee
     switchboard
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Switchboard Applications Plug";
-    homepage = https://github.com/elementary/switchboard-plug-applications;
-    license = licenses.gpl2Plus;
+    homepage = "https://github.com/elementary/switchboard-plug-applications";
+    license = licenses.gpl3Plus;
     platforms = platforms.linux;
-    maintainers = pantheon.maintainers;
+    maintainers = teams.pantheon.members;
   };
 }

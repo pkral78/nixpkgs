@@ -1,35 +1,44 @@
-{ stdenv, fetchurl, ocaml, findlib, ocamlbuild, qtest, num }:
+{ stdenv, lib, fetchFromGitHub, ocaml, findlib, ocamlbuild, qtest, num
+, doCheck ? lib.versionAtLeast ocaml.version "4.08" && !stdenv.isAarch64
+}:
 
-let version = "3.0.0"; in
+if !lib.versionAtLeast ocaml.version "4.02"
+then throw "batteries is not available for OCaml ${ocaml.version}"
+else
+
+let version = "3.4.0"; in
 
 stdenv.mkDerivation {
   name = "ocaml${ocaml.version}-batteries-${version}";
 
-  src = fetchurl {
-    url = "https://github.com/ocaml-batteries-team/batteries-included/releases/download/v${version}/batteries-${version}.tar.gz";
-    sha256 = "0d833amm4p0pczgl7wriv99f3r5r6345p5gi9d97sm0hqx27vzwi";
+  src = fetchFromGitHub {
+    owner = "ocaml-batteries-team";
+    repo = "batteries-included";
+    rev = "v${version}";
+    sha256 = "sha256:1cd7475n1mxhq482aidmhh27mq5p2vmb8d9fkb1mlza9pz5z66yq";
   };
 
-  buildInputs = [ ocaml findlib ocamlbuild qtest ];
+  buildInputs = [ ocaml findlib ocamlbuild ];
+  checkInputs = [ qtest ];
   propagatedBuildInputs = [ num ];
 
-  doCheck = stdenv.lib.versions.majorMinor ocaml.version != "4.07" && !stdenv.isAarch64;
-  checkTarget = "test test";
+  inherit doCheck;
+  checkTarget = "test";
 
   createFindlibDestdir = true;
 
   meta = {
-    homepage = http://batteries.forge.ocamlcore.org/;
+    homepage = "http://batteries.forge.ocamlcore.org/";
     description = "OCaml Batteries Included";
     longDescription = ''
       A community-driven effort to standardize on an consistent, documented,
       and comprehensive development platform for the OCaml programming
       language.
     '';
-    license = stdenv.lib.licenses.lgpl21Plus;
-    platforms = ocaml.meta.platforms or [];
+    license = lib.licenses.lgpl21Plus;
+    inherit (ocaml.meta) platforms;
     maintainers = [
-      stdenv.lib.maintainers.maggesi
+      lib.maintainers.maggesi
     ];
   };
 }

@@ -1,20 +1,19 @@
-{ stdenv, mkDerivation, fetchurl, cmake, pkgconfig, alsaLib
+{ lib, stdenv, mkDerivation, fetchurl, cmake, pkg-config, alsa-lib
 , libjack2, libsndfile, fftw, curl, gcc
 , libXt, qtbase, qttools, qtwebengine
 , readline, qtwebsockets, useSCEL ? false, emacs
 }:
 
-let optional = stdenv.lib.optional;
+let
+  inherit (lib) optional;
 in
-
 mkDerivation rec {
   pname = "supercollider";
-  version = "3.10.4";
-
+  version = "3.12.1";
 
   src = fetchurl {
     url = "https://github.com/supercollider/supercollider/releases/download/Version-${version}/SuperCollider-${version}-Source.tar.bz2";
-    sha256 = "168r0c0axgajsdzc1caklydrnagy4flv7i7jcyqwpc9agsqy0nnf";
+    sha256 = "sha256-neYId2hJRAMx4+ZFm+5TzYuUbMRfa9icyqm2UYac/Cs=";
   };
 
   hardeningDisable = [ "stackprotector" ];
@@ -24,20 +23,18 @@ mkDerivation rec {
     "-DSC_EL=${if useSCEL then "ON" else "OFF"}"
   ];
 
-  nativeBuildInputs = [ cmake pkgconfig qttools ];
-
-  enableParallelBuilding = true;
+  nativeBuildInputs = [ cmake pkg-config qttools ];
 
   buildInputs = [
     gcc libjack2 libsndfile fftw curl libXt qtbase qtwebengine qtwebsockets readline ]
-      ++ optional (!stdenv.isDarwin) alsaLib
+      ++ optional (!stdenv.isDarwin) alsa-lib
       ++ optional useSCEL emacs;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Programming language for real time audio synthesis";
     homepage = "https://supercollider.github.io";
     maintainers = with maintainers; [ mrmebelman ];
-    license = licenses.gpl3;
-    platforms = [ "x686-linux" "x86_64-linux" ];
+    license = licenses.gpl3Plus;
+    platforms = platforms.linux;
   };
 }

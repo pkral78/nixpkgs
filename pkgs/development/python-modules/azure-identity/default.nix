@@ -1,6 +1,5 @@
 { buildPythonPackage
 , fetchPypi
-, isPy38
 , lib
 
 # pythonPackages
@@ -17,13 +16,12 @@
 
 buildPythonPackage rec {
   pname = "azure-identity";
-  version = "1.1.0";
-  disabled = isPy38;
+  version = "1.7.1";
 
   src = fetchPypi {
     inherit pname version;
     extension = "zip";
-    sha256 = "1xn4nwi4vly8n3mmphv0wbdg9k55gsgmk3fdwma8rm3m3c7593hc";
+    sha256 = "7f22cd0c7a9b92ed297dd67ae79d9bb9a866e404061c02cec709ad10c4c88e19";
   };
 
   propagatedBuildInputs = [
@@ -37,6 +35,8 @@ buildPythonPackage rec {
     msrest
     msrestazure
   ];
+
+  pythonImportsCheck = [ "azure.identity" ];
 
   # Requires checkout from mono-repo and a mock account:
   #   https://github.com/Azure/azure-sdk-for-python/blob/master/sdk/identity/tests.yml

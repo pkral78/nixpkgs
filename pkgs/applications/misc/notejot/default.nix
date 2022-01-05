@@ -1,50 +1,69 @@
-{ stdenv, fetchFromGitHub, vala, pkgconfig, meson, ninja, python3, pantheon
-, gtk3, gtksourceview, json-glib, libgee, wrapGAppsHook }:
+{ lib
+, stdenv
+, fetchFromGitHub
+, gtk4
+, hicolor-icon-theme
+, json-glib
+, libadwaita
+, libgee
+, meson
+, ninja
+, nix-update-script
+, pkg-config
+, python3
+, vala
+, wrapGAppsHook4
+}:
 
 stdenv.mkDerivation rec {
   pname = "notejot";
-  version = "1.6.0";
+  version = "3.2.0";
 
   src = fetchFromGitHub {
     owner = "lainsce";
     repo = pname;
     rev = version;
-    sha256 = "1b65m9gvq8ziqqgnw3vgjpjb1qw7bww40ngd3gardsjg9lcwpxaf";
+    hash = "sha256-WyW1tGhO3+OykNa8BRavi93cBMOSBJw0M+0bwQHJOjU=";
   };
+
+  patches = [
+    # build: use gtk4-update-icon-cache
+    # https://github.com/lainsce/notejot/pull/307
+    ./use-gtk4-update-icon-cache.patch
+  ];
 
   nativeBuildInputs = [
     meson
     ninja
-    vala
-    pkgconfig
+    pkg-config
     python3
-    wrapGAppsHook
+    vala
+    wrapGAppsHook4
   ];
 
   buildInputs = [
-    gtk3
-    gtksourceview
+    gtk4
+    hicolor-icon-theme
     json-glib
+    libadwaita
     libgee
-    pantheon.elementary-icon-theme
-    pantheon.granite
   ];
 
   postPatch = ''
-    patchShebangs meson/post_install.py
+    chmod +x build-aux/post_install.py
+    patchShebangs build-aux/post_install.py
   '';
 
-  passthru = {
-    updateScript = pantheon.updateScript {
-      attrPath = pname;
-    };
+  passthru.updateScript = nix-update-script {
+    attrPath = pname;
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
+    homepage = "https://github.com/lainsce/notejot";
     description = "Stupidly-simple sticky notes applet";
-    homepage = https://github.com/lainsce/notejot;
-    license = licenses.gpl2Plus;
-    maintainers = with maintainers; [ worldofpeace ];
+    license = licenses.gpl3Plus;
+    maintainers = with maintainers; [ AndersonTorres ] ++ teams.pantheon.members;
     platforms = platforms.linux;
+    mainProgram = "io.github.lainsce.Notejot";
   };
 }

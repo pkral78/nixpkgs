@@ -1,4 +1,6 @@
-{ stdenv
+{ lib
+, stdenv
+, nix-update-script
 , appstream
 , appstream-glib
 , dbus
@@ -6,7 +8,6 @@
 , elementary-gtk-theme
 , elementary-icon-theme
 , fetchFromGitHub
-, fetchpatch
 , flatpak
 , gettext
 , glib
@@ -14,43 +15,45 @@
 , gtk3
 , json-glib
 , libgee
+, libhandy
 , libsoup
 , libxml2
 , meson
 , ninja
 , packagekit
-, pantheon
-, pkgconfig
+, pkg-config
 , python3
 , vala
+, polkit
 , wrapGAppsHook
 }:
 
 stdenv.mkDerivation rec {
   pname = "appcenter";
-  version = "3.2.2";
+  version = "3.9.1";
 
   src = fetchFromGitHub {
     owner = "elementary";
     repo = pname;
     rev = version;
-    sha256 = "0aqslkig7vs95z719mp3xrl1zp65ypp2lq9aikvsis6nssadn2cd";
+    sha256 = "sha256-xktIHQHmz5gh72NEz9UQ9fMvBlj1BihWxHgxsHmTIB0=";
   };
 
-  passthru = {
-    updateScript = pantheon.updateScript {
-      attrPath = "pantheon.${pname}";
-    };
-  };
+  patches = [
+    # Introduces a packagekit_backend meson flag.
+    # Makes appcenter actually work by using only the flatpak backend.
+    # https://github.com/elementary/appcenter/pull/1739
+    ./add-packagekit-backend-option.patch
+  ];
 
   nativeBuildInputs = [
     appstream-glib
-    dbus # for pkgconfig
+    dbus # for pkg-config
     desktop-file-utils
     gettext
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
@@ -58,23 +61,26 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     appstream
-    elementary-icon-theme
     elementary-gtk-theme
+    elementary-icon-theme
     flatpak
     glib
     granite
     gtk3
     json-glib
     libgee
+    libhandy
     libsoup
     libxml2
     packagekit
+    polkit
   ];
 
   mesonFlags = [
-    "-Dhomepage=false"
     "-Dpayments=false"
     "-Dcurated=false"
+    # This option is introduced in add-packagekit-backend-option.patch
+    "-Dpackagekit_backend=false"
   ];
 
   postPatch = ''
@@ -82,11 +88,18 @@ stdenv.mkDerivation rec {
     patchShebangs meson/post_install.py
   '';
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/elementary/appcenter;
+  passthru = {
+    updateScript = nix-update-script {
+      attrPath = "pantheon.${pname}";
+    };
+  };
+
+  meta = with lib; {
+    homepage = "https://github.com/elementary/appcenter";
     description = "An open, pay-what-you-want app store for indie developers, designed for elementary OS";
     license = licenses.gpl3Plus;
     platforms = platforms.linux;
-    maintainers = pantheon.maintainers;
+    maintainers = teams.pantheon.members;
+    mainProgram = "io.elementary.appcenter";
   };
 }

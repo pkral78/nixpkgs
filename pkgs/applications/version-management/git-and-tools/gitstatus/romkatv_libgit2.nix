@@ -2,18 +2,21 @@
 
 libgit2.overrideAttrs (oldAttrs: {
   cmakeFlags = oldAttrs.cmakeFlags ++ [
-    "-DUSE_BUNDLED_ZLIB=ON"
-    "-DUSE_ICONV=OFF"
     "-DBUILD_CLAR=OFF"
-    "-DUSE_SSH=OFF"
-    "-DUSE_HTTPS=OFF"
     "-DBUILD_SHARED_LIBS=OFF"
-    "-DUSE_EXT_HTTP_PARSER=OFF"
+    "-DREGEX_BACKEND=builtin"
+    "-DUSE_BUNDLED_ZLIB=ON"
+    "-DUSE_GSSAPI=OFF"
+    "-DUSE_HTTPS=OFF"
+    "-DUSE_HTTP_PARSER=builtin"  # overwritten from libgit2
+    "-DUSE_NTLMCLIENT=OFF"
+    "-DUSE_SSH=OFF"
+    "-DZERO_NSEC=ON"
   ];
   src = fetchFromGitHub {
     owner = "romkatv";
     repo = "libgit2";
-    rev = "bb77509f4436901f3958e30272026f63d2247d7d";
-    sha256 = "06iypr0sc6g11xipwfbgm6f039d4qy9krmwb3zww8k4y004s5jcv";
+    rev = "tag-5860a42d19bcd226cb6eff2dcbfcbf155d570c73";
+    sha256 = "sha256-OdGLNGOzXbWQGqw5zYM1RhU4Z2yRXi9cpAt7Vn9+j5I=";
   };
 })

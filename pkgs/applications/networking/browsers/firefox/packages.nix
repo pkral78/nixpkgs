@@ -1,4 +1,4 @@
-{ config, lib, callPackage, fetchurl }:
+{ stdenv, lib, callPackage, fetchurl, fetchpatch, nixosTests }:
 
 let
   common = opts: callPackage (import ./common.nix opts) {};
@@ -7,68 +7,51 @@ in
 rec {
   firefox = common rec {
     pname = "firefox";
-    ffversion = "73.0.1";
+    version = "95.0.2";
     src = fetchurl {
-      url = "mirror://mozilla/firefox/releases/${ffversion}/source/firefox-${ffversion}.source.tar.xz";
-      sha512 = "1vdz711v44xdiry5vm4rrg7fjkrlnyn5jjkaq0bcf98jwrn9bjklmgwblrrnvmpc9pjd2ff3m7354q7vy6gd6c3yh2jhbq91v2w5yl9";
+      url = "mirror://mozilla/firefox/releases/${version}/source/firefox-${version}.source.tar.xz";
+      sha512 = "1b9eb91d72a6975b4d2558a7c5de0e008095398b9862498623656ab6d8056e3cffc12263f58aa07feeddc91ccfb512aa4b582dfeadb142d548d96c3d50204196";
     };
-
-    patches = [
-      ./no-buildconfig-ffx65.patch
-    ];
 
     meta = {
       description = "A web browser built from Firefox source tree";
-      homepage = http://www.mozilla.com/en-US/firefox/;
-      maintainers = with lib.maintainers; [ eelco andir ];
+      homepage = "http://www.mozilla.com/en-US/firefox/";
+      maintainers = with lib.maintainers; [ eelco lovesegfault hexa ];
       platforms = lib.platforms.unix;
       badPlatforms = lib.platforms.darwin;
+      broken = stdenv.buildPlatform.is32bit; # since Firefox 60, build on 32-bit platforms fails with "out of memory".
+                                             # not in `badPlatforms` because cross-compilation on 64-bit machine might work.
+      maxSilent = 14400; # 4h, double the default of 7200s (c.f. #129212, #129115)
       license = lib.licenses.mpl20;
     };
+    tests = [ nixosTests.firefox ];
     updateScript = callPackage ./update.nix {
       attrPath = "firefox-unwrapped";
-      versionKey = "ffversion";
     };
   };
 
-  firefox-esr-68 = common rec {
+  firefox-esr-91 = common rec {
     pname = "firefox-esr";
-    ffversion = "68.5.0esr";
+    version = "91.4.1esr";
     src = fetchurl {
-      url = "mirror://mozilla/firefox/releases/${ffversion}/source/firefox-${ffversion}.source.tar.xz";
-      sha512 = "39i05r7r4rh2jvc8v4m2s2i6d33qaa075a1lc8m9gx7s3rw8yxja2c42cv5hq1imr9zc4dldbk88paz6lv1w8rhncm0dkxw8z6lxkqa";
+      url = "mirror://mozilla/firefox/releases/${version}/source/firefox-${version}.source.tar.xz";
+      sha512 = "1b9f17c4e58e3753f8507754bba93e3b7f76df5b6845d6173719fbdd98b70af2a90242df42fe274217f56d0280e5dbae17962f5b6bf111421260790f770f5337";
     };
 
-    patches = [
-      ./no-buildconfig-ffx65.patch
-    ];
-
-    meta = firefox.meta // {
+    meta = {
       description = "A web browser built from Firefox Extended Support Release source tree";
+      homepage = "http://www.mozilla.com/en-US/firefox/";
+      maintainers = with lib.maintainers; [ hexa ];
+      platforms = lib.platforms.unix;
+      badPlatforms = lib.platforms.darwin;
+      broken = stdenv.buildPlatform.is32bit; # since Firefox 60, build on 32-bit platforms fails with "out of memory".
+                                             # not in `badPlatforms` because cross-compilation on 64-bit machine might work.
+      license = lib.licenses.mpl20;
     };
+    tests = [ nixosTests.firefox-esr-91 ];
     updateScript = callPackage ./update.nix {
-      attrPath = "firefox-esr-68-unwrapped";
+      attrPath = "firefox-esr-91-unwrapped";
       versionSuffix = "esr";
-      versionKey = "ffversion";
     };
   };
-} // lib.optionalAttrs (config.allowAliases or true) {
-  #### ALIASES
-  #### remove after 20.03 branchoff
-
-  firefox-esr-52 = throw ''
-    firefoxPackages.firefox-esr-52 was removed as it's an unsupported ESR with
-    open security issues. If you need it because you need to run some plugins
-    not having been ported to WebExtensions API, import it from an older
-    nixpkgs checkout still containing it.
-  '';
-  firefox-esr-60 = throw "firefoxPackages.firefox-esr-60 was removed as it's an unsupported ESR with open security issues.";
-
-  icecat = throw "firefoxPackages.icecat was removed as even its latest upstream version is based on an unsupported ESR release with open security issues.";
-  icecat-52 = throw "firefoxPackages.icecat was removed as even its latest upstream version is based on an unsupported ESR release with open security issues.";
-
-  tor-browser-7-5 = throw "firefoxPackages.tor-browser-7-5 was removed because it was out of date and inadequately maintained. Please use tor-browser-bundle-bin instead. See #77452.";
-  tor-browser-8-5 = throw "firefoxPackages.tor-browser-8-5 was removed because it was out of date and inadequately maintained. Please use tor-browser-bundle-bin instead. See #77452.";
-  tor-browser = throw "firefoxPackages.tor-browser was removed because it was out of date and inadequately maintained. Please use tor-browser-bundle-bin instead. See #77452.";
-
 }

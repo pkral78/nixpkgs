@@ -11,11 +11,11 @@
 
 buildPythonPackage rec {
   pname = "pymbolic";
-  version = "2019.2";
+  version = "2021.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "a7507864a76574d72bf5732497b247661c6ad73bb277cd9c8aae09e90a62e05a";
+    sha256 = "67d08ef95568408901e59f79591ba41fd3f2caaecb42b7497c38fc82fd60358c";
   };
 
   postConfigure = ''
@@ -37,7 +37,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "A package for symbolic computation";
-    homepage = https://mathema.tician.de/software/pymbolic;
+    homepage = "https://mathema.tician.de/software/pymbolic";
     license = licenses.mit;
     maintainers = [ maintainers.costrouc ];
   };

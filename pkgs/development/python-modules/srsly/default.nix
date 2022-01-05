@@ -1,41 +1,42 @@
-{ stdenv
-, lib
+{ lib
 , buildPythonPackage
 , fetchPypi
 , pythonOlder
+, cython
+, catalogue
 , mock
 , numpy
-, pathlib
 , pytest
-, pytz
+, ruamel-yaml
 }:
 
 buildPythonPackage rec {
   pname = "srsly";
-  version = "1.0.1";
+  version = "2.4.2";
+
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0d49a90gsfyxwp8g14mvvw1kjm77qgx86zg4812kcmlz9ycb80hi";
+    hash = "sha256-KrolIpJ2eHUIat9OQ4DiewJNc2VUVveW+OB+s6TfrMA=";
   };
 
-  propagatedBuildInputs = lib.optional (pythonOlder "3.4") pathlib;
+  nativeBuildInputs = [ cython ];
+
+  propagatedBuildInputs = [ catalogue ];
 
   checkInputs = [
     mock
     numpy
     pytest
-    pytz
+    ruamel-yaml
   ];
 
-  # TypeError: cannot serialize '_io.BufferedRandom' object
-  # Possibly because of sandbox restrictions.
-  doCheck = false;
+  pythonImportsCheck = [ "srsly" ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Modern high-performance serialization utilities for Python";
-    homepage = https://github.com/explosion/srsly;
+    homepage = "https://github.com/explosion/srsly";
     license = licenses.mit;
-    maintainers = with maintainers; [ danieldk ];
   };
 }

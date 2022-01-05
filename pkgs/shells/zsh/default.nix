@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, ncurses, pcre, buildPackages }:
+{ lib, stdenv, fetchurl, fetchpatch, ncurses, pcre, buildPackages }:
 
 let
   version = "5.8";
@@ -18,6 +18,18 @@ stdenv.mkDerivation {
     sha256 = "09yyaadq738zlrnlh1hd3ycj1mv3q5hh4xl1ank70mjnqm6bbi6w";
   };
 
+  patches = [
+    # fix location of timezone data for TZ= completion
+    ./tz_completion.patch
+    # This commit will be released with the next version of zsh
+    (fetchpatch {
+      name = "fix-git-stash-drop-completions.patch";
+      url = "https://github.com/zsh-users/zsh/commit/754658aff38e1bdf487c58bec6174cbecd019d11.patch";
+      sha256 = "sha256-ud/rLD+SqvyTzT6vwOr+MWH+LY5o5KACrU1TpmL15Lo=";
+      excludes = [ "ChangeLog" ];
+    })
+  ];
+
   buildInputs = [ ncurses pcre ];
 
   configureFlags = [
@@ -26,11 +38,12 @@ stdenv.mkDerivation {
     "--with-tcsetpgrp"
     "--enable-pcre"
     "--enable-zprofile=${placeholder "out"}/etc/zprofile"
+    "--disable-site-fndir"
   ];
 
   # the zsh/zpty module is not available on hydra
   # so skip groups Y Z
-  checkFlags = map (T: "TESTNUM=${T}") (stdenv.lib.stringToCharacters "ABCDEVW");
+  checkFlags = map (T: "TESTNUM=${T}") (lib.stringToCharacters "ABCDEVW");
 
   # XXX: think/discuss about this, also with respect to nixos vs nix-on-X
   postInstall = ''
@@ -64,7 +77,7 @@ EOF
     ${if stdenv.hostPlatform == stdenv.buildPlatform then ''
       $out/bin/zsh -c "zcompile $out/etc/zprofile"
     '' else ''
-      ${stdenv.lib.getBin buildPackages.zsh}/bin/zsh -c "zcompile $out/etc/zprofile"
+      ${lib.getBin buildPackages.zsh}/bin/zsh -c "zcompile $out/etc/zprofile"
     ''}
     mv $out/etc/zprofile $out/etc/zprofile_zwc_is_used
   '';
@@ -81,9 +94,9 @@ EOF
       a host of other features.
     '';
     license = "MIT-like";
-    homepage = http://www.zsh.org/;
-    maintainers = with stdenv.lib.maintainers; [ pSub ];
-    platforms = stdenv.lib.platforms.unix;
+    homepage = "https://www.zsh.org/";
+    maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.unix;
   };
 
   passthru = {

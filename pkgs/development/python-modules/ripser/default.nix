@@ -1,21 +1,23 @@
 { lib
 , buildPythonPackage
 , fetchPypi
+, pythonOlder
 , cython
 , numpy
 , scipy
-, scikitlearn
+, scikit-learn
 , persim
 , pytest
 }:
 
 buildPythonPackage rec {
   pname = "ripser";
-  version = "0.4.1";
+  version = "0.6.1";
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "a4015b413c24e3074f82f31771b1eb805e054b8cf444db51ce8ca5afa42cf130";
+    sha256 = "335112a0f94532ccbe686db7826ee8d0714b32f65891abf92c0a02f3cb0fc5fd";
   };
 
   checkInputs = [
@@ -26,7 +28,7 @@ buildPythonPackage rec {
     cython
     numpy
     scipy
-    scikitlearn
+    scikit-learn
     persim
   ];
 
@@ -41,7 +43,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "A Lean Persistent Homology Library for Python";
-    homepage = https://ripser.scikit-tda.org;
+    homepage = "https://ripser.scikit-tda.org";
     license = licenses.mit;
     maintainers = [ maintainers.costrouc ];
   };

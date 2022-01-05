@@ -1,7 +1,8 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchFromGitHub
-, pantheon
-, pkgconfig
+, nix-update-script
+, pkg-config
 , meson
 , ninja
 , vala
@@ -10,36 +11,35 @@
 , gtk3
 , granite
 , libgee
+, libhandy
 , elementary-icon-theme
 , appstream
 , libpeas
 , editorconfig-core-c
-, gtksourceview3
+, gtksourceview4
 , gtkspell3
 , libsoup
 , vte
 , webkitgtk
-, zeitgeist
 , ctags
 , libgit2-glib
 , wrapGAppsHook
+, polkit
 }:
 
 stdenv.mkDerivation rec {
   pname = "elementary-code";
-  version = "3.3.0";
-
-  repoName = "code";
+  version = "6.1.0";
 
   src = fetchFromGitHub {
     owner = "elementary";
-    repo = repoName;
+    repo = "code";
     rev = version;
-    sha256 = "0v544zw99wjcy0bflaci9fssx4sibz4b05bxs3a7j8hrpl102r4w";
+    sha256 = "sha256-AXmMcPj2hf33G5v3TUg+eZwaKOdVlRvoVXglMJFHRjw=";
   };
 
   passthru = {
-    updateScript = pantheon.updateScript {
+    updateScript = nix-update-script {
       attrPath = "pantheon.${pname}";
     };
   };
@@ -49,7 +49,8 @@ stdenv.mkDerivation rec {
     desktop-file-utils
     meson
     ninja
-    pkgconfig
+    pkg-config
+    polkit # needed for ITS rules
     python3
     vala
     wrapGAppsHook
@@ -61,24 +62,21 @@ stdenv.mkDerivation rec {
     elementary-icon-theme
     granite
     gtk3
-    gtksourceview3
+    gtksourceview4
     gtkspell3
     libgee
     libgit2-glib
+    libhandy
     libpeas
     libsoup
     vte
     webkitgtk
-    zeitgeist
   ];
-
-  # install script fails with UnicodeDecodeError because of printing a fancy elipsis character
-  LC_ALL = "C.UTF-8";
 
   # ctags needed in path by outline plugin
   preFixup = ''
     gappsWrapperArgs+=(
-      --prefix PATH : "${stdenv.lib.makeBinPath [ ctags ]}"
+      --prefix PATH : "${lib.makeBinPath [ ctags ]}"
     )
   '';
 
@@ -87,11 +85,12 @@ stdenv.mkDerivation rec {
     patchShebangs meson/post_install.py
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Code editor designed for elementary OS";
-    homepage = https://github.com/elementary/code;
+    homepage = "https://github.com/elementary/code";
     license = licenses.gpl3Plus;
     platforms = platforms.linux;
-    maintainers = pantheon.maintainers;
+    maintainers = teams.pantheon.members;
+    mainProgram = "io.elementary.code";
   };
 }

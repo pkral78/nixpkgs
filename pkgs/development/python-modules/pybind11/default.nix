@@ -2,78 +2,73 @@
 , lib
 , buildPythonPackage
 , fetchFromGitHub
-, fetchpatch
-, python
-, pytest
 , cmake
+, boost
+, eigen
+, python
 , catch
 , numpy
-, eigen
-, scipy
+, pytest
 }:
 
 buildPythonPackage rec {
   pname = "pybind11";
-  version = "2.4.3";
+  version = "2.8.1";
 
   src = fetchFromGitHub {
     owner = "pybind";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0k89w4bsfbpzw963ykg1cyszi3h3nk393qd31m6y46pcfxkqh4rd";
+    sha256 = "sha256-Gk4ZN/g6SRWFm0ALCvyald/9zq3wBd48mGdqdGCeGYI=";
   };
 
   nativeBuildInputs = [ cmake ];
 
-  buildInputs = [ catch ];
+  dontUseCmakeBuildDir = true;
 
   cmakeFlags = [
-    "-DEIGEN3_INCLUDE_DIR=${eigen}/include/eigen3"
+    "-DBoost_INCLUDE_DIR=${lib.getDev boost}/include"
+    "-DEIGEN3_INCLUDE_DIR=${lib.getDev eigen}/include/eigen3"
+    "-DBUILD_TESTING=on"
   ] ++ lib.optionals (python.isPy3k && !stdenv.cc.isClang) [
-  # Enable some tests only on Python 3. The "test_string_view" test
-  # 'testTypeError: string_view16_chars(): incompatible function arguments'
-  # fails on Python 2.
-    "-DPYBIND11_CPP_STANDARD=-std=c++17"
+    "-DPYBIND11_CXX_STANDARD=-std=c++17"
   ];
 
-  dontUseSetuptoolsBuild = true;
-  dontUsePipInstall = true;
-  dontUseSetuptoolsCheck = true;
-
-  patches = [
-    ./0001-Find-include-directory.patch
-  ];
-
-  postPatch = ''
-    substituteInPlace pybind11/__init__.py --subst-var-by include "$out/include"
+  postBuild = ''
+    # build tests
+    make
   '';
 
-  preFixup = ''
-    pushd ..
-    export PYBIND11_USE_CMAKE=1
-    setuptoolsBuildPhase
-    pipInstallPhase
+  postInstall = ''
+    make install
     # Symlink the CMake-installed headers to the location expected by setuptools
     mkdir -p $out/include/${python.libPrefix}
     ln -sf $out/include/pybind11 $out/include/${python.libPrefix}/pybind11
-    popd
   '';
 
   checkInputs = [
-    pytest
+    catch
     numpy
-    scipy
+    pytest
   ];
 
-  meta = {
-    homepage = https://github.com/pybind/pybind11;
+  checkPhase = ''
+    runHook preCheck
+
+    make check
+
+    runHook postCheck
+  '';
+
+  meta = with lib; {
+    homepage = "https://github.com/pybind/pybind11";
     description = "Seamless operability between C++11 and Python";
     longDescription = ''
       Pybind11 is a lightweight header-only library that exposes
       C++ types in Python and vice versa, mainly to create Python
       bindings of existing C++ code.
     '';
-    license = lib.licenses.bsd3;
-    maintainers = [ lib.maintainers.yuriaisaka ];
+    license = licenses.bsd3;
+    maintainers = with maintainers; [ yuriaisaka dotlambda ];
   };
 }

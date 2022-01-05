@@ -1,4 +1,4 @@
-{ lib, fetchFromGitHub, fetchpatch, buildPythonPackage, cython, slurm }:
+{ lib, fetchFromGitHub, buildPythonPackage, cython, slurm }:
 
 buildPythonPackage rec {
   pname = "pyslurm";
@@ -18,9 +18,11 @@ buildPythonPackage rec {
   doCheck = false;
 
   meta = with lib; {
-    homepage = https://github.com/PySlurm/pyslurm;
+    homepage = "https://github.com/PySlurm/pyslurm";
     description = "Python bindings to Slurm";
     license = licenses.gpl2;
     maintainers = with maintainers; [ bhipple ];
+    platforms = platforms.linux;
+    broken = true;  # still needs slurm-19.05, but nixpkgs has slurm-20+ now
   };
 }

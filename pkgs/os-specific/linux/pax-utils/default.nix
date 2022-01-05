@@ -1,13 +1,17 @@
-{ stdenv, lib, fetchurl }:
+{ stdenv, lib, fetchurl, bash }:
 
 stdenv.mkDerivation rec {
   pname = "pax-utils";
-  version = "1.2.5";
+  version = "1.3.3";
 
   src = fetchurl {
-    url = "http://distfiles.gentoo.org/distfiles/${pname}-${version}.tar.xz";
-    sha256 = "1v4jwbda25w07qhlx5xc5i0hwsv3pjy8hfy0r93vnmfjxq61grvw";
+    url = "mirror://gentoo/distfiles/${pname}-${version}.tar.xz";
+    sha256 = "sha256-7sp/vZi8Zr6tSncADCAl2fF+qCAbhCRYgkBs4AubaxQ=";
   };
+
+  strictDeps = true;
+
+  buildInputs = [ bash ];
 
   makeFlags = [ "PREFIX=$(out)" ];
 
@@ -20,7 +24,7 @@ stdenv.mkDerivation rec {
       binary files.
     '';
     homepage = "https://wiki.gentoo.org/wiki/Hardened/PaX_Utilities";
-    license = licenses.gpl2;
+    license = licenses.gpl2Only;
     platforms = platforms.unix;
     maintainers = with maintainers; [ thoughtpolice joachifm ];
   };

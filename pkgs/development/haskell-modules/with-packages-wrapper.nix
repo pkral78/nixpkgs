@@ -1,5 +1,8 @@
 { lib, stdenv, ghc, llvmPackages, packages, symlinkJoin, makeWrapper
-, withLLVM ? false
+# GHC will have LLVM available if necessary for the respective target,
+# so useLLVM only needs to be changed if -fllvm is to be used for a
+# platform that has NCG support
+, useLLVM ? false
 , postBuild ? ""
 , ghcLibdir ? null # only used by ghcjs, when resolving plugins
 }:
@@ -50,16 +53,15 @@ let
                   ([ llvmPackages.llvm ]
                    ++ lib.optional stdenv.targetPlatform.isDarwin llvmPackages.clang);
 in
-if paths == [] && !withLLVM then ghc else
+if paths == [] && !useLLVM then ghc else
 symlinkJoin {
   # this makes computing paths from the name attribute impossible;
   # if such a feature is needed, the real compiler name should be saved
   # as a dedicated drv attribute, like `compiler-name`
   name = ghc.name + "-with-packages";
   paths = paths ++ [ghc];
+  nativeBuildInputs = [ makeWrapper ];
   postBuild = ''
-    . ${makeWrapper}/nix-support/setup-hook
-
     # wrap compiler executables with correct env variables
 
     for prg in ${ghcCommand} ${ghcCommand}i ${ghcCommand}-${ghc.version} ${ghcCommand}i-${ghc.version}; do
@@ -74,7 +76,7 @@ symlinkJoin {
           ${lib.optionalString (ghc.isGhcjs or false)
             ''--set NODE_PATH "${ghc.socket-io}/lib/node_modules"''
           } \
-          ${lib.optionalString withLLVM ''--prefix "PATH" ":" "${llvm}"''}
+          ${lib.optionalString useLLVM ''--prefix "PATH" ":" "${llvm}"''}
       fi
     done
 
@@ -113,7 +115,7 @@ symlinkJoin {
     # Clean up the old links that may have been (transitively) included by
     # symlinkJoin:
     rm -f $dynamicLinksDir/*
-    for d in $(grep dynamic-library-dirs $packageConfDir/*|awk '{print $2}'|sort -u); do
+    for d in $(grep -Poz "dynamic-library-dirs:\s*\K .+\n" $packageConfDir/*|awk '{print $2}'|sort -u); do
       ln -s $d/*.dylib $dynamicLinksDir
     done
     for f in $packageConfDir/*.conf; do
@@ -123,11 +125,22 @@ symlinkJoin {
       # $dynamicLinksDir
       cp $f $f-tmp
       rm $f
-      sed "s,dynamic-library-dirs: .*,dynamic-library-dirs: $dynamicLinksDir," $f-tmp > $f
+      sed "N;s,dynamic-library-dirs:\s*.*,dynamic-library-dirs: $dynamicLinksDir," $f-tmp > $f
       rm $f-tmp
     done
   '') + ''
-    ${lib.optionalString hasLibraries "$out/bin/${ghcCommand}-pkg recache"}
+    ${lib.optionalString hasLibraries ''
+     # GHC 8.10 changes.
+     # Instead of replacing package.cache[.lock] with the new file,
+     # ghc-pkg is now trying to open the file.  These file are symlink
+     # to another nix derivation, so they are not writable.  Removing
+     # them allow the correct behavior of ghc-pkg recache
+     # See: https://github.com/NixOS/nixpkgs/issues/79441
+     rm $out/lib/${ghc.name}/package.conf.d/package.cache.lock
+     rm $out/lib/${ghc.name}/package.conf.d/package.cache
+
+     $out/bin/${ghcCommand}-pkg recache
+     ''}
     ${# ghcjs will read the ghc_libdir file when resolving plugins.
       lib.optionalString (isGhcjs && ghcLibdir != null) ''
       mkdir -p "${libDir}"

@@ -1,11 +1,41 @@
 # Nixpkgs/NixOS option handling.
 { lib }:
 
-with lib.trivial;
-with lib.lists;
-with lib.attrsets;
-with lib.strings;
-
+let
+  inherit (lib)
+    all
+    collect
+    concatLists
+    concatMap
+    elemAt
+    filter
+    foldl'
+    head
+    tail
+    isAttrs
+    isBool
+    isDerivation
+    isFunction
+    isInt
+    isList
+    isString
+    length
+    mapAttrs
+    optional
+    optionals
+    take
+    ;
+  inherit (lib.attrsets)
+    optionalAttrs
+    ;
+  inherit (lib.strings)
+    concatMapStrings
+    concatStringsSep
+    ;
+  inherit (lib.types)
+    mkOptionType
+    ;
+in
 rec {
 
   /* Returns true when the given argument is an option
@@ -24,7 +54,7 @@ rec {
 
      Example:
        mkOption { }  // => { _type = "option"; }
-       mkOption { defaultText = "foo"; } // => { _type = "option"; defaultText = "foo"; }
+       mkOption { default = "foo"; } // => { _type = "option"; default = "foo"; }
   */
   mkOption =
     {
@@ -44,7 +74,7 @@ rec {
     apply ? null,
     # Whether the option is for NixOS developers only.
     internal ? null,
-    # Whether the option shows up in the manual.
+    # Whether the option shows up in the manual. Default: true. Use false to hide the option and any sub-options from submodules. Use "shallow" to hide only sub-options.
     visible ? null,
     # Whether the option can be set only once
     readOnly ? null,
@@ -96,22 +126,26 @@ rec {
     else if all isBool list then foldl' lib.or false list
     else if all isString list then lib.concatStrings list
     else if all isInt list && all (x: x == head list) list then head list
-    else throw "Cannot merge definitions of `${showOption loc}' given in ${showFiles (getFiles defs)}.";
+    else throw "Cannot merge definitions of `${showOption loc}'. Definition values:${showDefs defs}";
 
   mergeOneOption = loc: defs:
     if defs == [] then abort "This case should never happen."
     else if length defs != 1 then
-      throw "The unique option `${showOption loc}' is defined multiple times, in:\n - ${concatStringsSep "\n - " (getFiles defs)}."
+      throw "The unique option `${showOption loc}' is defined multiple times. Definition values:${showDefs defs}"
     else (head defs).value;
 
   /* "Merge" option definitions by checking that they all have the same value. */
   mergeEqualOption = loc: defs:
     if defs == [] then abort "This case should never happen."
-    else foldl' (val: def:
-      if def.value != val then
-        throw "The option `${showOption loc}' has conflicting definitions, in ${showFiles (getFiles defs)}."
+    # Return early if we only have one element
+    # This also makes it work for functions, because the foldl' below would try
+    # to compare the first element with itself, which is false for functions
+    else if length defs == 1 then (head defs).value
+    else (foldl' (first: def:
+      if def.value != first.value then
+        throw "The option `${showOption loc}' has conflicting definition values:${showDefs [ first def ]}"
       else
-        val) (head defs).value defs;
+        first) (head defs) (tail defs)).value;
 
   /* Extracts values of all "value" keys of the given list.
 
@@ -146,7 +180,10 @@ rec {
           description = opt.description or (lib.warn "Option `${name}' has no description." "This option has no description.");
           declarations = filter (x: x != unknownModule) opt.declarations;
           internal = opt.internal or false;
-          visible = opt.visible or true;
+          visible =
+            if (opt?visible && opt.visible == "shallow")
+            then true
+            else opt.visible or true;
           readOnly = opt.readOnly or false;
           type = opt.type.description or null;
         }
@@ -158,8 +195,9 @@ rec {
         subOptions =
           let ss = opt.type.getSubOptions opt.loc;
           in if ss != {} then optionAttrSetToDocList' opt.loc ss else [];
+        subOptionsVisible = docOption.visible && opt.visible or null != "shallow";
       in
-        [ docOption ] ++ subOptions) (collect isOption options);
+        [ docOption ] ++ optionals subOptionsVisible subOptions) (collect isOption options);
 
 
   /* This function recursively removes all derivation attributes from
@@ -178,11 +216,25 @@ rec {
     else x;
 
 
-  /* For use in the `example` option attribute. It causes the given
-     text to be included verbatim in documentation. This is necessary
-     for example values that are not simple values, e.g., functions.
+  /* For use in the `defaultText` and `example` option attributes. Causes the
+     given string to be rendered verbatim in the documentation as Nix code. This
+     is necessary for complex values, e.g. functions, or values that depend on
+     other values or packages.
   */
-  literalExample = text: { _type = "literalExample"; inherit text; };
+  literalExpression = text:
+    if ! isString text then throw "literalExpression expects a string."
+    else { _type = "literalExpression"; inherit text; };
+
+  literalExample = lib.warn "literalExample is deprecated, use literalExpression instead, or use literalDocBook for a non-Nix description." literalExpression;
+
+
+  /* For use in the `defaultText` and `example` option attributes. Causes the
+     given DocBook text to be inserted verbatim in the documentation, for when
+     a `literalExpression` would be too hard to read.
+  */
+  literalDocBook = text:
+    if ! isString text then throw "literalDocBook expects a string."
+    else { _type = "literalDocBook"; inherit text; };
 
   # Helper functions.
 
@@ -191,7 +243,14 @@ rec {
 
      Example:
        (showOption ["foo" "bar" "baz"]) == "foo.bar.baz"
-       (showOption ["foo" "bar.baz" "tux"]) == "foo.\"bar.baz\".tux"
+       (showOption ["foo" "bar.baz" "tux"]) == "foo.bar.baz.tux"
+
+     Placeholders will not be quoted as they are not actual values:
+       (showOption ["foo" "*" "bar"]) == "foo.*.bar"
+       (showOption ["foo" "<name>" "bar"]) == "foo.<name>.bar"
+
+     Unlike attributes, options can also start with numbers:
+       (showOption ["windowManager" "2bwm" "enable"]) == "windowManager.2bwm.enable"
   */
   showOption = parts: let
     escapeOptionPart = part:
@@ -202,6 +261,26 @@ rec {
          else escaped;
     in (concatStringsSep ".") (map escapeOptionPart parts);
   showFiles = files: concatStringsSep " and " (map (f: "`${f}'") files);
+
+  showDefs = defs: concatMapStrings (def:
+    let
+      # Pretty print the value for display, if successful
+      prettyEval = builtins.tryEval
+        (lib.generators.toPretty { }
+          (lib.generators.withRecursion { depthLimit = 10; throwOnDepthLimit = false; } def.value));
+      # Split it into its lines
+      lines = filter (v: ! isList v) (builtins.split "\n" prettyEval.value);
+      # Only display the first 5 lines, and indent them for better visibility
+      value = concatStringsSep "\n    " (take 5 lines ++ optional (length lines > 5) "...");
+      result =
+        # Don't print any value if evaluating the value strictly fails
+        if ! prettyEval.success then ""
+        # Put it on a new line if it consists of multiple
+        else if length lines > 1 then ":\n    " + value
+        else ": " + value;
+    in "\n- In `${def.file}'${result}"
+  ) defs;
+
   unknownModule = "<unknown-file>";
 
 }

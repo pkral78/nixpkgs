@@ -1,29 +1,31 @@
-{ lib, buildGoPackage, fetchFromGitHub }:
+{ lib, buildGoModule, fetchFromGitHub }:
 
-# SHA of ${version} for the tool's help output
-let rev = "c9c2a461cd3397909fe6e45ff71836347ef89fd8";
+# SHA of ${version} for the tool's help output. Unfortunately this is needed in build flags.
+let rev = "237bd35906f5c4bed1f4de4aa58cc6a6a676d4fd";
 in
-buildGoPackage rec {
+buildGoModule rec {
   pname = "sonobuoy";
-  version = "0.16.1";
+  version = "0.55.1"; # Do not forget to update `rev` above
 
-  goPackagePath = "github.com/heptio/sonobuoy";
-
-  buildFlagsArray =
-    let t = goPackagePath;
-    in ''
-      -ldflags=
-        -s -X ${t}/pkg/buildinfo.Version=${version}
-           -X ${t}/pkg/buildinfo.GitSHA=${rev}
-           -X ${t}/pkg/buildDate=unknown
-    '';
+  ldflags =
+    let t = "github.com/vmware-tanzu/sonobuoy";
+    in [
+      "-s"
+      "-X ${t}/pkg/buildinfo.Version=v${version}"
+      "-X ${t}/pkg/buildinfo.GitSHA=${rev}"
+      "-X ${t}/pkg/buildDate=unknown"
+    ];
 
   src = fetchFromGitHub {
-    sha256 = "14qc5a7jbr403wjpk6pgpb94i72yx647sg9srz07q6drq650kyfv";
-    rev = "v${version}";
-    repo = "sonobuoy";
     owner = "vmware-tanzu";
+    repo = "sonobuoy";
+    rev = "v${version}";
+    sha256 = "sha256-pHpnh+6O9yjnDA8u0jyLvqNQbXC+xz8fRn47aQNdOAo=";
   };
+
+  vendorSha256 = "sha256-jPKCWTFABKRZCg6X5VVdrmOU/ZFc7yGD7R8RJrpcITg=";
+
+  subPackages = [ "." ];
 
   meta = with lib; {
     description = ''
@@ -38,6 +40,6 @@ buildGoPackage rec {
 
     homepage = "https://sonobuoy.io";
     license = licenses.asl20;
-    maintainers = with maintainers; [ carlosdagos saschagrunert ];
+    maintainers = with maintainers; [ carlosdagos saschagrunert wilsonehusin ];
   };
 }

@@ -42,8 +42,7 @@ in {
 
       extraConfig = mkOption {
         type = types.lines;
-        default = ''
-        '';
+        default = "";
         description = ''
           Configuration lines appended to the generated connman configuration file.
         '';
@@ -77,6 +76,14 @@ in {
         '';
       };
 
+      package = mkOption {
+        type = types.package;
+        description = "The connman package / build flavor";
+        default = connman;
+        defaultText = literalExpression "pkgs.connman";
+        example = literalExpression "pkgs.connmanFull";
+      };
+
     };
 
   };
@@ -89,11 +96,13 @@ in {
       assertion = !config.networking.useDHCP;
       message = "You can not use services.connman with networking.useDHCP";
     }{
+      # TODO: connman seemingly can be used along network manager and
+      # connmanFull supports this - so this should be worked out somehow
       assertion = !config.networking.networkmanager.enable;
       message = "You can not use services.connman with networking.networkmanager";
     }];
 
-    environment.systemPackages = [ connman ];
+    environment.systemPackages = [ cfg.package ];
 
     systemd.services.connman = {
       description = "Connection service";
@@ -105,7 +114,7 @@ in {
         BusName = "net.connman";
         Restart = "on-failure";
         ExecStart = toString ([
-          "${pkgs.connman}/sbin/connmand"
+          "${cfg.package}/sbin/connmand"
           "--config=${configFile}"
           "--nodaemon"
         ] ++ optional enableIwd "--wifi=iwd_agent"
@@ -122,7 +131,7 @@ in {
       serviceConfig = {
         Type = "dbus";
         BusName = "net.connman.vpn";
-        ExecStart = "${pkgs.connman}/sbin/connman-vpnd -n";
+        ExecStart = "${cfg.package}/sbin/connman-vpnd -n";
         StandardOutput = "null";
       };
     };
@@ -132,7 +141,7 @@ in {
       serviceConfig = {
         Name = "net.connman.vpn";
         before = [ "connman" ];
-        ExecStart = "${pkgs.connman}/sbin/connman-vpnd -n";
+        ExecStart = "${cfg.package}/sbin/connman-vpnd -n";
         User = "root";
         SystemdService = "connman-vpn.service";
       };
@@ -142,6 +151,7 @@ in {
       useDHCP = false;
       wireless = {
         enable = mkIf (!enableIwd) true;
+        dbusControlled = true;
         iwd = mkIf enableIwd {
           enable = true;
         };

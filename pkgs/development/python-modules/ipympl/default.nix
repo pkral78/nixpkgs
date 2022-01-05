@@ -1,15 +1,22 @@
-{ lib, buildPythonPackage, fetchPypi, ipywidgets, matplotlib }:
+{ lib
+, buildPythonPackage
+, fetchPypi
+, ipykernel
+, ipywidgets
+}:
 
 buildPythonPackage rec {
   pname = "ipympl";
-  version = "0.3.3";
+  version = "0.8.4";
+  format = "wheel";
 
   src = fetchPypi {
-    inherit pname version;
-    sha256 = "0m5sh2ha9hlgigc5xxsy7nd0gdadx797h1i66i9z616p0r43gx7d";
+    inherit pname version format;
+    sha256 = "2f955c1c04d8e6df883d57866450657040bfc568edeabcace801cbdbaf4d0295";
   };
 
-  propagatedBuildInputs = [ ipywidgets matplotlib ];
+
+  propagatedBuildInputs = [ ipykernel ipywidgets ];
 
   # There are no unit tests in repository
   doCheck = false;
@@ -17,8 +24,8 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Matplotlib Jupyter Extension";
-    homepage = https://github.com/matplotlib/jupyter-matplotlib;
-    maintainers = with maintainers; [ jluttine ];
+    homepage = "https://github.com/matplotlib/jupyter-matplotlib";
+    maintainers = with maintainers; [ jluttine fabiangd ];
     license = licenses.bsd3;
   };
 }

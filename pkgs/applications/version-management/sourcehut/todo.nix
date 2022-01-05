@@ -1,21 +1,25 @@
-{ stdenv, fetchgit, buildPythonPackage
+{ lib
+, fetchFromSourcehut
+, buildPythonPackage
+, srht
+, redis
+, alembic
+, pystache
+, pytest
+, factory_boy
 , python
-, srht, redis, alembic, pystache
-, pytest, factory_boy, writeText }:
+}:
 
 buildPythonPackage rec {
   pname = "todosrht";
-  version = "0.55.3";
+  version = "0.66.1";
 
-  src = fetchgit {
-    url = "https://git.sr.ht/~sircmpwn/todo.sr.ht";
+  src = fetchFromSourcehut {
+    owner = "~sircmpwn";
+    repo = "todo.sr.ht";
     rev = version;
-    sha256 = "1j82yxdnag0q6rp0rpiq3ccn5maa1k58j2f1ilcsxf1gr13pycf5";
+    sha256 = "sha256-P0xaQpK7O9zipGSIa5jL1O0L/fKt51EMNGt7XndYQ+g=";
   };
-
-  patches = [
-    ./use-srht-path.patch
-  ];
 
   nativeBuildInputs = srht.nativeBuildInputs;
 
@@ -38,11 +42,12 @@ buildPythonPackage rec {
   ];
 
   dontUseSetuptoolsCheck = true;
+  pythonImportsCheck = [ "todosrht" ];
 
-  meta = with stdenv.lib; {
-    homepage = https://todo.sr.ht/~sircmpwn/todo.sr.ht;
+  meta = with lib; {
+    homepage = "https://todo.sr.ht/~sircmpwn/todo.sr.ht";
     description = "Ticket tracking service for the sr.ht network";
-    license = licenses.agpl3;
+    license = licenses.agpl3Only;
     maintainers = with maintainers; [ eadwu ];
   };
 }

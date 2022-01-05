@@ -2,18 +2,20 @@
 
 buildGoModule rec {
   pname = "go-jsonnet";
-  version = "0.15.0";
+  version = "0.18.0";
 
   src = fetchFromGitHub {
     owner = "google";
     repo = "go-jsonnet";
     rev = "v${version}";
-    sha256 = "0l6cwky2xl7m8nnc9abp76bhkdcf2ldbbv3r8p30xv2yr5wd1j8i";
+    sha256 = "sha256-o/IjXskGaMhvQmTsAS745anGBMI2bwHf/EOEp57H8LU=";
   };
 
-  modSha256 = "1b6hz5a66hhlzpcv1badxr1b4nmk4lw0507d5jks7lqzvvwd0sxq";
+  vendorSha256 = "sha256-fZBhlZrLcC4xj5uvb862lBOczGnJa9CceS3D8lUhBQo=";
 
-  subPackages = [ "cmd/jsonnet" ];
+  doCheck = false;
+
+  subPackages = [ "cmd/jsonnet" "cmd/jsonnetfmt" ];
 
   meta = with lib; {
     description = "An implementation of Jsonnet in pure Go";

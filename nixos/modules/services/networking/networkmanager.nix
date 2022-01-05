@@ -6,7 +6,6 @@ let
   cfg = config.networking.networkmanager;
 
   basePackages = with pkgs; [
-    crda
     modemmanager
     networkmanager
     networkmanager-fortisslvpn
@@ -15,41 +14,58 @@ let
     networkmanager-openconnect
     networkmanager-openvpn
     networkmanager-vpnc
+    networkmanager-sstp
    ] ++ optional (!delegateWireless && !enableIwd) wpa_supplicant;
 
   delegateWireless = config.networking.wireless.enable == true && cfg.unmanaged != [];
 
   enableIwd = cfg.wifi.backend == "iwd";
 
-  configFile = pkgs.writeText "NetworkManager.conf" ''
-    [main]
-    plugins=keyfile
-    dhcp=${cfg.dhcp}
-    dns=${cfg.dns}
-    # If resolvconf is disabled that means that resolv.conf is managed by some other module.
-    rc-manager=${if config.networking.resolvconf.enable then "resolvconf" else "unmanaged"}
+  mkValue = v:
+    if v == true then "yes"
+    else if v == false then "no"
+    else if lib.isInt v then toString v
+    else v;
 
-    [keyfile]
-    ${optionalString (cfg.unmanaged != [])
-      ''unmanaged-devices=${lib.concatStringsSep ";" cfg.unmanaged}''}
-
-    [logging]
-    level=${cfg.logLevel}
-    audit=${lib.boolToString config.security.audit.enable}
-
-    [connection]
-    ipv6.ip6-privacy=2
-    ethernet.cloned-mac-address=${cfg.ethernet.macAddress}
-    wifi.cloned-mac-address=${cfg.wifi.macAddress}
-    ${optionalString (cfg.wifi.powersave != null)
-      ''wifi.powersave=${if cfg.wifi.powersave then "3" else "2"}''}
-
-    [device]
-    wifi.scan-rand-mac-address=${if cfg.wifi.scanRandMacAddress then "yes" else "no"}
-    wifi.backend=${cfg.wifi.backend}
-
-    ${cfg.extraConfig}
+  mkSection = name: attrs: ''
+    [${name}]
+    ${
+      lib.concatStringsSep "\n"
+        (lib.mapAttrsToList
+          (k: v: "${k}=${mkValue v}")
+          (lib.filterAttrs
+            (k: v: v != null)
+            attrs))
+    }
   '';
+
+  configFile = pkgs.writeText "NetworkManager.conf" (lib.concatStringsSep "\n" [
+    (mkSection "main" {
+      plugins = "keyfile";
+      dhcp = cfg.dhcp;
+      dns = cfg.dns;
+      # If resolvconf is disabled that means that resolv.conf is managed by some other module.
+      rc-manager =
+        if config.networking.resolvconf.enable then "resolvconf"
+        else "unmanaged";
+      firewall-backend = cfg.firewallBackend;
+    })
+    (mkSection "keyfile" {
+      unmanaged-devices =
+        if cfg.unmanaged == [] then null
+        else lib.concatStringsSep ";" cfg.unmanaged;
+    })
+    (mkSection "logging" {
+      audit = config.security.audit.enable;
+      level = cfg.logLevel;
+    })
+    (mkSection "connection" cfg.connectionConfig)
+    (mkSection "device" {
+      "wifi.scan-rand-mac-address" = cfg.wifi.scanRandMacAddress;
+      "wifi.backend" = cfg.wifi.backend;
+    })
+    cfg.extraConfig
+  ]);
 
   /*
     [network-manager]
@@ -131,6 +147,10 @@ let
 
 in {
 
+  meta = {
+    maintainers = teams.freedesktop.members;
+  };
+
   ###### interface
 
   options = {
@@ -146,6 +166,28 @@ in {
           configured. If enabled, a group <literal>networkmanager</literal>
           will be created. Add all users that should have permission
           to change network settings to this group.
+        '';
+      };
+
+      connectionConfig = mkOption {
+        type = with types; attrsOf (nullOr (oneOf [
+          bool
+          int
+          str
+        ]));
+        default = {};
+        description = ''
+          Configuration for the [connection] section of NetworkManager.conf.
+          Refer to
+          <link xlink:href="https://developer.gnome.org/NetworkManager/stable/NetworkManager.conf.html">
+            https://developer.gnome.org/NetworkManager/stable/NetworkManager.conf.html#id-1.2.3.11
+          </link>
+          or
+          <citerefentry>
+            <refentrytitle>NetworkManager.conf</refentrytitle>
+            <manvolnum>5</manvolnum>
+          </citerefentry>
+          for more information.
         '';
       };
 
@@ -199,6 +241,15 @@ in {
         default = "internal";
         description = ''
           Which program (or internal library) should be used for DHCP.
+        '';
+      };
+
+      firewallBackend = mkOption {
+        type = types.enum [ "iptables" "nftables" "none" ];
+        default = "iptables";
+        description = ''
+          Which firewall backend should be used for configuring masquerading with shared mode.
+          If set to none, NetworkManager doesn't manage the configuration at all.
         '';
       };
 
@@ -302,7 +353,7 @@ in {
           };
         });
         default = [];
-        example = literalExample ''
+        example = literalExpression ''
         [ {
               source = pkgs.writeText "upHook" '''
 
@@ -362,6 +413,8 @@ in {
       }
     ];
 
+    hardware.wirelessRegulatoryDatabase = true;
+
     environment.etc = with pkgs; {
       "NetworkManager/NetworkManager.conf".source = configFile;
 
@@ -382,6 +435,9 @@ in {
 
       "NetworkManager/VPN/nm-iodine-service.name".source =
         "${networkmanager-iodine}/lib/NetworkManager/VPN/nm-iodine-service.name";
+
+      "NetworkManager/VPN/nm-sstp-service.name".source =
+        "${networkmanager-sstp}/lib/NetworkManager/VPN/nm-sstp-service.name";
       }
       // optionalAttrs (cfg.appendNameservers != [] || cfg.insertNameservers != [])
          {
@@ -408,6 +464,7 @@ in {
     users.users = {
       nm-openvpn = {
         uid = config.ids.uids.nm-openvpn;
+        group = "nm-openvpn";
         extraGroups = [ "networkmanager" ];
       };
       nm-iodine = {
@@ -447,10 +504,10 @@ in {
 
     systemd.services.NetworkManager-dispatcher = {
       wantedBy = [ "network.target" ];
-      restartTriggers = [ configFile ];
+      restartTriggers = [ configFile overrideNameserversScript ];
 
       # useful binaries for user-specified hooks
-      path = [ pkgs.iproute pkgs.utillinux pkgs.coreutils ];
+      path = [ pkgs.iproute2 pkgs.util-linux pkgs.coreutils ];
       aliases = [ "dbus-org.freedesktop.nm-dispatcher.service" ];
     };
 
@@ -467,7 +524,20 @@ in {
       (mkIf enableIwd {
         wireless.iwd.enable = true;
       })
+
+      {
+        networkmanager.connectionConfig = {
+          "ethernet.cloned-mac-address" = cfg.ethernet.macAddress;
+          "wifi.cloned-mac-address" = cfg.wifi.macAddress;
+          "wifi.powersave" =
+            if cfg.wifi.powersave == null then null
+            else if cfg.wifi.powersave then 3
+            else 2;
+        };
+      }
     ];
+
+    boot.kernelModules = [ "ctr" ];
 
     security.polkit.extraConfig = polkitConf;
 

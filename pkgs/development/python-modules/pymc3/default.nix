@@ -9,19 +9,23 @@
 , tqdm
 , six
 , h5py
+, arviz
+, packaging
 , pytest
 , nose
 , parameterized
+, fastprogress
+, typing-extensions
 }:
 
 buildPythonPackage rec {
   pname = "pymc3";
-  version = "3.8";
+  version = "3.11.4";
   disabled = pythonOlder "3.5";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1bb2915e4a29877c681ead13932b0b7d276f7f496e9c3f09ba96b977c99caf00";
+    sha256 = "3b88d1e6c85f7fb8a9b99d6f136ac860672170370ec4146338fdd160c3b3fd3f";
   };
 
   # No need for coverage stats in Nix builds
@@ -37,6 +41,10 @@ buildPythonPackage rec {
     tqdm
     six
     h5py
+    arviz
+    packaging
+    fastprogress
+    typing-extensions
   ];
 
   checkInputs = [
@@ -48,6 +56,7 @@ buildPythonPackage rec {
   # The test suite is computationally intensive and test failures are not
   # indicative for package usability hence tests are disabled by default.
   doCheck = false;
+  pythonImportsCheck = [ "pymc3" ];
 
   # For some reason tests are run as a part of the *install* phase if enabled.
   # Theano writes compiled code to ~/.theano hence we set $HOME.
@@ -56,7 +65,7 @@ buildPythonPackage rec {
 
   meta = {
     description = "Bayesian estimation, particularly using Markov chain Monte Carlo (MCMC)";
-    homepage = https://github.com/pymc-devs/pymc3;
+    homepage = "https://github.com/pymc-devs/pymc3";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ilya-kolpakov ];
   };

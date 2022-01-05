@@ -24,12 +24,14 @@ buildPythonPackage rec {
     # disabled tests access the network
     py.test tests -k "not test_no_content_length_header \
                   and not test_read_file \
-                  and not test_reads_file_from_url_wrapper"
+                  and not test_reads_file_from_url_wrapper \
+                  and not test_x509_der \
+                  and not test_x509_pem"
   '';
 
   meta = {
     description = "A toolbelt of useful classes and functions to be used with python-requests";
-    homepage = http://toolbelt.rtfd.org;
+    homepage = "http://toolbelt.rtfd.org";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
   };

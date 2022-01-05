@@ -1,21 +1,22 @@
-{ stdenv, fetchurl, fetchpatch, curl, expat, zlib, bzip2
+{ lib, stdenv, fetchurl, fetchpatch, curl, expat, zlib, bzip2
 , useNcurses ? false, ncurses, useQt4 ? false, qt4, ps
 }:
 
-with stdenv.lib;
+with lib;
 
 assert stdenv ? cc;
 assert stdenv.cc ? libc;
 
 let
-  os = stdenv.lib.optionalString;
+  os = lib.optionalString;
   majorVersion = "2.8";
   minorVersion = "12.2";
   version = "${majorVersion}.${minorVersion}";
 in
 
 stdenv.mkDerivation rec {
-  name = "cmake-${os useNcurses "cursesUI-"}${os useQt4 "qt4UI-"}${version}";
+  pname = "cmake${os useNcurses "-cursesUI"}${os useQt4 "-qt4UI"}";
+  inherit version;
 
   inherit majorVersion;
 
@@ -56,11 +57,11 @@ stdenv.mkDerivation rec {
     (concatMap (p: [ (p.dev or p) (p.out or p) ]) buildInputs);
 
   configureFlags = [
-    "--docdir=/share/doc/${name}"
+    "--docdir=/share/doc/${pname}-${version}"
     "--mandir=/share/man"
     "--system-libs"
     "--no-system-libarchive"
-   ] ++ stdenv.lib.optional useQt4 "--qt-gui";
+   ] ++ lib.optional useQt4 "--qt-gui";
 
   setupHook = ./setup-hook.sh;
 
@@ -78,10 +79,10 @@ stdenv.mkDerivation rec {
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = https://cmake.org;
+    homepage = "https://cmake.org";
     description = "Cross-Platform Makefile Generator";
-    platforms = if useQt4 then qt4.meta.platforms else stdenv.lib.platforms.unix;
-    maintainers = with stdenv.lib.maintainers; [ xfix ];
-    license = stdenv.lib.licenses.bsd3;
+    platforms = if useQt4 then qt4.meta.platforms else lib.platforms.unix;
+    maintainers = with lib.maintainers; [ xfix ];
+    license = lib.licenses.bsd3;
   };
 }

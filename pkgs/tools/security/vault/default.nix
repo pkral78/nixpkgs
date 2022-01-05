@@ -1,35 +1,51 @@
-{ stdenv, fetchFromGitHub, buildGoPackage }:
+{ stdenv, lib, fetchFromGitHub, buildGoModule, installShellFiles, nixosTests
+, makeWrapper
+, gawk
+, glibc
+}:
 
-buildGoPackage rec {
+buildGoModule rec {
   pname = "vault";
-  version = "1.3.3";
+  version = "1.9.2";
 
   src = fetchFromGitHub {
     owner = "hashicorp";
     repo = "vault";
     rev = "v${version}";
-    sha256 = "1scwclkpb7v5pcx1afgjqrfgcp0c1bd9gqvwdmjbpfcyxv1f032d";
+    sha256 = "sha256-vuwVPBB7zxpmJsBZ+J/vl0E49gx7CUGGi5j1Grgv2Jo=";
   };
 
-  goPackagePath = "github.com/hashicorp/vault";
+  vendorSha256 = "sha256-OHGQ6v51jfxEhe7v8b9/yh7aPZmgTod+WFKFzwXk4LU=";
 
   subPackages = [ "." ];
 
-  buildFlagsArray = [
-    "-tags='vault'"
-    "-ldflags=\"-X github.com/hashicorp/vault/sdk/version.GitCommit='v${version}'\""
+  nativeBuildInputs = [ installShellFiles makeWrapper ];
+
+  tags = [ "vault" ];
+
+  ldflags = [
+    "-s" "-w"
+    "-X github.com/hashicorp/vault/sdk/version.GitCommit=${src.rev}"
+    "-X github.com/hashicorp/vault/sdk/version.Version=${version}"
+    "-X github.com/hashicorp/vault/sdk/version.VersionPrerelease="
   ];
 
   postInstall = ''
-    mkdir -p $bin/share/bash-completion/completions
-    echo "complete -C $bin/bin/vault vault" > $bin/share/bash-completion/completions/vault
+    echo "complete -C $out/bin/vault vault" > vault.bash
+    installShellCompletion vault.bash
+  '' + lib.optionalString stdenv.isLinux ''
+    wrapProgram $out/bin/vault \
+      --prefix PATH ${lib.makeBinPath [ gawk glibc ]}
   '';
 
-  meta = with stdenv.lib; {
+  passthru.tests = { inherit (nixosTests) vault vault-postgresql; };
+
+  meta = with lib; {
     homepage = "https://www.vaultproject.io/";
     description = "A tool for managing secrets";
+    changelog = "https://github.com/hashicorp/vault/blob/v${version}/CHANGELOG.md";
     platforms = platforms.linux ++ platforms.darwin;
     license = licenses.mpl20;
-    maintainers = with maintainers; [ rushmorem lnl7 offline pradeepchhetri ];
+    maintainers = with maintainers; [ rushmorem lnl7 offline pradeepchhetri Chili-Man ];
   };
 }

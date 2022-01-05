@@ -1,7 +1,8 @@
-{ stdenv, fetchgit, opencflite, clang, libcxx }:
+{ lib, stdenv, fetchgit, opencflite, clang, libcxx }:
 
 stdenv.mkDerivation {
-  name = "maloader-0git";
+  pname = "maloader";
+  version = "unstable-2014-02-25";
 
   src = fetchgit {
     url = "git://github.com/shinh/maloader.git";
@@ -16,7 +17,7 @@ stdenv.mkDerivation {
       ld-mac.cc
   '';
 
-  NIX_CFLAGS_COMPILE = "-I${libcxx}/include/c++/v1";
+  NIX_CFLAGS_COMPILE = "-I${lib.getDev libcxx}/include/c++/v1";
   buildInputs = [ clang libcxx ];
   buildFlags = [ "USE_LIBCXX=1" "release" ];
 
@@ -30,9 +31,9 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Mach-O loader for Linux";
-    homepage = https://github.com/shinh/maloader;
-    license = stdenv.lib.licenses.bsd2;
-    platforms = stdenv.lib.platforms.linux;
+    homepage = "https://github.com/shinh/maloader";
+    license = lib.licenses.bsd2;
+    platforms = lib.platforms.linux;
     broken = true; # 2018-09-08, no succesful build since 2017-08-21
   };
 }

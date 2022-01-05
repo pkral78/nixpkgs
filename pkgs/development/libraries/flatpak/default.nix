@@ -1,22 +1,20 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
+, fetchpatch
 , autoreconfHook
-, docbook_xml_dtd_412
-, docbook_xml_dtd_42
-, docbook_xml_dtd_43
-, docbook_xsl
+, docbook_xml_dtd_45
+, docbook-xsl-nons
 , which
 , libxml2
 , gobject-introspection
 , gtk-doc
 , intltool
 , libxslt
-, pkgconfig
+, pkg-config
 , xmlto
 , appstream-glib
 , substituteAll
-, glibcLocales
-, yacc
+, bison
 , xdg-dbus-proxy
 , p11-kit
 , bubblewrap
@@ -38,7 +36,8 @@
 , fuse
 , nixosTests
 , libsoup
-, lzma
+, xz
+, zstd
 , ostree
 , polkit
 , python3
@@ -46,22 +45,23 @@
 , xorg
 , valgrind
 , glib-networking
-, wrapGAppsHook
+, wrapGAppsNoGuiHook
 , dconf
 , gsettings-desktop-schemas
 , librsvg
+, makeWrapper
 }:
 
 stdenv.mkDerivation rec {
   pname = "flatpak";
-  version = "1.6.2";
+  version = "1.12.2";
 
   # TODO: split out lib once we figure out what to do with triggerdir
-  outputs = [ "out" "dev" "man" "doc" "installedTests" ];
+  outputs = [ "out" "dev" "man" "doc" "devdoc" "installedTests" ];
 
   src = fetchurl {
     url = "https://github.com/flatpak/flatpak/releases/download/${version}/${pname}-${version}.tar.xz";
-    sha256 = "02k9p5n60gz2k85n805n9niic4miw0mfh0i7yk1vrc8vaa5h69wd";
+    sha256 = "df1eb464f9142c11627f99f04f6a5c02c868bbb145489b8902cb6c105e774b75"; # Taken from https://github.com/flatpak/flatpak/releases/
   };
 
   patches = [
@@ -69,7 +69,7 @@ stdenv.mkDerivation rec {
     # https://github.com/flatpak/flatpak/issues/1460
     (substituteAll {
       src = ./fix-test-paths.patch;
-      inherit coreutils gettext glibcLocales socat gtk3;
+      inherit coreutils gettext socat gtk3;
       smi = shared-mime-info;
       dfu = desktop-file-utils;
       hicolorIconTheme = hicolor-icon-theme;
@@ -91,35 +91,36 @@ stdenv.mkDerivation rec {
     # Patch taken from gtk-doc expression.
     ./respect-xml-catalog-files-var.patch
 
-    # Don’t hardcode flatpak binary path in launchers stored under user’s profile otherwise they will break after Flatpak update.
-    # https://github.com/NixOS/nixpkgs/issues/43581
-    ./use-flatpak-from-path.patch
-
     # Nix environment hacks should not leak into the apps.
     # https://github.com/NixOS/nixpkgs/issues/53441
     ./unset-env-vars.patch
 
     # But we want the GDK_PIXBUF_MODULE_FILE from the wrapper affect the icon validator.
     ./validate-icon-pixbuf.patch
+
+    # Tests don't respect the FLATPAK_BINARY override that was added, this is a workaround.
+    # https://github.com/flatpak/flatpak/pull/4496 (Can be removed once included).
+    (fetchpatch {
+      url = "https://github.com/flatpak/flatpak/commit/96dbe28cfa96e80b23fa1d8072eb36edad41279c.patch";
+      sha256 = "1jczk06ymfs98h3nsg245g0jwxvml7wg2x6pb7mrfpsdmrpz2czd";
+    })
   ];
 
   nativeBuildInputs = [
     autoreconfHook
     libxml2
-    docbook_xml_dtd_412
-    docbook_xml_dtd_42
-    docbook_xml_dtd_43
-    docbook_xsl
+    docbook_xml_dtd_45
+    docbook-xsl-nons
     which
     gobject-introspection
     gtk-doc
     intltool
     libxslt
-    pkgconfig
+    pkg-config
     xmlto
     appstream-glib
-    yacc
-    wrapGAppsHook
+    bison
+    wrapGAppsNoGuiHook
   ];
 
   buildInputs = [
@@ -133,7 +134,8 @@ stdenv.mkDerivation rec {
     libcap
     libseccomp
     libsoup
-    lzma
+    xz
+    zstd
     polkit
     python3
     systemd
@@ -166,6 +168,7 @@ stdenv.mkDerivation rec {
     "--with-system-dbus-proxy=${xdg-dbus-proxy}/bin/xdg-dbus-proxy"
     "--with-dbus-config-dir=${placeholder "out"}/share/dbus-1/system.d"
     "--localstatedir=/var"
+    "--enable-gtk-doc"
     "--enable-installed-tests"
   ];
 
@@ -174,9 +177,21 @@ stdenv.mkDerivation rec {
     "installed_test_metadir=${placeholder "installedTests"}/share/installed-tests/flatpak"
   ];
 
-  postPatch = ''
+  postPatch = let
+    vsc-py = python3.withPackages (pp: [
+      pp.pyparsing
+    ]);
+  in ''
     patchShebangs buildutil
     patchShebangs tests
+    PATH=${lib.makeBinPath [vsc-py]}:$PATH patchShebangs --build subprojects/variant-schema-compiler/variant-schema-compiler
+  '';
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      # Use flatpak from PATH in exported assets (e.g. desktop files).
+      --set FLATPAK_BINARY flatpak
+    )
   '';
 
   passthru = {
@@ -185,10 +200,10 @@ stdenv.mkDerivation rec {
     };
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Linux application sandboxing and distribution framework";
     homepage = "https://flatpak.org/";
-    license = licenses.lgpl21;
+    license = licenses.lgpl21Plus;
     maintainers = with maintainers; [ jtojnar ];
     platforms = platforms.linux;
   };

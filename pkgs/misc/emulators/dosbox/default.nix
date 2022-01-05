@@ -1,10 +1,11 @@
 { stdenv, lib, fetchurl, makeDesktopItem, SDL, SDL_net, SDL_sound, libGLU, libGL, libpng, graphicsmagick }:
 
 stdenv.mkDerivation rec {
-  name = "dosbox-0.74-3";
+  pname = "dosbox";
+  version = "0.74-3";
 
   src = fetchurl {
-    url = "mirror://sourceforge/dosbox/${name}.tar.gz";
+    url = "mirror://sourceforge/dosbox/dosbox-${version}.tar.gz";
     sha256 = "02i648i50dwicv1vaql15rccv4g8h5blf5g6inv67lrfxpbkvlf0";
   };
 
@@ -23,7 +24,7 @@ stdenv.mkDerivation rec {
     comment = "x86 emulator with internal DOS";
     desktopName = "DOSBox";
     genericName = "DOS emulator";
-    categories = "Application;Emulator;";
+    categories = "Emulator;";
   };
 
   postInstall = ''
@@ -37,7 +38,7 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   meta = with lib; {
-    homepage = http://www.dosbox.com/;
+    homepage = "http://www.dosbox.com/";
     description = "A DOS emulator";
     platforms = platforms.unix;
     maintainers = with maintainers; [ matthewbauer ];

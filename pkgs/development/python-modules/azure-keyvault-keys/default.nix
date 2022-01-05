@@ -2,7 +2,6 @@
 , aiohttp
 , azure-common
 , azure-core
-, azure-nspkg
 , cryptography
 , msrest
 , pytestCheckHook
@@ -10,13 +9,13 @@
 
 buildPythonPackage rec {
   pname = "azure-keyvault-keys";
-  version = "4.0.0";
+  version = "4.4.0";
   disabled = isPy27;
 
   src = fetchPypi {
     inherit pname version;
     extension = "zip";
-    sha256 = "1l1fwm8plzr5zbv02nlvs0i8ssmd88cxm5lb19i54b3scci77hiq";
+    sha256 = "7792ad0d5e63ad9eafa68bdce5de91b3ffcc7ca7a6afdc576785e6a2793caed0";
   };
 
   propagatedBuildInputs = [
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     msrest
     cryptography
   ];
+
+  pythonNamespaces = [ "azure.keyvault" ];
 
   # requires relative paths to utilities in the mono-repo
   doCheck = false;

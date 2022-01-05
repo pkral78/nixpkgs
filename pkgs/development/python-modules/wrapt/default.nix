@@ -5,19 +5,19 @@
 
 buildPythonPackage rec {
   pname = "wrapt";
-  version = "1.11.2";
+  version = "1.13.3";
 
   # No tests in archive
   doCheck = false;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "565a021fd19419476b9362b05eeaa094178de64f8361e44468f9e9d7843901e1";
+    sha256 = "1fea9cd438686e6682271d36f3481a9f3636195578bab9ca3382e2f5f01fc185";
   };
 
   meta = {
     description = "Module for decorators, wrappers and monkey patching";
     license = lib.licenses.bsd2;
-    homepage = https://github.com/GrahamDumpleton/wrapt;
+    homepage = "https://github.com/GrahamDumpleton/wrapt";
   };
 }

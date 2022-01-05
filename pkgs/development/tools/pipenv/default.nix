@@ -6,7 +6,7 @@ with python3.pkgs;
 
 let
 
-  runtimeDeps = [
+  runtimeDeps = ps: with ps; [
     certifi
     setuptools
     pip
@@ -14,30 +14,29 @@ let
     virtualenv-clone
   ];
 
-  pythonEnv = python3.withPackages(ps: with ps; [ virtualenv ]);
+  pythonEnv = python3.withPackages runtimeDeps;
 
 in buildPythonApplication rec {
   pname = "pipenv";
-  version = "2018.11.26";
+  version = "2021.11.23";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0ip8zsrwmhrankrix0shig9g8q2knmr7b63sh7lqa8a5x03fcwx6";
+    sha256 = "1bde859e8bbd1d21d503fd995bc0170048d6da7686ab885f074592c99a16e8f3";
   };
 
   LC_ALL = "en_US.UTF-8";
 
   postPatch = ''
     # pipenv invokes python in a subprocess to create a virtualenv
-    # it uses sys.executable which will point in our case to a python that
-    # does not have virtualenv.
+    # and to call setup.py.
+    # It would use sys.executable, which in our case points to a python that
+    # does not have the required dependencies.
     substituteInPlace pipenv/core.py \
-      --replace "vistir.compat.Path(sys.executable).absolute().as_posix()" "vistir.compat.Path('${pythonEnv.interpreter}').absolute().as_posix()"
+      --replace "sys.executable" "'${pythonEnv.interpreter}'"
   '';
 
-  nativeBuildInputs = [ invoke parver ];
-
-  propagatedBuildInputs = runtimeDeps;
+  propagatedBuildInputs = runtimeDeps python3.pkgs;
 
   doCheck = true;
   checkPhase = ''

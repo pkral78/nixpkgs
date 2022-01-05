@@ -1,13 +1,13 @@
-{ stdenv, fetchFromGitHub, libpng, bison, flex, ffmpeg, icu }:
+{ lib, stdenv, fetchFromGitHub, libpng, bison, flex, ffmpeg, icu }:
 
 stdenv.mkDerivation rec {
   pname = "cfdg";
-  version = "3.2_2";
+  version = "3.3";
   src = fetchFromGitHub {
     owner = "MtnViewJohn";
     repo = "context-free";
     rev = "Version${version}";
-    sha256 = "14v1gya7h0p9dj16hw87wpmjfddmkz537w3kjvaribgxxp0gzyz5";
+    sha256 = "13m8npccacmgxbs4il45zw53dskjh53ngv2nxahwqw8shjrws4mh";
   };
 
   buildInputs = [ libpng bison flex ffmpeg icu ];
@@ -25,7 +25,7 @@ stdenv.mkDerivation rec {
     cp *.txt $out/share/doc/${pname}-${version}
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Context-free design grammar - a tool for graphics generation";
     maintainers = with maintainers; [ raskin ];
     platforms = platforms.linux;

@@ -1,15 +1,17 @@
-{ stdenv, fetchurl, libusb1, pkgconfig, ... }:
+{ lib, stdenv, fetchFromGitHub, libusb1, pkg-config, ... }:
 
 stdenv.mkDerivation rec {
   pname = "blink1";
   version = "1.98a";
 
-  src = fetchurl {
-    url = "https://github.com/todbot/blink1/archive/v${version}.tar.gz";
-    sha256 = "1waci6hccv5i50v5d3z7lx4h224fbkj66ywfynnsgn46w0jm6imv";
+  src = fetchFromGitHub {
+    owner = "todbot";
+    repo = "blink1";
+    rev = "v${version}";
+    sha256 = "sha256-o4pOF6Gp70AL63ih6BNOpRTCs7+qzeZrEqaR4hYDTG8=";
   };
 
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libusb1 ];
 
   configurePhase = ''
@@ -22,9 +24,9 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Command line client for the blink(1) notification light";
-    homepage = https://blink1.thingm.com/;
-    license = stdenv.lib.licenses.cc-by-sa-30;
-    maintainers = [ stdenv.lib.maintainers.cransom ];
-    platforms = stdenv.lib.platforms.linux;
+    homepage = "https://blink1.thingm.com/";
+    license = lib.licenses.cc-by-sa-30;
+    maintainers = [ lib.maintainers.cransom ];
+    platforms = lib.platforms.linux;
   };
 }

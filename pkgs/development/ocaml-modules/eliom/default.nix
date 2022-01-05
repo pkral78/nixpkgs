@@ -1,27 +1,41 @@
-{ stdenv, fetchzip, which, ocsigen_server, ocaml,
-  lwt_react,
-  opaline, ppx_deriving, findlib
-, js_of_ocaml-ocamlbuild, js_of_ocaml-ppx, js_of_ocaml-ppx_deriving_json
+{ stdenv
+, lib
+, fetchFromGitHub
+, which
+, ocsigen_server
+, ocaml
+, lwt_react
+, opaline
+, ppx_deriving
+, findlib
+, js_of_ocaml-ocamlbuild
+, js_of_ocaml-ppx
+, js_of_ocaml-ppx_deriving_json
 , js_of_ocaml-lwt
 , js_of_ocaml-tyxml
 , lwt_ppx
+, ocamlnet
 }:
 
-if !stdenv.lib.versionAtLeast ocaml.version "4.07"
-then throw "eliom is not available for OCaml ${ocaml.version}"
-else
-
-stdenv.mkDerivation rec
-{
+stdenv.mkDerivation rec {
   pname = "eliom";
-  version = "6.10.1";
+  version = "8.9.0";
 
-  src = fetchzip {
-    url = "https://github.com/ocsigen/eliom/archive/${version}.tar.gz";
-    sha256 = "006722wcmhsfhyzv3qbgrrn53fbv9v4i31z52a0pznb6cll45nkm";
+  src = fetchFromGitHub {
+    owner = "ocsigen";
+    repo = "eliom";
+    rev = version;
+    sha256 = "sha256-VNxzpVpXEGlixyjadbW0GjL83jcKV5TWd46UReNYO6w=";
   };
 
-  buildInputs = [ ocaml which findlib js_of_ocaml-ocamlbuild js_of_ocaml-ppx_deriving_json opaline
+  buildInputs = [
+    ocaml
+    which
+    findlib
+    js_of_ocaml-ocamlbuild
+    js_of_ocaml-ppx_deriving_json
+    opaline
+    ocamlnet
   ];
 
   propagatedBuildInputs = [
@@ -39,10 +53,10 @@ stdenv.mkDerivation rec
   setupHook = [ ./setup-hook.sh ];
 
   meta = {
-    homepage = http://ocsigen.org/eliom/;
+    homepage = "http://ocsigen.org/eliom/";
     description = "OCaml Framework for programming Web sites and client/server Web applications";
 
-    longDescription =''Eliom is a framework for programming Web sites
+    longDescription = ''Eliom is a framework for programming Web sites
     and client/server Web applications. It introduces new concepts to
     simplify programming common behaviours and uses advanced static
     typing features of OCaml to check many properties of the Web site
@@ -52,8 +66,8 @@ stdenv.mkDerivation rec
     distinguish both parts and the client side is compiled to JS using
     Ocsigen Js_of_ocaml.'';
 
-    license = stdenv.lib.licenses.lgpl21;
+    license = lib.licenses.lgpl21;
 
-    maintainers = [ stdenv.lib.maintainers.gal_bolle ];
+    maintainers = [ lib.maintainers.gal_bolle ];
   };
 }

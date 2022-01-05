@@ -5,9 +5,9 @@ let
   inherit (builtins) length map;
   inherit (lib.attrsets) attrNames filterAttrs hasAttr mapAttrs mapAttrsToList optionalAttrs;
   inherit (lib.modules) mkDefault mkIf;
-  inherit (lib.options) literalExample mkEnableOption mkOption;
+  inherit (lib.options) literalExpression mkEnableOption mkOption;
   inherit (lib.strings) concatStringsSep optionalString toLower;
-  inherit (lib.types) addCheck attrsOf lines loaOf nullOr package path port str strMatching submodule;
+  inherit (lib.types) addCheck attrsOf lines nullOr package path port str strMatching submodule;
 
   # Checks if given list of strings contains unique
   # elements when compared without considering case.
@@ -123,7 +123,7 @@ let
     };
     options.text = mkOption {
       type = lines;
-      example = literalExample
+      example = literalExpression
         ''lib.modules.mkAfter "compression no"'';
       description = ''
         Additional text lines for the server stanza.
@@ -178,7 +178,7 @@ let
       client system-options file "dsm.sys"
     '';
     servers = mkOption {
-      type = loaOf (submodule [ serverOptions ]);
+      type = attrsOf (submodule [ serverOptions ]);
       default = {};
       example.mainTsmServer = {
         server = "tsmserver.company.com";
@@ -218,8 +218,8 @@ let
     package = mkOption {
       type = package;
       default = pkgs.tsm-client;
-      defaultText = "pkgs.tsm-client";
-      example = literalExample "pkgs.tsm-client-withGui";
+      defaultText = literalExpression "pkgs.tsm-client";
+      example = literalExpression "pkgs.tsm-client-withGui";
       description = ''
         The TSM client derivation to be
         added to the system environment.

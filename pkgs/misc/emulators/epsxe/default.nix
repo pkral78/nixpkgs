@@ -1,7 +1,7 @@
-{ stdenv, fetchurl, alsaLib, curl, gdk-pixbuf, glib, gtk3, libGLU, libGL,
+{ lib, stdenv, fetchurl, alsa-lib, curl, gdk-pixbuf, glib, gtk3, libGLU, libGL,
   libX11, openssl_1_0_2, ncurses5, SDL, SDL_ttf, unzip, zlib, wrapGAppsHook, autoPatchelfHook }:
 
-with stdenv.lib;
+with lib;
 
 stdenv.mkDerivation rec {
   pname = "epsxe";
@@ -21,7 +21,7 @@ stdenv.mkDerivation rec {
   sourceRoot = ".";
 
   buildInputs = [
-    alsaLib
+    alsa-lib
     curl
     gdk-pixbuf
     glib
@@ -43,10 +43,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = http://epsxe.com/;
+    homepage = "http://epsxe.com/";
     description = "Enhanced PSX (PlayStation 1) emulator";
     license = licenses.unfree;
-    maintainers = with maintainers; [ yegortimoshenko ];
+    maintainers = with maintainers; [ yana ];
     platforms = [ "i686-linux" "x86_64-linux" ];
   };
 }

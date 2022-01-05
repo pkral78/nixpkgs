@@ -1,12 +1,12 @@
-{ stdenv, fetchurl, makeWrapper, jre }:
+{ lib, stdenv, fetchurl, makeWrapper, jdk11, nixosTests }:
 
 stdenv.mkDerivation rec {
   pname = "metabase";
-  version = "0.34.3";
+  version = "0.41.5";
 
   src = fetchurl {
-    url = "http://downloads.metabase.com/v${version}/metabase.jar";
-    sha256 = "0kvjqdzr9zb65c2kaqb39x8s71ynpp56aax2h1x37rds4zxdg2yg";
+    url = "https://downloads.metabase.com/v${version}/metabase.jar";
+    sha256 = "sha256-DH1xy1cTVDNNXyOIaayGHzOi4g0ZukNFFbZjufY+XLk=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -14,14 +14,17 @@ stdenv.mkDerivation rec {
   dontUnpack = true;
 
   installPhase = ''
-    makeWrapper ${jre}/bin/java $out/bin/metabase --add-flags "-jar $src"
+    makeWrapper ${jdk11}/bin/java $out/bin/metabase --add-flags "-jar $src"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "The easy, open source way for everyone in your company to ask questions and learn from data";
     homepage    = "https://metabase.com";
     license     = licenses.agpl3;
     platforms   = platforms.all;
     maintainers = with maintainers; [ schneefux thoughtpolice mmahut ];
+  };
+  passthru.tests = {
+    inherit (nixosTests) metabase;
   };
 }

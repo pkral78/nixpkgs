@@ -1,29 +1,59 @@
-{ stdenv, fetchFromGitHub, pkg-config, sqlite, autoreconfHook }:
+{ lib
+, stdenv
+, fetchFromGitHub
+, fetchpatch
+, cmake
+, pkg-config
+, sqlite
+, libtiff
+, curl
+, gtest
+}:
 
 stdenv.mkDerivation rec {
-  name = "proj";
-  version = "6.1.1";
+  pname = "proj";
+  version = "8.2.0";
 
   src = fetchFromGitHub {
     owner = "OSGeo";
     repo = "PROJ";
     rev = version;
-    sha256 = "0w2v2l22kv0xzq5hwl7n8ki6an8vfsr0lg0cdbkwcl4xv889ysma";
+    sha256 = "sha256-YXZ3txBWW5vUcdYLISJPxdFGCQpKi1vvJlX8rntujg8=";
   };
+
+  patches = [
+    (fetchpatch {
+      name = "Make-CApi-test-cross-platform.patch";
+      url = "https://github.com/OSGeo/PROJ/commit/ac113a8898cded7f5359f1edd3abc17a78eee9b4.patch";
+      sha256 = "0gz2xa5nxzck5c0yr7cspv3kw4cz3fxb2yic76w7qfvxidi7z1s1";
+    })
+  ];
 
   outputs = [ "out" "dev"];
 
-  nativeBuildInputs = [ pkg-config autoreconfHook ];
+  nativeBuildInputs = [ cmake pkg-config ];
 
-  buildInputs = [ sqlite ];
+  buildInputs = [ sqlite libtiff curl ];
 
-  doCheck = stdenv.is64bit;
+  checkInputs = [ gtest ];
 
-  meta = with stdenv.lib; {
+  cmakeFlags = [
+    "-DUSE_EXTERNAL_GTEST=ON"
+    "-DRUN_NETWORK_DEPENDENT_TESTS=OFF"
+  ];
+
+  preCheck = ''
+    export HOME=$TMPDIR
+    export TMP=$TMPDIR
+  '';
+
+  doCheck = true;
+
+  meta = with lib; {
     description = "Cartographic Projections Library";
-    homepage = https://proj4.org;
+    homepage = "https://proj.org/";
     license = licenses.mit;
-    platforms = platforms.linux ++ platforms.darwin;
-    maintainers = with maintainers; [ vbgl ];
+    platforms = platforms.unix;
+    maintainers = with maintainers; [ vbgl dotlambda ];
   };
 }

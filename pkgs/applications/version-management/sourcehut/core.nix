@@ -1,27 +1,51 @@
-{ stdenv, fetchgit, fetchNodeModules, buildPythonPackage
-, pgpy, flask, bleach, misaka, humanize, markdown, psycopg2, pygments, requests
-, sqlalchemy, cryptography, beautifulsoup4, sqlalchemy-utils, celery, alembic
+{ lib
+, fetchgit
+, fetchNodeModules
+, buildPythonPackage
+, pgpy
+, flask
+, bleach
+, misaka
+, humanize
+, html5lib
+, markdown
+, psycopg2
+, pygments
+, requests
+, sqlalchemy
+, cryptography
+, beautifulsoup4
+, sqlalchemy-utils
+, prometheus-client
+, celery
+, alembic
 , importlib-metadata
-, sassc, nodejs
-, writeText }:
+, mistletoe
+, minio
+, sassc
+, nodejs
+, redis
+}:
 
 buildPythonPackage rec {
   pname = "srht";
-  version = "0.57.2";
+  version = "0.68.13";
 
   src = fetchgit {
     url = "https://git.sr.ht/~sircmpwn/core.sr.ht";
     rev = version;
-    sha256 = "11rfpb0wf1xzrhcnpahaghmi5626snzph0vsbxlmmqx75wf0p6mf";
+    sha256 = "sha256-LPyEfpNlmod18Fj16xpihKOrsU/hQUfAeOmWMmUeVPQ=";
+    fetchSubmodules = true;
   };
 
   node_modules = fetchNodeModules {
     src = "${src}/srht";
     nodejs = nodejs;
-    sha256 = "0gwa2xb75g7fclrsr7r131kj8ri5gmhd96yw1iws5pmgsn2rlqi1";
+    sha256 = "sha256-IWKahdWv3qJ5DNyb1GB9JWYkZxghn6wzZe68clYXij8=";
   };
 
   patches = [
+    # Disable check for npm
     ./disable-npm-install.patch
   ];
 
@@ -36,19 +60,24 @@ buildPythonPackage rec {
     bleach
     misaka
     humanize
+    html5lib
     markdown
     psycopg2
     pygments
     requests
+    mistletoe
     sqlalchemy
     cryptography
     beautifulsoup4
     sqlalchemy-utils
+    prometheus-client
 
     # Unofficial runtime dependencies?
     celery
     alembic
     importlib-metadata
+    minio
+    redis
   ];
 
   PKGVER = version;
@@ -58,9 +87,10 @@ buildPythonPackage rec {
   '';
 
   dontUseSetuptoolsCheck = true;
+  pythonImportsCheck = [ "srht" ];
 
-  meta = with stdenv.lib; {
-    homepage = https://git.sr.ht/~sircmpwn/srht;
+  meta = with lib; {
+    homepage = "https://git.sr.ht/~sircmpwn/srht";
     description = "Core modules for sr.ht";
     license = licenses.bsd3;
     maintainers = with maintainers; [ eadwu ];

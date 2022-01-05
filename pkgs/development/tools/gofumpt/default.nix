@@ -2,20 +2,22 @@
 
 buildGoModule rec {
   pname = "gofumpt";
-  version = "2019-11-11";
+  version = "0.2.0";
 
   src = fetchFromGitHub {
     owner = "mvdan";
     repo = pname;
-    rev = "eb442649d62000da5d11671f3beb1afa1b746fd7";
-    sha256 = "1cw9mmavxz8gxzzwsllvf5lwb2wwi19jbc7hcwxsi4ywp7a84gh0";
+    rev = "v${version}";
+    sha256 = "sha256-Kgj3f90bAtaVl4mby6FQr4t4BT4I3QLtHhvO10f1BOk=";
   };
 
-  modSha256 = "1ladpxhr90awnms2qmlm2lz91wyh92fl3rqbfr54qngrkpkpbhr2";
+  vendorSha256 = "sha256-gxxK2eUmYUqHjt8HP6OANaHsO43wCaodUDR4BlMY8Zw=";
+
+  doCheck = false;
 
   meta = with lib; {
     description = "A stricter gofmt";
-    homepage = https://github.com/mvdan/gofumpt;
+    homepage = "https://github.com/mvdan/gofumpt";
     license = licenses.bsd3;
     maintainers = with maintainers; [ rvolosatovs ];
   };

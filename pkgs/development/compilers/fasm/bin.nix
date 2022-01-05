@@ -3,11 +3,11 @@
 stdenvNoCC.mkDerivation rec {
   pname = "fasm-bin";
 
-  version = "1.73.22";
+  version = "1.73.29";
 
   src = fetchurl {
     url = "https://flatassembler.net/fasm-${version}.tgz";
-    sha256 = "1pb0rcfdsb0h89khjjrbikz5wjdllavj3ajim0rcyh7x12xr1hw5";
+    sha256 = "sha256-Yyj02DRo9wTkJ01ukOwElHr1ZyZFPOMTibwyAkqYISs=";
   };
 
   installPhase = ''
@@ -16,7 +16,7 @@ stdenvNoCC.mkDerivation rec {
 
   meta = with lib; {
     description = "x86(-64) macro assembler to binary, MZ, PE, COFF, and ELF";
-    homepage = https://flatassembler.net/download.php;
+    homepage = "https://flatassembler.net/download.php";
     license = licenses.bsd2;
     maintainers = with maintainers; [ orivej ];
     platforms = [ "i686-linux" "x86_64-linux" ];

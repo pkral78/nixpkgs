@@ -1,33 +1,45 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchFromGitHub
 , pkg-config
 , glib
 , glibc
+, libseccomp
 , systemd
+, nixosTests
 }:
 
 stdenv.mkDerivation rec {
   pname = "conmon";
-  version = "2.0.11";
+  version = "2.0.31";
 
   src = fetchFromGitHub {
     owner = "containers";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1mdnfkbbv41g590a1ja4rfw69z6kp03znyhikdmg6zqp4qsv32ib";
+    sha256 = "sha256-/IQS5L9Gqhft1eefkcNAPcQn7nSqOxAp9ySKBSOjs7M=";
   };
 
   nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ glib systemd ] ++
-    stdenv.lib.optionals (!stdenv.hostPlatform.isMusl) [ glibc glibc.static ];
+  buildInputs = [ glib libseccomp systemd ]
+  ++ lib.optionals (!stdenv.hostPlatform.isMusl) [ glibc glibc.static ];
 
-  installPhase = "install -Dm755 bin/${pname} $out/bin/${pname}";
+  # manpage requires building the vendored go-md2man
+  makeFlags = [ "bin/conmon" ];
 
-  meta = with stdenv.lib; {
+  installPhase = ''
+    runHook preInstall
+    install -D bin/conmon -t $out/bin
+    runHook postInstall
+  '';
+
+  passthru.tests = { inherit (nixosTests) cri-o podman; };
+
+  meta = with lib; {
     homepage = "https://github.com/containers/conmon";
     description = "An OCI container runtime monitor";
     license = licenses.asl20;
-    maintainers = with maintainers; [ vdemeester saschagrunert ];
+    maintainers = with maintainers; [ ] ++ teams.podman.members;
     platforms = platforms.linux;
   };
 }

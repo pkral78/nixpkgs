@@ -1,4 +1,4 @@
-{ stdenv, fetchzip, buildEnv, makeDesktopItem, runCommand, writeText, pkgconfig
+{ mkDerivation, lib, fetchzip, buildEnv, makeDesktopItem, runCommand, writeText, pkg-config
 , cmake, qmake, cacert, jsoncpp, libX11, libXScrnSaver, lua, openssl, poco
 , qtbase, qtwebengine, qtx11extras, sqlite }:
 
@@ -11,12 +11,12 @@ let
     sha256 = "01hqkx9dljnhwnyqi6mmzfp02hnbi2j50rsfiasniqrkbi99x9v1";
   };
 
-  bugsnag-qt = stdenv.mkDerivation rec {
+  bugsnag-qt = mkDerivation rec {
     pname = "bugsnag-qt";
     version = "20180522.005732";
 
     src = fetchzip {
-      url = "https://github.com/yegortimoshenko/bugsnag-qt/archive/${version}.tar.gz";
+      url = "https://github.com/alpakido/bugsnag-qt/archive/${version}.tar.gz";
       sha256 = "02s6mlggh0i4a856md46dipy6mh47isap82jlwmjr7hfsk2ykgnq";
     };
 
@@ -24,7 +24,7 @@ let
     buildInputs = [ qtbase ];
   };
 
-  qxtglobalshortcut = stdenv.mkDerivation rec {
+  qxtglobalshortcut = mkDerivation rec {
     pname = "qxtglobalshortcut";
     version = "f584471dada2099ba06c574bdfdd8b078c2e3550";
 
@@ -37,12 +37,12 @@ let
     buildInputs = [ qtbase qtx11extras ];
   };
 
-  qt-oauth-lib = stdenv.mkDerivation rec {
+  qt-oauth-lib = mkDerivation rec {
     pname = "qt-oauth-lib";
     version = "20190125.190943";
 
     src = fetchzip {
-      url = "https://github.com/yegortimoshenko/qt-oauth-lib/archive/${version}.tar.gz";
+      url = "https://github.com/alpakido/qt-oauth-lib/archive/${version}.tar.gz";
       sha256 = "0zmfgvdf6n79mgfvbda7lkdxxlzjmy86436gqi2r5x05vq04sfrj";
     };
 
@@ -62,13 +62,13 @@ let
     mkdir -p $out/lib/pkgconfig && ln -s ${poco-pc} $_/poco.pc
   '';
 
-  libtoggl = stdenv.mkDerivation {
+  libtoggl = mkDerivation {
     name = "libtoggl-${version}";
     inherit src version;
 
     sourceRoot = "source/src";
 
-    nativeBuildInputs = [ qmake pkgconfig ];
+    nativeBuildInputs = [ qmake pkg-config ];
     buildInputs = [ jsoncpp lua openssl poco poco-pc-wrapped sqlite libX11 ];
 
     postPatch = ''
@@ -77,7 +77,7 @@ let
     '';
   };
 
-  toggldesktop = stdenv.mkDerivation {
+  toggldesktop = mkDerivation {
     name = "${name}-unwrapped";
     inherit src version;
 
@@ -93,7 +93,7 @@ let
       ln -s ${cacert}/etc/ssl/certs/ca-bundle.crt $out/cacert.pem
     '';
 
-    nativeBuildInputs = [ qmake pkgconfig ];
+    nativeBuildInputs = [ qmake pkg-config ];
 
     buildInputs = [
       bugsnag-qt
@@ -108,7 +108,7 @@ let
     ];
   };
 
-  toggldesktop-icons = stdenv.mkDerivation {
+  toggldesktop-icons = mkDerivation {
     name = "${name}-icons";
     inherit (toggldesktop) src sourceRoot;
 
@@ -138,11 +138,12 @@ buildEnv {
   inherit name;
   paths = [ desktopItem toggldesktop-icons toggldesktop-wrapped ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
+    broken = true; # libtoggl is broken
     description = "Client for Toggl time tracking service";
-    homepage = https://github.com/toggl/toggldesktop;
+    homepage = "https://github.com/toggl/toggldesktop";
     license = licenses.bsd3;
-    maintainers = with maintainers; [ yegortimoshenko ];
+    maintainers = with maintainers; [ yana ];
     platforms = platforms.linux;
   };
 }

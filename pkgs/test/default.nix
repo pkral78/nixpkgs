@@ -22,10 +22,16 @@ with pkgs;
   cc-wrapper-libcxx-9 = callPackage ./cc-wrapper { stdenv = llvmPackages_9.libcxxStdenv; };
   stdenv-inputs = callPackage ./stdenv-inputs { };
 
-  haskell-shellFor = callPackage ./haskell-shellFor { };
+  haskell = callPackage ./haskell { };
 
   cc-multilib-gcc = callPackage ./cc-wrapper/multilib.nix { stdenv = gccMultiStdenv; };
   cc-multilib-clang = callPackage ./cc-wrapper/multilib.nix { stdenv = clangMultiStdenv; };
+
+  fetchpatch = callPackages ../build-support/fetchpatch/tests.nix { };
+  fetchgit = callPackages ../build-support/fetchgit/tests.nix { };
+  fetchFirefoxAddon = callPackages ../build-support/fetchfirefoxaddon/tests.nix { };
+
+  install-shell-files = callPackage ./install-shell-files {};
 
   kernel-config = callPackage ./kernel.nix {};
 
@@ -35,9 +41,29 @@ with pkgs;
 
   cross = callPackage ./cross {};
 
+  php = recurseIntoAttrs (callPackages ./php {});
+
+  rustCustomSysroot = callPackage ./rust-sysroot {};
+  buildRustCrate = callPackage ../build-support/rust/build-rust-crate/test { };
+  importCargoLock = callPackage ../build-support/rust/test/import-cargo-lock { };
+
+  vim = callPackage ./vim {};
+
   nixos-functions = callPackage ./nixos-functions {};
 
   patch-shebangs = callPackage ./patch-shebangs {};
 
+  texlive = callPackage ./texlive {};
+
+  cuda = callPackage ./cuda { };
+
+  trivial-builders = recurseIntoAttrs {
+    writeStringReferencesToFile = callPackage ../build-support/trivial-builders/test/writeStringReferencesToFile.nix {};
+    references = callPackage ../build-support/trivial-builders/test/references.nix {};
+    overriding = callPackage ../build-support/trivial-builders/test-overriding.nix {};
+  };
+
   writers = callPackage ../build-support/writers/test.nix {};
+
+  dhall = callPackage ./dhall { };
 }

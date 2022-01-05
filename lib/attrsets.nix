@@ -4,8 +4,8 @@
 let
   inherit (builtins) head tail length;
   inherit (lib.trivial) and;
-  inherit (lib.strings) concatStringsSep;
-  inherit (lib.lists) fold concatMap concatLists;
+  inherit (lib.strings) concatStringsSep sanitizeDerivationName;
+  inherit (lib.lists) foldr foldl' concatMap concatLists elemAt;
 in
 
 rec {
@@ -55,10 +55,13 @@ rec {
        => { a = { b = 3; }; }
   */
   setAttrByPath = attrPath: value:
-    if attrPath == [] then value
-    else listToAttrs
-      [ { name = head attrPath; value = setAttrByPath (tail attrPath) value; } ];
-
+    let
+      len = length attrPath;
+      atDepth = n:
+        if n == len
+        then value
+        else { ${elemAt attrPath n} = atDepth (n + 1); };
+    in atDepth 0;
 
   /* Like `attrByPath' without a default value. If it doesn't find the
      path it will throw.
@@ -152,8 +155,8 @@ rec {
        => { a = [ 2 3 ]; }
   */
   foldAttrs = op: nul: list_of_attrs:
-    fold (n: a:
-        fold (name: o:
+    foldr (n: a:
+        foldr (name: o:
           o // { ${name} = op n.${name} (a.${name} or nul); }
         ) a (attrNames n)
     ) {} list_of_attrs;
@@ -182,6 +185,24 @@ rec {
       concatMap (collect pred) (attrValues attrs)
     else
       [];
+
+  /* Return the cartesian product of attribute set value combinations.
+
+    Example:
+      cartesianProductOfSets { a = [ 1 2 ]; b = [ 10 20 ]; }
+      => [
+           { a = 1; b = 10; }
+           { a = 1; b = 20; }
+           { a = 2; b = 10; }
+           { a = 2; b = 20; }
+         ]
+  */
+  cartesianProductOfSets = attrsOfLists:
+    foldl' (listOfAttrs: attrName:
+      concatMap (attrs:
+        map (listValue: attrs // { ${attrName} = listValue; }) attrsOfLists.${attrName}
+      ) listOfAttrs
+    ) [{}] (attrNames attrsOfLists);
 
 
   /* Utility function that creates a {name, value} pair as expected by
@@ -225,6 +246,10 @@ rec {
   /* Call a function for each attribute in the given set and return
      the result in a list.
 
+     Type:
+       mapAttrsToList ::
+         (String -> a -> b) -> AttrSet -> [b]
+
      Example:
        mapAttrsToList (name: value: name + value)
           { x = "a"; y = "b"; }
@@ -253,7 +278,7 @@ rec {
   /* Like `mapAttrsRecursive', but it takes an additional predicate
      function that tells it whether to recursive into an attribute
      set.  If it returns false, `mapAttrsRecursiveCond' does not
-     recurse, but does apply the map function.  It is returns true, it
+     recurse, but does apply the map function.  If it returns true, it
      does recurse, and does not apply the map function.
 
      Type:
@@ -310,7 +335,7 @@ rec {
       path' = builtins.storePath path;
       res =
         { type = "derivation";
-          name = builtins.unsafeDiscardStringContext (builtins.substring 33 (-1) (baseNameOf path'));
+          name = sanitizeDerivationName (builtins.substring 33 (-1) (baseNameOf path'));
           outPath = path';
           outputs = [ "out" ];
           out = res;
@@ -433,7 +458,7 @@ rec {
        => true
    */
   matchAttrs = pattern: attrs: assert isAttrs pattern;
-    fold and true (attrValues (zipAttrsWithNames (attrNames pattern) (n: values:
+    foldr and true (attrValues (zipAttrsWithNames (attrNames pattern) (n: values:
       let pat = head values; val = head (tail values); in
       if length values == 1 then false
       else if isAttrs pat then isAttrs val && matchAttrs pat val
@@ -462,13 +487,14 @@ rec {
        => "/nix/store/9rz8gxhzf8sw4kf2j2f1grr49w8zx5vj-openssl-1.0.1r-dev"
   */
   getOutput = output: pkg:
-    if pkg.outputUnspecified or false
+    if ! pkg ? outputSpecified || ! pkg.outputSpecified
       then pkg.${output} or pkg.out or pkg
       else pkg;
 
   getBin = getOutput "bin";
   getLib = getOutput "lib";
   getDev = getOutput "dev";
+  getMan = getOutput "man";
 
   /* Pick the outputs of packages to place in buildInputs */
   chooseDevOutputs = drvs: builtins.map getDev drvs;
@@ -492,5 +518,4 @@ rec {
   zipWithNames = zipAttrsWithNames;
   zip = builtins.trace
     "lib.zip is deprecated, use lib.zipAttrsWith instead" zipAttrsWith;
-
 }

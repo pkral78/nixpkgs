@@ -1,16 +1,16 @@
-{ stdenv
+{ lib
 , buildPythonPackage
 , fetchPypi
 , django
 }:
 
 buildPythonPackage rec {
-  version = "0.5.0";
+  version = "1.1.0";
   pname = "filebrowser_safe";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "5dcd31dd79684025139b43841f6515af1da5a4bb0de15bc4d88003db1970648e";
+    sha256 = "14b6e0af9697f1d0f08508cc88bc8459273cd6453636cebe8504dccc80e926e4";
   };
 
   buildInputs = [ django ];
@@ -18,7 +18,7 @@ buildPythonPackage rec {
   # There is no test embedded
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A snapshot of django-filebrowser for the Mezzanine CMS";
     longDescription = ''
       filebrowser_safe was created to provide a snapshot of the
@@ -30,8 +30,8 @@ buildPythonPackage rec {
       with Django 1.1 - filebrowser_safe was therefore created to
       address these specific issues.
     '';
-    homepage = https://github.com/stephenmcd/filebrowser-safe;
-    downloadPage = https://pypi.python.org/pypi/filebrowser_safe/;
+    homepage = "https://github.com/stephenmcd/filebrowser-safe";
+    downloadPage = "https://pypi.python.org/pypi/filebrowser_safe/";
     license = licenses.free;
     maintainers = with maintainers; [ prikhi ];
     platforms = platforms.unix;

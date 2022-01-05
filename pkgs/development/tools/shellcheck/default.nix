@@ -1,4 +1,4 @@
-{ stdenv, lib, haskellPackages, haskell }:
+{ stdenv, lib, ShellCheck, haskell, pandoc }:
 
 # this wraps around the haskell package
 # and puts the documentation into place
@@ -15,18 +15,21 @@ let
       };
     in drv' // { meta = meta' // overrideFn meta'; };
 
-  bin = haskell.lib.justStaticExecutables haskellPackages.ShellCheck;
-  src = haskellPackages.ShellCheck.src;
+  bin = haskell.lib.compose.justStaticExecutables ShellCheck;
 
   shellcheck = stdenv.mkDerivation {
     pname = "shellcheck";
     version = bin.version;
 
-    inherit src;
+    inherit (ShellCheck) meta src;
+
+    nativeBuildInputs = [ pandoc ];
 
     outputs = [ "bin" "man" "doc" "out" ];
 
-    phases = [ "unpackPhase" "installPhase" "fixupPhase" ];
+    buildPhase = ''
+      pandoc -s -f markdown-smart -t man shellcheck.1.md -o shellcheck.1
+    '';
 
     installPhase = ''
       install -Dm755 ${bin}/bin/shellcheck $bin/bin/shellcheck
@@ -34,10 +37,6 @@ let
       install -Dm644 shellcheck.1 $man/share/man/man1/shellcheck.1
       mkdir $out
     '';
-
-    # just some file copying
-    preferLocalBuild = true;
-    allowSubstitutes = false;
   };
 
 in

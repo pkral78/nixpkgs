@@ -1,6 +1,6 @@
 { config, lib, name, ... }:
 let
-  inherit (lib) literalExample mkOption nameValuePair types;
+  inherit (lib) literalExpression mkOption nameValuePair types;
 in
 {
   options = {
@@ -47,10 +47,27 @@ in
       ];
       description = ''
         Listen addresses and ports for this virtual host.
-        <note><para>
+        <note>
+        <para>
           This option overrides <literal>addSSL</literal>, <literal>forceSSL</literal> and <literal>onlySSL</literal>.
-        </para></note>
+        </para>
+        <para>
+          If you only want to set the addresses manually and not the ports, take a look at <literal>listenAddresses</literal>.
+        </para>
+        </note>
       '';
+    };
+
+    listenAddresses = mkOption {
+      type = with types; nonEmptyListOf str;
+
+      description = ''
+        Listen addresses for this virtual host.
+        Compared to <literal>listen</literal> this only sets the addreses
+        and the ports are chosen automatically.
+      '';
+      default = [ "*" ];
+      example = [ "127.0.0.1" ];
     };
 
     enableSSL = mkOption {
@@ -111,9 +128,12 @@ in
     };
 
     acmeRoot = mkOption {
-      type = types.str;
-      default = "/var/lib/acme/acme-challenges";
-      description = "Directory for the acme challenge which is PUBLIC, don't put certs or keys in here";
+      type = types.nullOr types.str;
+      default = "/var/lib/acme/acme-challenge";
+      description = ''
+        Directory for the acme challenge which is PUBLIC, don't put certs or keys in here.
+        Set to null to inherit from config.security.acme.
+      '';
     };
 
     sslServerCert = mkOption {
@@ -137,7 +157,7 @@ in
 
     http2 = mkOption {
       type = types.bool;
-      default = false;
+      default = true;
       description = ''
         Whether to enable HTTP 2. HTTP/2 is supported in all multi-processing modules that come with httpd. <emphasis>However, if you use the prefork mpm, there will
         be severe restrictions.</emphasis> Refer to <link xlink:href="https://httpd.apache.org/docs/2.4/howto/http2.html#mpm-config"/> for details.
@@ -220,7 +240,7 @@ in
     globalRedirect = mkOption {
       type = types.nullOr types.str;
       default = null;
-      example = http://newserver.example.org/;
+      example = "http://newserver.example.org/";
       description = ''
         If set, all requests for this host are redirected permanently to
         the given URL.
@@ -249,7 +269,7 @@ in
     locations = mkOption {
       type = with types; attrsOf (submodule (import ./location-options.nix));
       default = {};
-      example = literalExample ''
+      example = literalExpression ''
         {
           "/" = {
             proxyPass = "http://localhost:3000";

@@ -38,7 +38,7 @@ let
   filteredGemset = filterGemset { inherit ruby groups; } importedGemset;
 
   configuredGemset = lib.flip lib.mapAttrs filteredGemset (name: attrs:
-    applyGemConfigs (attrs // { inherit ruby; gemName = name; })
+    applyGemConfigs (attrs // { inherit ruby document; gemName = name; })
   );
 
   hasBundler = builtins.hasAttr "bundler" filteredGemset;
@@ -119,12 +119,13 @@ let
       wrappedRuby = stdenv.mkDerivation {
         name = "wrapped-ruby-${pname'}";
         nativeBuildInputs = [ makeWrapper ];
+        inherit (ruby) gemPath meta;
         buildCommand = ''
           mkdir -p $out/bin
           for i in ${ruby}/bin/*; do
             makeWrapper "$i" $out/bin/$(basename "$i") \
               --set BUNDLE_GEMFILE ${confFiles}/Gemfile \
-              --set BUNDLE_PATH ${basicEnv}/${ruby.gemPath} \
+              --unset BUNDLE_PATH \
               --set BUNDLE_FROZEN 1 \
               --set GEM_HOME ${basicEnv}/${ruby.gemPath} \
               --set GEM_PATH ${basicEnv}/${ruby.gemPath}

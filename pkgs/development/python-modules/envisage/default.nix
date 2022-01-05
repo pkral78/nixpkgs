@@ -1,33 +1,42 @@
-{ stdenv, fetchPypi, buildPythonPackage
-, traits, apptools
-, ipykernel
+{ lib
+, fetchPypi
+, isPy27
+, buildPythonPackage
+, traits
+, apptools
+, pytestCheckHook
+, ipython
+, setuptools
 }:
 
 buildPythonPackage rec {
   pname = "envisage";
-  version = "4.7.2";
+  version = "6.0.1";
+
+  disabled = isPy27;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0jb5nw0w9x97jij0hd3d7kfzcj58r1cqmplmdy56bj11dyc4wyc9";
+    sha256 = "8864c29aa344f7ac26eeb94788798f2d0cc791dcf95c632da8d79ebc580e114c";
   };
 
-  propagatedBuildInputs = [ traits apptools ];
+  # for the optional dependency ipykernel, only versions < 6 are
+  # supported, so it's not included in the tests, and not propagated
+  propagatedBuildInputs = [ traits apptools setuptools ];
 
   preCheck = ''
     export HOME=$PWD/HOME
   '';
 
   checkInputs = [
-    ipykernel
+    ipython
+    pytestCheckHook
   ];
 
-  doCheck = true;
-
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Framework for building applications whose functionalities can be extended by adding 'plug-ins'";
-    homepage = https://github.com/enthought/envisage;
-    maintainers = with stdenv.lib.maintainers; [ knedlsepp ];
+    homepage = "https://github.com/enthought/envisage";
+    maintainers = with lib.maintainers; [ knedlsepp ];
     license = licenses.bsdOriginal;
   };
 }

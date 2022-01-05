@@ -1,27 +1,35 @@
-{ lib, rustPlatform, fetchFromGitHub, installShellFiles }:
+{ stdenv, lib, rustPlatform, fetchFromGitHub, installShellFiles, SystemConfiguration, libiconv }:
 
 rustPlatform.buildRustPackage rec {
   pname = "pueue";
-  version = "0.1.6";
+  version = "1.0.4";
 
   src = fetchFromGitHub {
     owner = "Nukesor";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1qp9h1xlfxwswcqi1qn2hfybxl547z13xjbvfgsx1nc8yj51bi3c";
+    sha256 = "sha256-tNTKX++LrWwuVGdmAjvBStNYp4p1ai12JwJmozo1GV0=";
   };
+
+  cargoSha256 = "sha256-t1d8K0v7kHPjH78lYCRCa4pyPCvyQT1kaQtVpoROZIE=";
 
   nativeBuildInputs = [ installShellFiles ];
 
-  cargoSha256 = "00va292bjdp42bkqdkjqajmzc2nshhqa1fj0yfwdf3rrx4nhssjd";
+  buildInputs = lib.optionals stdenv.isDarwin [ SystemConfiguration libiconv ];
+
+  checkFlags = [ "--skip=test_single_huge_payload" "--skip=test_create_unix_socket" ];
 
   postInstall = ''
-    installShellCompletion utils/completions/pueue.{bash,fish} --zsh utils/completions/_pueue
+    for shell in bash fish zsh; do
+      $out/bin/pueue completions $shell .
+    done
+    installShellCompletion pueue.{bash,fish} _pueue
   '';
 
   meta = with lib; {
     description = "A daemon for managing long running shell commands";
     homepage = "https://github.com/Nukesor/pueue";
+    changelog = "https://github.com/Nukesor/pueue/raw/v${version}/CHANGELOG.md";
     license = licenses.mit;
     maintainers = [ maintainers.marsam ];
   };

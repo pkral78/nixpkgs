@@ -17,10 +17,8 @@ buildPhase() {
         # Create the module.
         echo "Building linux driver against kernel: $kernel";
         cd kernel
-        sysSrc=$(echo $kernel/lib/modules/$kernelVersion/source)
-        sysOut=$(echo $kernel/lib/modules/$kernelVersion/build)
         unset src # used by the nv makefile
-        make SYSSRC=$sysSrc SYSOUT=$sysOut module -j$NIX_BUILD_CORES
+        make $makeFlags -j $NIX_BUILD_CORES module
 
         cd ..
     fi
@@ -43,6 +41,23 @@ installPhase() {
     cp -prd *.so.* "$out/lib/"
     if [ -d tls ]; then
         cp -prd tls "$out/lib/"
+    fi
+
+    # Install systemd power management executables
+    if [ -e systemd/nvidia-sleep.sh ]; then
+        mv systemd/nvidia-sleep.sh ./
+    fi
+    if [ -e nvidia-sleep.sh ]; then
+        sed -E 's#(PATH=).*#\1"$PATH"#' nvidia-sleep.sh > nvidia-sleep.sh.fixed
+        install -Dm755 nvidia-sleep.sh.fixed $out/bin/nvidia-sleep.sh
+    fi
+
+    if [ -e systemd/system-sleep/nvidia ]; then
+        mv systemd/system-sleep/nvidia ./
+    fi
+    if [ -e nvidia ]; then
+        sed -E "s#/usr(/bin/nvidia-sleep.sh)#$out\\1#" nvidia > nvidia.fixed
+        install -Dm755 nvidia.fixed $out/lib/systemd/system-sleep/nvidia
     fi
 
     for i in $lib32 $out; do
@@ -73,8 +88,14 @@ installPhase() {
             else
                 sed -E "s#(libGLX_nvidia)#$i/lib/\\1#" nvidia_icd.json > nvidia_icd.json.fixed
             fi
-            install -Dm644 nvidia_icd.json.fixed $i/share/vulkan/icd.d/nvidia.json
+
+            if [ "$system" = "i686-linux" ]; then
+                install -Dm644 nvidia_icd.json.fixed $i/share/vulkan/icd.d/nvidia_icd.i686.json
+            else
+                install -Dm644 nvidia_icd.json.fixed $i/share/vulkan/icd.d/nvidia_icd.json
+            fi
         fi
+
         if [ -e nvidia_layers.json ]; then
             sed -E "s#(libGLX_nvidia)#$i/lib/\\1#" nvidia_layers.json > nvidia_layers.json.fixed
             install -Dm644 nvidia_layers.json.fixed $i/share/vulkan/implicit_layer.d/nvidia_layers.json
@@ -85,12 +106,19 @@ installPhase() {
             sed -E "s#(libEGL_nvidia)#$i/lib/\\1#" 10_nvidia.json > 10_nvidia.json.fixed
             sed -E "s#(libnvidia-egl-wayland)#$i/lib/\\1#" 10_nvidia_wayland.json > 10_nvidia_wayland.json.fixed
 
-            install -Dm644 10_nvidia.json.fixed $i/share/glvnd/egl_vendor.d/nvidia.json
-            install -Dm644 10_nvidia_wayland.json.fixed $i/share/glvnd/egl_vendor.d/nvidia_wayland.json
+            install -Dm644 10_nvidia.json.fixed $i/share/glvnd/egl_vendor.d/10_nvidia.json
+            install -Dm644 10_nvidia_wayland.json.fixed $i/share/egl/egl_external_platform.d/10_nvidia_wayland.json
+
+            if [[ -f "15_nvidia_gbm.json" ]]; then
+              sed -E "s#(libnvidia-egl-gbm)#$i/lib/\\1#" 15_nvidia_gbm.json > 15_nvidia_gbm.json.fixed
+              install -Dm644 15_nvidia_gbm.json.fixed $i/share/egl/egl_external_platform.d/15_nvidia_gbm.json
+
+              mkdir -p $i/lib/gbm
+              ln -s $i/lib/libnvidia-allocator.so $i/lib/gbm/nvidia-drm_gbm.so
+            fi
         fi
 
     done
-
 
     if [ -n "$bin" ]; then
         # Install the X drivers.
@@ -166,6 +194,5 @@ installPhase() {
         # install -Dm755 nvidia-bug-report.sh $bin/bin/nvidia-bug-report.sh
     fi
 }
-
 
 genericBuild

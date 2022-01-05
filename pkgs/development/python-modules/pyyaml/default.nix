@@ -1,26 +1,40 @@
-{ lib, buildPythonPackage, fetchPypi, cython, libyaml, buildPackages }:
+{ lib
+, buildPythonPackage
+, fetchFromGitHub
+, cython
+, libyaml
+, isPy27
+, python
+}:
 
 buildPythonPackage rec {
   pname = "PyYAML";
-  version = "5.2";
+  version = "5.4.1.1";
 
-  src = fetchPypi {
-    inherit pname version;
-    sha256 = "c0ee8eca2c582d29c3c2ec6e2c4f703d1b7f1fb10bc72317355a746057e7346c";
+  src = fetchFromGitHub {
+    owner = "yaml";
+    repo = "pyyaml";
+    rev = version;
+    sha256 = "1v386gzdvsjg0mgix6v03rd0cgs9dl81qvn3m547849jm8r41dx8";
   };
 
-  # force regeneration using Cython
-  postPatch = ''
-    rm ext/_yaml.c
-  '';
-
-  nativeBuildInputs = [ cython buildPackages.stdenv.cc ];
+  nativeBuildInputs = [ cython ];
 
   buildInputs = [ libyaml ];
 
+  checkPhase = let
+    testdir = if isPy27 then "tests/lib" else "tests/lib3";
+  in ''
+    runHook preCheck
+    PYTHONPATH="${testdir}:$PYTHONPATH" ${python.interpreter} -m test_all
+    runHook postCheck
+  '';
+
+  pythonImportsCheck = [ "yaml" ];
+
   meta = with lib; {
     description = "The next generation YAML parser and emitter for Python";
-    homepage = https://github.com/yaml/pyyaml;
+    homepage = "https://github.com/yaml/pyyaml";
     license = licenses.mit;
     maintainers = with maintainers; [ dotlambda ];
   };

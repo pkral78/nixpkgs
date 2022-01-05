@@ -1,15 +1,17 @@
-{ stdenv, fetchurl, zlib, libX11, libXext, libSM, libICE
+{ lib, stdenv, fetchurl, zlib, libX11, libXext, libSM, libICE, libxkbcommon, libxshmfence
 , libXfixes, libXt, libXi, libXcursor, libXScrnSaver, libXcomposite, libXdamage, libXtst, libXrandr
-, alsaLib, dbus, cups, libexif, ffmpeg, systemd
+, alsa-lib, dbus, cups, libexif, ffmpeg, systemd, libva
 , freetype, fontconfig, libXft, libXrender, libxcb, expat
 , libuuid
-, gstreamer, gst-plugins-base, libxml2
+, libxml2
 , glib, gtk3, pango, gdk-pixbuf, cairo, atk, at-spi2-atk, at-spi2-core, gnome2
+, libdrm, mesa
 , nss, nspr
 , patchelf, makeWrapper
 , isSnapshot ? false
 , proprietaryCodecs ? false, vivaldi-ffmpeg-codecs ? null
 , enableWidevine ? false, vivaldi-widevine ? null
+, commandLineArgs ? ""
 }:
 
 let
@@ -17,11 +19,11 @@ let
   vivaldiName = if isSnapshot then "vivaldi-snapshot" else "vivaldi";
 in stdenv.mkDerivation rec {
   pname = "vivaldi";
-  version = "2.11.1811.47-1";
+  version = "5.0.2497.32-1";
 
   src = fetchurl {
     url = "https://downloads.vivaldi.com/${branch}/vivaldi-${branch}_${version}_amd64.deb";
-    sha256 = "16fw6v00xy66mxkkq0b4k49jd0wwlyyvxaaml2gglfk7swxy7i02";
+    sha256 = "1l333q002z9rr08np0r0j89j26shmsl8y2clyqwh54h22h7hmypz";
   };
 
   unpackPhase = ''
@@ -32,34 +34,40 @@ in stdenv.mkDerivation rec {
   nativeBuildInputs = [ patchelf makeWrapper ];
 
   buildInputs = [
-    stdenv.cc.cc stdenv.cc.libc zlib libX11 libXt libXext libSM libICE libxcb
+    stdenv.cc.cc stdenv.cc.libc zlib libX11 libXt libXext libSM libICE libxcb libxkbcommon libxshmfence
     libXi libXft libXcursor libXfixes libXScrnSaver libXcomposite libXdamage libXtst libXrandr
-    atk at-spi2-atk at-spi2-core alsaLib dbus cups gtk3 gdk-pixbuf libexif ffmpeg systemd
+    atk at-spi2-atk at-spi2-core alsa-lib dbus cups gtk3 gdk-pixbuf libexif ffmpeg systemd libva
     freetype fontconfig libXrender libuuid expat glib nss nspr
-    gstreamer libxml2 gst-plugins-base pango cairo gnome2.GConf
-  ] ++ stdenv.lib.optional proprietaryCodecs vivaldi-ffmpeg-codecs;
+    libxml2 pango cairo gnome2.GConf
+    libdrm mesa
+  ] ++ lib.optional proprietaryCodecs vivaldi-ffmpeg-codecs;
 
-  libPath = stdenv.lib.makeLibraryPath buildInputs
-    + stdenv.lib.optionalString (stdenv.is64bit)
-      (":" + stdenv.lib.makeSearchPathOutput "lib" "lib64" buildInputs)
+  libPath = lib.makeLibraryPath buildInputs
+    + lib.optionalString (stdenv.is64bit)
+      (":" + lib.makeSearchPathOutput "lib" "lib64" buildInputs)
     + ":$out/opt/${vivaldiName}/lib";
 
   buildPhase = ''
+    runHook preBuild
     echo "Patching Vivaldi binaries"
-    patchelf \
-      --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
-      --set-rpath "${libPath}" \
-      opt/${vivaldiName}/vivaldi-bin
-  '' + stdenv.lib.optionalString proprietaryCodecs ''
+    for f in chrome_crashpad_handler vivaldi-bin vivaldi-sandbox ; do
+      patchelf \
+        --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+        --set-rpath "${libPath}" \
+        opt/${vivaldiName}/$f
+    done
+  '' + lib.optionalString proprietaryCodecs ''
     ln -s ${vivaldi-ffmpeg-codecs}/lib/libffmpeg.so opt/${vivaldiName}/libffmpeg.so.''${version%\.*\.*}
   '' + ''
     echo "Finished patching Vivaldi binaries"
+    runHook postBuild
   '';
 
   dontPatchELF = true;
   dontStrip    = true;
 
   installPhase = ''
+    runHook preInstall
     mkdir -p "$out"
     cp -r opt "$out"
     mkdir "$out/bin"
@@ -78,17 +86,20 @@ in stdenv.mkDerivation rec {
         "$out"/share/icons/hicolor/''${d}x''${d}/apps/vivaldi.png
     done
     wrapProgram "$out/bin/vivaldi" \
+      --add-flags ${lib.escapeShellArg commandLineArgs} \
       --suffix XDG_DATA_DIRS : ${gtk3}/share/gsettings-schemas/${gtk3.name}/ \
-      ${stdenv.lib.optionalString enableWidevine "--suffix LD_LIBRARY_PATH : ${libPath}"}
-  '' + stdenv.lib.optionalString enableWidevine ''
+      ${lib.optionalString enableWidevine "--suffix LD_LIBRARY_PATH : ${libPath}"}
+  '' + lib.optionalString enableWidevine ''
     ln -sf ${vivaldi-widevine}/share/google/chrome/WidevineCdm $out/opt/${vivaldiName}/WidevineCdm
+  '' + ''
+    runHook postInstall
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A Browser for our Friends, powerful and personal";
     homepage    = "https://vivaldi.com";
     license     = licenses.unfree;
-    maintainers = with maintainers; [ otwieracz nequissimus ];
+    maintainers = with maintainers; [ otwieracz badmutex ];
     platforms   = [ "x86_64-linux" ];
   };
 }

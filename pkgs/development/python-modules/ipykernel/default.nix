@@ -1,66 +1,45 @@
 { lib
-, stdenv
 , buildPythonPackage
+, callPackage
 , fetchPypi
-, fetchpatch
-, flaky
-, ipython
-, jupyter_client
-, traitlets
-, tornado
 , pythonOlder
-, pytestCheckHook
-, nose
+, argcomplete
+, debugpy
+, ipython
+, jupyter-client
+, tornado
+, traitlets
 }:
 
 buildPythonPackage rec {
   pname = "ipykernel";
-  version = "5.1.4";
+  version = "6.5.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "7f1f01df22f1229c8879501057877ccaf92a3b01c1d00db708aad5003e5f9238";
+    sha256 = "dd27172bccbbcfef952991e49372e4c6fd1c14eed0df05ebd5b4335cb27a81a2";
   };
 
-  propagatedBuildInputs = [ ipython jupyter_client traitlets tornado ];
-
-  # https://github.com/ipython/ipykernel/pull/377
-  patches = [
-    (fetchpatch {
-      url = "https://github.com/ipython/ipykernel/commit/a3bf849dbd368a1826deb9dfc94c2bd3e5ed04fe.patch";
-      sha256 = "1yhpwqixlf98a3n620z92mfips3riw6psijqnc5jgs2p58fgs2yc";
-    })
+  propagatedBuildInputs = [
+    debugpy
+    ipython
+    jupyter-client
+    tornado
+    traitlets
+  ] ++ lib.optionals (pythonOlder "3.8") [
+    argcomplete
   ];
 
-  checkInputs = [ pytestCheckHook nose flaky ];
-  dontUseSetuptoolsCheck = true;
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-  disabledTests = lib.optionals stdenv.isDarwin ([
-    # see https://github.com/NixOS/nixpkgs/issues/76197
-    "test_subprocess_print"
-    "test_subprocess_error"
-    "test_ipython_start_kernel_no_userns"
-  ] ++ lib.optionals (pythonOlder "3.8") [
-    # flaky test https://github.com/ipython/ipykernel/issues/485
-    "test_shutdown"
+  # check in passthru.tests.pytest to escape infinite recursion with ipyparallel
+  doCheck = false;
 
-    # test regression https://github.com/ipython/ipykernel/issues/486
-    "test_sys_path_profile_dir"
-    "test_save_history"
-    "test_help_output"
-    "test_write_kernel_spec"
-    "test_ipython_start_kernel_userns"
-    "ZMQDisplayPublisherTests"
-  ]);
-
-  # Some of the tests use localhost networking.
-  __darwinAllowLocalNetworking = true;
+  passthru.tests = {
+    pytest = callPackage ./tests.nix { };
+  };
 
   meta = {
     description = "IPython Kernel for Jupyter";
-    homepage = http://ipython.org/;
+    homepage = "http://ipython.org/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fridh ];
   };

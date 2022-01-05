@@ -1,31 +1,61 @@
 { lib
+, appdirs
 , buildPythonPackage
-, fetchPypi
-, six
-, requests-cache
+, cachelib
+, cssselect
+, fetchFromGitHub
+, keep
+, lxml
 , pygments
 , pyquery
+, requests
+, pytestCheckHook
 }:
 
 buildPythonPackage rec {
   pname = "howdoi";
-  version = "1.2.1";
+  version = "2.0.19";
 
-  src = fetchPypi {
-    inherit pname version;
-    sha256 = "3b322668606d29d8a841c3b28c0574851f512b55c33a7ceb982b6a98d82fa3e3";
+  src = fetchFromGitHub {
+    owner = "gleitz";
+    repo = pname;
+    rev = "v${version}";
+    sha256 = "0hl7cpxm4llsgw6390bpjgkzrprrpb0vxx2flgly7wiy9zl1rc5q";
   };
 
-  propagatedBuildInputs = [ six requests-cache pygments pyquery ];
+  propagatedBuildInputs = [
+    appdirs
+    cachelib
+    cssselect
+    keep
+    lxml
+    pygments
+    pyquery
+    requests
+  ];
+
+  checkInputs = [
+    pytestCheckHook
+  ];
 
   preCheck = ''
     export HOME=$(mktemp -d)
   '';
 
+  disabledTests = [
+    # AssertionError: "The...
+    "test_get_text_with_one_link"
+    "test_get_text_without_links"
+  ];
+
+  pythonImportsCheck = [
+    "howdoi"
+  ];
+
   meta = with lib; {
     description = "Instant coding answers via the command line";
-    homepage = https://pypi.python.org/pypi/howdoi;
+    homepage = "https://pypi.python.org/pypi/howdoi";
     license = licenses.mit;
-    maintainers = [ maintainers.costrouc ];
+    maintainers = with maintainers; [ costrouc ];
   };
 }

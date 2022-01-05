@@ -150,10 +150,10 @@ in
       package = mkOption {
         type = types.package;
         default = pkgs.cockroachdb;
-        defaultText = "pkgs.cockroachdb";
+        defaultText = literalExpression "pkgs.cockroachdb";
         description = ''
           The CockroachDB derivation to use for running the service.
-          
+
           This would primarily be useful to enable Enterprise Edition features
           in your own custom CockroachDB build (Nixpkgs CockroachDB binaries
           only contain open source features and open source code).

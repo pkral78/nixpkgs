@@ -1,16 +1,26 @@
-{ fetchPypi, buildPythonPackage, lib, six, singledispatch, isPy3k }:
+{ fetchPypi, buildPythonPackage, lib, isPy3k
+, click
+, joblib
+, regex
+, tqdm
+}:
 
 buildPythonPackage rec {
-  version = "3.4.5";
+  version = "3.6.7";
   pname = "nltk";
 
   src = fetchPypi {
     inherit pname version;
     extension = "zip";
-    sha256 = "153x2clrnigs74jdgnn3qmljdjj4gprmvpdvh49i18ls4m8mbm5y";
+    sha256 = "51bf1aef5304740a708be7c8e683f7798f03dc5c7a7e7feb758be9e95f4585e3";
   };
 
-  propagatedBuildInputs = [ six ] ++ lib.optional (!isPy3k) singledispatch;
+  propagatedBuildInputs = [
+    click
+    joblib
+    regex
+    tqdm
+  ];
 
   # Tests require some data, the downloading of which is impure. It would
   # probably make sense to make the data another derivation, but then feeding
@@ -22,7 +32,7 @@ buildPythonPackage rec {
 
   meta = {
     description = "Natural Language Processing ToolKit";
-    homepage = http://nltk.org/;
+    homepage = "http://nltk.org/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lheckemann ];
   };

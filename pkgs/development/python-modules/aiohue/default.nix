@@ -1,19 +1,36 @@
-{ lib, buildPythonPackage, fetchPypi, aiohttp }:
+{ lib
+, buildPythonPackage
+, fetchPypi
+, aiohttp
+, asyncio-throttle
+}:
 
 buildPythonPackage rec {
   pname = "aiohue";
-  version = "1.10.1";
+  version = "3.0.11";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "d95e51f15c442d769004774e7b4220155e32dc6c8ae834b035a2f0d8ff783ff0";
+    sha256 = "sha256-McC5DX3Cti9eGpPniywNY2DvbAqHSFwhek85TJN/zn0=";
   };
 
-  propagatedBuildInputs = [ aiohttp ];
+  propagatedBuildInputs = [
+    aiohttp
+    asyncio-throttle
+  ];
+
+  pythonImportsCheck = [
+    "aiohue"
+    "aiohue.discovery"
+  ];
+
+  # Project has no tests
+  doCheck = false;
 
   meta = with lib; {
-    description = "asyncio package to talk to Philips Hue";
-    homepage = https://github.com/balloob/aiohue;
-    license = licenses.asl20;
+    description = "Python package to talk to Philips Hue";
+    homepage = "https://github.com/home-assistant-libs/aiohue";
+    license = with licenses; [ asl20 ];
+    maintainers = with maintainers; [ fab ];
   };
 }

@@ -1,7 +1,8 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchFromGitHub
-, pantheon
-, pkgconfig
+, nix-update-script
+, pkg-config
 , meson
 , ninja
 , vala
@@ -9,6 +10,7 @@
 , gtk3
 , granite
 , libgee
+, libhandy
 , geoclue2
 , libchamplain
 , clutter
@@ -17,6 +19,7 @@
 , python3
 , libnotify
 , libical
+, libgdata
 , evolution-data-server
 , appstream-glib
 , elementary-icon-theme
@@ -25,7 +28,7 @@
 
 stdenv.mkDerivation rec {
   pname = "elementary-calendar";
-  version = "5.0.3";
+  version = "6.0.3";
 
   repoName = "calendar";
 
@@ -33,13 +36,7 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = repoName;
     rev = version;
-    sha256 = "1dqcmh585fjib4m8bs7qy23fv429s7q9nbcqnn0vvmy1n36fic4m";
-  };
-
-  passthru = {
-    updateScript = pantheon.updateScript {
-      attrPath = "pantheon.${pname}";
-    };
+    sha256 = "sha256-+RQUiJLuCIbmcbtsOCfF9HYFrxtldZMbg2vg/a/IOaY=";
   };
 
   nativeBuildInputs = [
@@ -47,7 +44,7 @@ stdenv.mkDerivation rec {
     desktop-file-utils
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
@@ -64,8 +61,10 @@ stdenv.mkDerivation rec {
     gtk3
     libchamplain
     libgee
+    libhandy
     libical
     libnotify
+    libgdata # required by some dependency transitively
   ];
 
   postPatch = ''
@@ -73,11 +72,18 @@ stdenv.mkDerivation rec {
     patchShebangs meson/post_install.py
   '';
 
-  meta = with stdenv.lib; {
+  passthru = {
+    updateScript = nix-update-script {
+      attrPath = "pantheon.${pname}";
+    };
+  };
+
+  meta = with lib; {
     description = "Desktop calendar app designed for elementary OS";
-    homepage = https://github.com/elementary/calendar;
+    homepage = "https://github.com/elementary/calendar";
     license = licenses.gpl3Plus;
     platforms = platforms.linux;
-    maintainers = pantheon.maintainers;
+    maintainers = teams.pantheon.members;
+    mainProgram = "io.elementary.calendar";
   };
 }

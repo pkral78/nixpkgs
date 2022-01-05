@@ -1,13 +1,11 @@
-{ stdenv, lib, buildPythonPackage, python, fetchFromGitHub, fetchpatch, isPy3k
-, notmuch, urwid, urwidtrees, twisted, python_magic, configobj, mock, file, gpgme
-, service-identity
-, gnupg ? null, sphinx, awk ? null, procps ? null, future ? null
-, withManpage ? false }:
-
+{ lib, buildPythonPackage, python, fetchFromGitHub, isPy3k, pytestCheckHook
+, notmuch2, urwid, urwidtrees, twisted, python_magic, configobj, mock, file, gpgme
+, service-identity, gnupg, sphinx, gawk, procps, future , withManpage ? false
+}:
 
 buildPythonPackage rec {
   pname = "alot";
-  version = "0.9";
+  version = "0.10";
   outputs = [ "out" ] ++ lib.optional withManpage "man";
 
   disabled = !isPy3k;
@@ -16,22 +14,17 @@ buildPythonPackage rec {
     owner = "pazz";
     repo = "alot";
     rev = version;
-    sha256 = "sha256-WUwOJcq8JE7YO8sFeZwYikCRhpufO0pL6MKu54ZYsHI=";
+    sha256 = "sha256-1reAq8X9VwaaZDY5UfvcFzHDKd71J88CqJgH3+ANjis=";
   };
 
-  patches = [
-    # can't compose email if signature is set: https://github.com/pazz/alot/issues/1468
-    (fetchpatch {
-      name = "envelope-body.patch";
-      url = "https://github.com/pazz/alot/commit/28a4296c7f556c251d71d9502681980d46d9fa55.patch";
-      sha256 = "1iwvmjyz4mh1g08vr85ywhah2xarcqg8dazagygk19icgsn45w06";
-    })
-  ];
+  postPatch = ''
+    substituteInPlace alot/settings/manager.py --replace /usr/share "$out/share"
+  '';
 
   nativeBuildInputs = lib.optional withManpage sphinx;
 
   propagatedBuildInputs = [
-    notmuch
+    notmuch2
     urwid
     urwidtrees
     twisted
@@ -42,11 +35,14 @@ buildPythonPackage rec {
     gpgme
   ];
 
-  # some twisted tests need the network (test_env_set... )
-  doCheck = false;
   postBuild = lib.optionalString withManpage "make -C docs man";
 
-  checkInputs =  [ awk future mock gnupg procps ];
+  checkInputs = [ gawk future mock gnupg procps pytestCheckHook ];
+  # some twisted tests need internet access
+  disabledTests = [
+    "test_env_set"
+    "test_no_spawn_no_stdin_attached"
+  ];
 
   postInstall = let
     completionPython = python.withPackages (ps: [ ps.configobj ]);
@@ -65,11 +61,11 @@ buildPythonPackage rec {
     sed "s,/usr/bin,$out/bin,g" extra/alot.desktop > $out/share/applications/alot.desktop
   '';
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/pazz/alot;
+  meta = with lib; {
+    homepage = "https://github.com/pazz/alot";
     description = "Terminal MUA using notmuch mail";
-    license = licenses.gpl3;
+    license = licenses.gpl3Plus;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ geistesk ];
+    maintainers = with maintainers; [ edibopp ];
   };
 }

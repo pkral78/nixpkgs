@@ -1,5 +1,5 @@
 { stdenv, lib, fetchFromGitHub, buildEnv, cmake, makeWrapper
-, SDL2, libGL
+, SDL2, libGL, curl
 , oggSupport ? true, libogg, libvorbis
 , openalSupport ? true, openal
 , zipSupport ? true, zlib
@@ -15,20 +15,23 @@ let
 
   yquake2 = stdenv.mkDerivation rec {
     pname = "yquake2";
-    version = "7.30";
+    version = "8.00";
 
     src = fetchFromGitHub {
       owner = "yquake2";
       repo = "yquake2";
       rev = "QUAKE2_${builtins.replaceStrings ["."] ["_"] version}";
-      sha256 = "0xfr620k1hns70dckv6k0kc72jbiwyghcys904jpriv5x94lnrlc";
+      sha256 = "0xnpmh0pl1095dykhc76rp242x587yh9zh6wayqzaam6cn3xlz3w";
     };
 
-    enableParallelBuilding = true;
+    postPatch = ''
+      substituteInPlace src/common/filesystem.c \
+        --replace /usr/share/games/quake2 $out/share/games/quake2
+    '';
 
     nativeBuildInputs = [ cmake ];
 
-    buildInputs = [ SDL2 libGL ]
+    buildInputs = [ SDL2 libGL curl ]
       ++ lib.optionals stdenv.isDarwin [ Cocoa OpenAL ]
       ++ lib.optionals oggSupport [ libogg libvorbis ]
       ++ lib.optional openalSupport openal
@@ -57,7 +60,7 @@ let
       cp $src/stuff/yq2.cfg $out/share/games/quake2
     '';
 
-    meta = with stdenv.lib; {
+    meta = with lib; {
       description = "Yamagi Quake II client";
       homepage = "https://www.yamagi.org/quake2/";
       license = licenses.gpl2;

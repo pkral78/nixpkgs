@@ -1,43 +1,55 @@
 { lib
 , buildPythonPackage
+, cmake
 , fetchPypi
 , isPy3k
 , pytest
 , pytest-pylint
 , nbconvert
-, jupyter_client
+, joblib
+, jupyter-client
 , numpy
 , scipy
 , pandas
 , matplotlib
+, ninja
 , numba
+, pybind11
 }:
 
 buildPythonPackage rec {
   pname = "phik";
-  version = "0.9.8";
-  format = "wheel";
+  version = "0.12.0";
   disabled = !isPy3k;
 
   src = fetchPypi {
-    inherit pname version format;
-    python = "py3";
-    sha256 = "c398452c5c1eea153905666b289c6a153712cf3d58811fa41e2bbbd27a65d678";
+    inherit pname version;
+    sha256 = "959fd40482246e3f643cdac5ea04135b2c11a487e917af7d4e75843f47183549";
   };
 
   checkInputs = [
     pytest
     pytest-pylint
     nbconvert
-    jupyter_client
+    jupyter-client
   ];
 
   propagatedBuildInputs = [
+    joblib
     numpy
     scipy
     pandas
     matplotlib
     numba
+    pybind11
+  ];
+
+  # uses setuptools to drive build process
+  dontUseCmakeConfigure = true;
+
+  nativeBuildInputs = [
+    cmake
+    ninja
   ];
 
   postInstall = ''
@@ -47,7 +59,7 @@ buildPythonPackage rec {
   meta = with lib; {
     description = "Phi_K correlation analyzer library";
     longDescription = "Phi_K is a new and practical correlation coefficient based on several refinements to Pearson’s hypothesis test of independence of two variables.";
-    homepage = https://phik.readthedocs.io/en/latest/;
+    homepage = "https://phik.readthedocs.io/en/latest/";
     maintainers = with maintainers; [ melsigl ];
     license = licenses.asl20;
   };

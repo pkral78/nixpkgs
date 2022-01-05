@@ -37,7 +37,7 @@ in
         type = listOfMaintainers;
         internal = true;
         default = [];
-        example = [ lib.maintainers.all ];
+        example = literalExpression ''[ lib.maintainers.all ]'';
         description = ''
           List of maintainers of each module.  This option should be defined at
           most once per module.
@@ -47,9 +47,9 @@ in
       doc = mkOption {
         type = docFile;
         internal = true;
-        example = "./meta.xml";
+        example = "./meta.chapter.xml";
         description = ''
-          Documentation prologe for the set of options of each module.  This
+          Documentation prologue for the set of options of each module.  This
           option should be defined at most once per module.
         '';
       };

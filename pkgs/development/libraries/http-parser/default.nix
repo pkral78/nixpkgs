@@ -1,16 +1,14 @@
-{ stdenv, fetchFromGitHub }:
+{ lib, stdenv, fetchFromGitHub }:
 
-let
-  version = "2.9.3";
-in stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   pname = "http-parser";
-  inherit version;
+  version = "2.9.4";
 
   src = fetchFromGitHub {
     owner = "nodejs";
     repo = "http-parser";
     rev = "v${version}";
-    sha256 = "189zi61vczqgmqjd2myjcjbbi5icrk7ccs0kn6nj8hxqiv5j3811";
+    sha256 = "1vda4dp75pjf5fcph73sy0ifm3xrssrmf927qd1x8g3q46z0cv6c";
   };
 
   NIX_CFLAGS_COMPILE = "-Wno-error";
@@ -20,9 +18,9 @@ in stdenv.mkDerivation {
   doCheck = true;
   checkTarget = "test";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "An HTTP message parser written in C";
-    homepage = https://github.com/nodejs/http-parser;
+    homepage = "https://github.com/nodejs/http-parser";
     maintainers = with maintainers; [ matthewbauer ];
     license = licenses.mit;
     platforms = platforms.unix;

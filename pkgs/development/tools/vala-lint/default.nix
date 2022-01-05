@@ -1,31 +1,44 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchFromGitHub
+, fetchpatch
 , glib
 , meson
 , ninja
 , pantheon
-, pkgconfig
+, pkg-config
 , vala
 , gettext
 , wrapGAppsHook
+, unstableGitUpdater
 }:
 
 stdenv.mkDerivation rec {
-  pname = "vala-lint-unstable";
-  version = "2019-10-11";
+  pname = "vala-lint";
+  version = "unstable-2021-11-18";
 
   src = fetchFromGitHub {
     owner = "vala-lang";
     repo = "vala-lint";
-    rev = "a077bbec30dea128616a23583ce3f8364ff2ef11";
-    sha256 = "0w0rmaj4v42wc4vq2lfjnj6airag5ahv6522xkw3j1nmccxq3s72";
+    rev = "2db018056befba76136e6c69a78d905a128a6165";
+    sha256 = "sha256-bQaj2bETzl6ykgrpE2iLAvx691aGDLFteL/ulfoKuEk=";
   };
+
+  patches = [
+    # Fix build against vala-0.54.3+. Pull fix pending upstream
+    # inclusion: https://github.com/vala-lang/vala-lint/pull/155
+    (fetchpatch {
+      name = "vala-0.54.patch";
+      url = "https://github.com/vala-lang/vala-lint/commit/739f9a0b7d3e92db41eb32f2bfa527efdacc223b.patch";
+      sha256 = "sha256-1IbQu3AQXRCrrjoMZKhEOqzExmPAo1SQOFHa/IrqnNA=";
+    })
+  ];
 
   nativeBuildInputs = [
     gettext
     meson
     ninja
-    pkgconfig
+    pkg-config
     vala
     wrapGAppsHook
   ];
@@ -34,11 +47,16 @@ stdenv.mkDerivation rec {
     glib
   ];
 
-  # See https://github.com/vala-lang/vala-lint/issues/133
-  doCheck = false;
+  doCheck = true;
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/vala-lang/vala-lint;
+  passthru = {
+    updateScript = unstableGitUpdater {
+      url = "https://github.com/vala-lang/vala-lint.git";
+    };
+  };
+
+  meta = with lib; {
+    homepage = "https://github.com/vala-lang/vala-lint";
     description = "Check Vala code files for code-style errors";
     longDescription = ''
       Small command line tool and library for checking Vala code files for code-style errors.
@@ -46,6 +64,7 @@ stdenv.mkDerivation rec {
     '';
     license = licenses.gpl2Plus;
     platforms = platforms.linux;
-    maintainers = pantheon.maintainers;
+    maintainers = teams.pantheon.members;
+    mainProgram = "io.elementary.vala-lint";
   };
 }

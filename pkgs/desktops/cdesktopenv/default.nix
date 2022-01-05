@@ -1,8 +1,11 @@
-{ stdenv, fetchurl, xorgproto, libX11, bison, ksh, perl, gnum4
+{ lib, stdenv, fetchurl
+, fetchpatch
+, xorgproto, libX11, bison, ksh, perl, gnum4
 , libXinerama, libXt, libXext, libtirpc, motif, libXft, xbitmaps
 , libjpeg, libXmu, libXdmcp, libXScrnSaver, symlinkJoin, bdftopcf
 , ncompress, mkfontdir, tcl, libXaw, gcc, glibcLocales, gawk
-, autoPatchelfHook, libredirect, makeWrapper, xset, xrdb, fakeroot }:
+, autoPatchelfHook, libredirect, makeWrapper, xset, xrdb, fakeroot
+, rpcsvc-proto }:
 
 let
   x11ProjectRoot = symlinkJoin {
@@ -25,6 +28,14 @@ in stdenv.mkDerivation rec {
   # remove with next release
   patches = [
     ./2.3.2.patch
+    ./0001-all-remove-deprecated-sys_errlist-and-replace-with-A.patch
+
+    (fetchpatch {
+      name = "binutils-2.36.patch";
+      url = "https://github.com/cdesktopenv/cde/commit/0b7849e210a99a413ddeb52a0eb5aef9a08504a0.patch";
+      sha256 = "0wlhs617hws3rwln9v74y1nw27n3pp7jkpnxlala7k5y64506ipj";
+      stripLen = 1;
+    })
   ];
 
   buildInputs = [
@@ -33,6 +44,7 @@ in stdenv.mkDerivation rec {
   ];
   nativeBuildInputs = [
     bison ncompress gawk autoPatchelfHook makeWrapper fakeroot
+    rpcsvc-proto
   ];
 
   makeFlags = [
@@ -68,11 +80,11 @@ EOF
     mv $out/opt/dt/bin/dtmail $out/bin
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Common Desktop Environment";
-    homepage = https://sourceforge.net/projects/cdesktopenv/;
+    homepage = "https://sourceforge.net/projects/cdesktopenv/";
     license = licenses.lgpl2;
-    maintainers = [ maintainers.gnidorah ];
+    maintainers = [ ];
     platforms = [ "i686-linux" "x86_64-linux" ];
   };
 }

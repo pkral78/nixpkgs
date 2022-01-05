@@ -1,37 +1,46 @@
-{ stdenv, fetchPypi, buildPythonPackage
-, wxPython, pygments, numpy, vtk, traitsui, envisage, apptools
-, nose, mock
-, isPy3k
+{ lib, buildPythonPackage, pythonOlder, fetchPypi, wrapQtAppsHook
+, pyface, pygments, numpy, vtk, traitsui, envisage, apptools, pyqt5
 }:
 
 buildPythonPackage rec {
   pname = "mayavi";
-  version = "4.7.0";
+  version = "4.7.4";
+
+  disabled = pythonOlder "3.8";
 
   src = fetchPypi {
     inherit pname version;
-    extension = "tar.bz2";
-    sha256 = "02rg4j1vkny2piqn3f728kg34m54kgx396g6h5y7ykz2lk3f3h44";
+    extension = "tar.gz";
+    sha256 = "ec50e7ec6afb0f9224ad1863d104a0d1ded6c8deb13e720652007aaca2303332";
   };
 
-  # Discovery of 'vtk' in setuptools is not working properly, due to a missing
-  # .egg-info in the vtk package. It does however import and run just fine.
   postPatch = ''
+    # Discovery of 'vtk' in setuptools is not working properly, due to a missing
+    # .egg-info in the vtk package. It does however import and run just fine.
     substituteInPlace mayavi/__init__.py --replace "'vtk'" ""
+
+    # building the docs fails with the usual Qt xcb error, so skip:
+    substituteInPlace setup.py \
+      --replace "build.build.run(self)" "build.build.run(self); return"
   '';
 
-  propagatedBuildInputs = [ wxPython pygments numpy vtk traitsui envisage apptools ];
+  nativeBuildInputs = [ wrapQtAppsHook ];
 
-  checkInputs = [ nose mock ];
-
-  disabled = isPy3k; # TODO: This would need pyqt5 instead of wxPython
+  propagatedBuildInputs = [
+    pyface pygments numpy vtk traitsui envisage apptools pyqt5
+  ];
 
   doCheck = false; # Needs X server
+  pythonImportsCheck = [ "mayavi" ];
 
-  meta = with stdenv.lib; {
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  meta = with lib; {
     description = "3D visualization of scientific data in Python";
-    homepage = https://github.com/enthought/mayavi;
-    maintainers = with stdenv.lib.maintainers; [ knedlsepp ];
+    homepage = "https://github.com/enthought/mayavi";
+    maintainers = with maintainers; [ knedlsepp ];
     license = licenses.bsdOriginal;
   };
 }

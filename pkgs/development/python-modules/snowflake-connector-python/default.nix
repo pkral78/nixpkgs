@@ -1,5 +1,6 @@
-{ buildPythonPackage
-, isPy27
+{ lib
+, buildPythonPackage
+, pythonOlder
 , asn1crypto
 , azure-storage-blob
 , boto3
@@ -9,8 +10,6 @@
 , future
 , idna
 , ijson
-, isPy3k
-, lib
 , oscrypto
 , pyarrow
 , pyasn1-modules
@@ -25,12 +24,12 @@
 
 buildPythonPackage rec {
   pname = "snowflake-connector-python";
-  version = "2.2.0";
-  disabled = isPy27;
+  version = "2.7.2";
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1d3qxjqc79fi2l4sns5svbc6kfaihivsrpycflmh50h7x0k9sv7f";
+    sha256 = "b2f8f360750eefa98be09ff53c130381646f8dfc8c6e4a705387676210ff8578";
   };
 
   propagatedBuildInputs = [
@@ -49,19 +48,24 @@ buildPythonPackage rec {
     pytz
     requests
     six
-  ] ++ lib.optionals (!isPy3k) [
     pyarrow
     pyasn1-modules
     urllib3
   ];
 
-  # tests are not working
-  # XXX: fix the tests
+  # Tests require encrypted secrets, see
+  # https://github.com/snowflakedb/snowflake-connector-python/tree/master/.github/workflows/parameters
   doCheck = false;
+
+  pythonImportsCheck = [
+    "snowflake"
+    "snowflake.connector"
+  ];
 
   meta = with lib; {
     description = "Snowflake Connector for Python";
     homepage = "https://www.snowflake.com/";
     license = licenses.asl20;
+    maintainers = with maintainers; [ ];
   };
 }

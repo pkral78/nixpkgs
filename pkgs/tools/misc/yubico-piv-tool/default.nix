@@ -1,20 +1,24 @@
-{ stdenv, fetchurl, pkgconfig, openssl, pcsclite, check }:
+{ lib, stdenv, fetchurl, pkg-config, openssl, check, pcsclite, PCSC
+, withApplePCSC ? stdenv.isDarwin
+}:
 
 stdenv.mkDerivation rec {
-  name = "yubico-piv-tool-2.0.0";
+  pname = "yubico-piv-tool";
+  version = "2.0.0";
 
   src = fetchurl {
-    url = "https://developers.yubico.com/yubico-piv-tool/Releases/${name}.tar.gz";
+    url = "https://developers.yubico.com/yubico-piv-tool/Releases/yubico-piv-tool-${version}.tar.gz";
     sha256 = "124lhlim05gw32ydjh1yawqbnx6wdllz1ir9j00j09wji3m11rfs";
   };
 
-  nativeBuildInputs = [ pkgconfig ];
-  buildInputs = [ openssl pcsclite check ];
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl check ]
+    ++ (if withApplePCSC then [ PCSC ] else [ pcsclite ]);
 
-  configureFlags = [ "--with-backend=pcsc" ];
+  configureFlags = [ "--with-backend=${if withApplePCSC then "macscard" else "pcsc"}" ];
 
-  meta = with stdenv.lib; {
-    homepage = https://developers.yubico.com/yubico-piv-tool/;
+  meta = with lib; {
+    homepage = "https://developers.yubico.com/yubico-piv-tool/";
     description = ''
       Used for interacting with the Privilege and Identification Card (PIV)
       application on a YubiKey

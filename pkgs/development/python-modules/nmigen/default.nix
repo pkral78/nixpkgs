@@ -3,44 +3,67 @@
 , pythonOlder
 , fetchFromGitHub
 , setuptools
-, setuptools_scm
+, setuptools-scm
 , pyvcd
 , jinja2
+, importlib-resources
+, importlib-metadata
+, git
 
 # for tests
-, yosys
+, pytestCheckHook
 , symbiyosys
 , yices
+, yosys
 }:
 
 buildPythonPackage rec {
   pname = "nmigen";
-  version = "unstable-2019-02-08";
+  version = "unstable-2021-02-09";
   # python setup.py --version
-  realVersion = "0.2.dev49+g${lib.substring 0 7 src.rev}";
+  realVersion = "0.3.dev243+g${lib.substring 0 7 src.rev}";
+  disabled = pythonOlder "3.6";
 
   src = fetchFromGitHub {
     owner = "nmigen";
     repo = "nmigen";
-    rev = "66f4510c4465be5d0763d7835770553434e4ee91";
-    sha256 = "19y39c4ywckm4yzrpjzcdl9pqy9d1sf1zsb4zpzajpmnfqccc3b0";
+    rev = "f7c2b9419f9de450be76a0e9cf681931295df65f";
+    sha256 = "0cjs9wgmxa76xqmjhsw4fsb2mhgvd85jgs2mrjxqp6fwp8rlgnl1";
   };
 
-  disabled = pythonOlder "3.6";
+  SETUPTOOLS_SCM_PRETEND_VERSION="${realVersion}";
 
-  nativeBuildInputs = [ setuptools_scm ];
+  nativeBuildInputs = [
+    git
+    setuptools-scm
+  ];
 
-  propagatedBuildInputs = [ setuptools pyvcd jinja2 ];
+  propagatedBuildInputs = [
+    jinja2
+    pyvcd
+    setuptools
+  ] ++
+    lib.optional (pythonOlder "3.9") importlib-resources ++
+    lib.optional (pythonOlder "3.8") importlib-metadata;
 
-  checkInputs = [ yosys symbiyosys yices ];
+  checkInputs = [
+    pytestCheckHook
+    symbiyosys
+    yices
+    yosys
+  ];
 
-  preBuild = ''
-    export SETUPTOOLS_SCM_PRETEND_VERSION="${realVersion}"
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace "Jinja2~=2.11" "Jinja2>=2.11" \
+      --replace "pyvcd~=0.2.2" "pyvcd"
   '';
+
+  pythonImportsCheck = [ "nmigen" ];
 
   meta = with lib; {
     description = "A refreshed Python toolbox for building complex digital hardware";
-    homepage = https://github.com/nmigen/nmigen;
+    homepage = "https://nmigen.info/nmigen";
     license = licenses.bsd2;
     maintainers = with maintainers; [ emily ];
   };

@@ -1,33 +1,60 @@
-{ stdenv, fetchFromGitHub, cmake, pkgconfig, curl, boost, liboauth, jsoncpp
-, htmlcxx, rhash, tinyxml-2, help2man, fetchpatch }:
+{ lib
+, stdenv
+, fetchFromGitHub
+, cmake
+, pkg-config
+, curl
+, boost
+, liboauth
+, jsoncpp
+, htmlcxx
+, rhash
+, tinyxml-2
+, help2man
+}:
 
 stdenv.mkDerivation rec {
   pname = "lgogdownloader";
-  version = "3.5";
+  version = "3.8";
 
   src = fetchFromGitHub {
     owner = "Sude-";
     repo = "lgogdownloader";
     rev = "v${version}";
-    sha256 = "0a3rrkgqwdqxx3ghzw182jx88gzzw6ldp3jasmgnr4l7gpxkmwws";
+    sha256 = "sha256-LywFJCZevlhthOkAZo7JkXcPT9V6Zh28VD/MVQnMQjo=";
   };
 
-  nativeBuildInputs = [ cmake pkgconfig help2man ];
-
-  buildInputs = [ curl boost liboauth jsoncpp htmlcxx rhash tinyxml-2 ];
-
-  patches = [
-    # Fix find_path for newer jsoncpp. Remove with the next release
-    (fetchpatch {
-      url = "https://github.com/Sude-/lgogdownloader/commit/ff353126ecda61824cf866d3807c9ebada96282e.patch";
-      sha256 = "1xr1lwxlrncrj662s9l1is1x1mhs1jbwlj8qafixz5hw2kx22w19";
-    })
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    help2man
   ];
 
-  meta = {
-    homepage = https://github.com/Sude-/lgogdownloader;
+  buildInputs = [
+    boost
+    curl
+    htmlcxx
+    jsoncpp
+    liboauth
+    rhash
+    tinyxml-2
+  ];
+
+  doInstallCheck = true;
+  installCheckPhase = ''
+    if [[ "$("$out/bin/${pname}" --version)" == "LGOGDownloader ${version}" ]]; then
+       echo '${pname} smoke check passed'
+     else
+       echo '${pname} smoke check failed'
+       return 1
+     fi
+  '';
+
+  meta = with lib; {
     description = "Unofficial downloader to GOG.com for Linux users. It uses the same API as the official GOGDownloader";
-    license = stdenv.lib.licenses.wtfpl;
-    platforms = stdenv.lib.platforms.linux;
+    homepage = "https://github.com/Sude-/lgogdownloader";
+    license = licenses.wtfpl;
+    maintainers = with maintainers; [ _0x4A6F ];
+    platforms = platforms.linux;
   };
 }

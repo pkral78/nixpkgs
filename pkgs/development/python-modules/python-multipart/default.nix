@@ -2,7 +2,7 @@
 , buildPythonPackage
 , fetchPypi
 , pytest
-, pytestcov
+, pytest-cov
 , mock
 , pyyaml
 , six
@@ -19,7 +19,7 @@ buildPythonPackage rec {
 
   checkInputs = [
     pytest
-    pytestcov
+    pytest-cov
     mock
     pyyaml
   ];
@@ -34,7 +34,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "A streaming multipart parser for Python";
-    homepage = https://github.com/andrew-d/python-multipart;
+    homepage = "https://github.com/andrew-d/python-multipart";
     license = licenses.asl20;
     maintainers = [ maintainers.costrouc ];
   };

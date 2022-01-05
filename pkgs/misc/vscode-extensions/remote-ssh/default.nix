@@ -1,17 +1,18 @@
-{ stdenv
+{ lib
 , vscode-utils
-, useLocalExtensions ? false}:
+, useLocalExtensions ? false
+}:
 # Note that useLocalExtensions requires that vscode-server is not running
-# on host. If it is, you'll need to remove ~/.vscode-server,
+# on host. If it is, you'll need to remove $HOME/.vscode-server,
 # and redo the install by running "Connect to host" on client
 
 let
   inherit (vscode-utils) buildVscodeMarketplaceExtension;
-  
+
   # patch runs on remote machine hence use of which
   # links to local node if version is 12
   patch = ''
-    f="/home/''$USER/.vscode-server/bin/''$COMMIT_ID/node"
+    f="$HOME/.vscode-server/bin/$COMMIT_ID/node"
     localNodePath=''$(which node)
     if [ -x "''$localNodePath" ]; then
       localNodeVersion=''$(node -v)
@@ -21,35 +22,33 @@ let
         ln -s ''$localNodePath ''$f
       fi
     fi
-    ${stdenv.lib.optionalString useLocalExtensions ''
+    ${lib.optionalString useLocalExtensions ''
       # Use local extensions
-      if [ -d ~/.vscode/extensions ]; then
-        if ! test -L "~/.vscode-server/extensions"; then
-          mkdir -p ~/.vscode-server
-          ln -s ~/.vscode/extensions ~/.vscode-server/
+      if [ -d $HOME/.vscode/extensions ]; then
+        if ! test -L "$HOME/.vscode-server/extensions"; then
+          mkdir -p $HOME/.vscode-server
+          ln -s $HOME/.vscode/extensions $HOME/.vscode-server/
         fi
       fi
     ''}
   '';
 in
-  buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      name = "remote-ssh";
-      publisher = "ms-vscode-remote";
-      version = "0.48.0";
-      sha256 = "04q53gljqh5snkrdf5l69g0ahn1s5z35a4ipfcbf1rsjjmm85a19";
-    };
+buildVscodeMarketplaceExtension {
+  mktplcRef = {
+    name = "remote-ssh";
+    publisher = "ms-vscode-remote";
+    version = "0.66.1";
+    sha256 = "sha256-+v4UnGRG5xOc8k0IzvHUBHa128fhgd3jcmEuciiMQmI=";
+  };
 
-    postPatch = ''
-      substituteInPlace "out/extension.js" \
-        --replace "# install extensions" '${patch}'
-    '';
+  postPatch = ''
+    substituteInPlace "out/extension.js" \
+      --replace "# install extensions" '${patch}'
+  '';
 
-    meta = with stdenv.lib; {
-      description ="Use any remote machine with a SSH server as your development environment.";
-      license = licenses.unfree;
-      maintainers = with maintainers; [
-        tbenst
-      ];
-    };
-  }
+  meta = with lib; {
+    description = "Use any remote machine with a SSH server as your development environment.";
+    license = licenses.unfree;
+    maintainers = with maintainers; [ SuperSandro2000 tbenst ];
+  };
+}

@@ -1,19 +1,26 @@
-{ stdenv, buildGoModule, fetchFromGitHub, installShellFiles }:
+{ lib, buildGoModule, fetchFromGitHub, installShellFiles }:
 
 buildGoModule rec {
   pname = "helm";
-  version = "3.1.1";
+  version = "3.7.2";
+  gitCommit = "663a896f4a815053445eec4153677ddc24a0a361";
 
   src = fetchFromGitHub {
     owner = "helm";
     repo = "helm";
     rev = "v${version}";
-    sha256 = "16hbwmgq14g28r9s0ipnpiqlppyh57yrcqcspmj05vrf9jsg5vwj";
+    sha256 = "sha256-MhBuwpgF1PBAZ5QwF7t4J1gqam2cMX+hkdZs7KoSD6I=";
   };
-  modSha256 = "0618zzi4x37ahsrazsr82anghhfva8yaryzb3p5d737p3ixbiyv8";
+  vendorSha256 = "sha256-YDdpeVh9rG3MF1HgG7uuRvjXDr9Fcjuhrj16kpK8tsI=";
+
+  doCheck = false;
 
   subPackages = [ "cmd/helm" ];
-  buildFlagsArray = [ "-ldflags=-w -s -X helm.sh/helm/v3/internal/version.version=v${version}" ];
+  ldflags = [
+    "-w" "-s"
+    "-X helm.sh/helm/v3/internal/version.version=v${version}"
+    "-X helm.sh/helm/v3/internal/version.gitCommit=${gitCommit}"
+  ];
 
   nativeBuildInputs = [ installShellFiles ];
   postInstall = ''
@@ -22,10 +29,10 @@ buildGoModule rec {
     installShellCompletion helm.{bash,zsh}
   '';
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/kubernetes/helm;
+  meta = with lib; {
+    homepage = "https://github.com/kubernetes/helm";
     description = "A package manager for kubernetes";
     license = licenses.asl20;
-    maintainers = with maintainers; [ rlupton20 edude03 saschagrunert Frostman ];
+    maintainers = with maintainers; [ rlupton20 edude03 saschagrunert Frostman Chili-Man ];
   };
 }

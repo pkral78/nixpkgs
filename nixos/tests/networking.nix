@@ -8,7 +8,9 @@ with import ../lib/testing-python.nix { inherit system pkgs; };
 with pkgs.lib;
 
 let
-  router = { config, pkgs, ... }:
+  qemu-common = import ../lib/qemu-common.nix { inherit (pkgs) lib pkgs; };
+
+  router = { config, pkgs, lib, ... }:
     with pkgs.lib;
     let
       vlanIfs = range 1 (length config.virtualisation.vlans);
@@ -30,17 +32,20 @@ let
       services.dhcpd4 = {
         enable = true;
         interfaces = map (n: "eth${toString n}") vlanIfs;
-        extraConfig = ''
-          authoritative;
-        '' + flip concatMapStrings vlanIfs (n: ''
+        extraConfig = flip concatMapStrings vlanIfs (n: ''
           subnet 192.168.${toString n}.0 netmask 255.255.255.0 {
             option routers 192.168.${toString n}.1;
-            # XXX: technically it's _not guaranteed_ that IP addresses will be
-            # issued from the first item in range onwards! We assume that in
-            # our tests however.
-            range 192.168.${toString n}.2 192.168.${toString n}.254;
+            range 192.168.${toString n}.3 192.168.${toString n}.254;
           }
-        '');
+        '')
+        ;
+        machines = flip map vlanIfs (vlan:
+          {
+            hostName = "client${toString vlan}";
+            ethernetAddress = qemu-common.qemuNicMac vlan 1;
+            ipAddress = "192.168.${toString vlan}.2";
+          }
+        );
       };
       services.radvd = {
         enable = true;
@@ -200,6 +205,7 @@ let
           useDHCP = false;
           interfaces.eth1 = {
             ipv4.addresses = mkOverride 0 [ ];
+            mtu = 1343;
             useDHCP = true;
           };
           interfaces.eth2.ipv4.addresses = mkOverride 0 [ ];
@@ -215,6 +221,9 @@ let
 
           with subtest("Wait until we have an ip address on each interface"):
               client.wait_until_succeeds("ip addr show dev eth1 | grep -q '192.168.1'")
+
+          with subtest("ensure MTU is set"):
+              assert "mtu 1343" in client.succeed("ip link show dev eth1")
 
           with subtest("Test vlan 1"):
               client.wait_until_succeeds("ping -c 1 192.168.1.1")
@@ -371,12 +380,57 @@ let
               router.wait_until_succeeds("ping -c 1 192.168.1.3")
         '';
     };
+    fou = {
+      name = "foo-over-udp";
+      nodes.machine = { ... }: {
+        virtualisation.vlans = [ 1 ];
+        networking = {
+          useNetworkd = networkd;
+          useDHCP = false;
+          interfaces.eth1.ipv4.addresses = mkOverride 0
+            [ { address = "192.168.1.1"; prefixLength = 24; } ];
+          fooOverUDP = {
+            fou1 = { port = 9001; };
+            fou2 = { port = 9002; protocol = 41; };
+            fou3 = mkIf (!networkd)
+              { port = 9003; local.address = "192.168.1.1"; };
+            fou4 = mkIf (!networkd)
+              { port = 9004; local = { address = "192.168.1.1"; dev = "eth1"; }; };
+          };
+        };
+        systemd.services = {
+          fou3-fou-encap.after = optional (!networkd) "network-addresses-eth1.service";
+        };
+      };
+      testScript = { ... }:
+        ''
+          import json
+
+          machine.wait_for_unit("network.target")
+          fous = json.loads(machine.succeed("ip -json fou show"))
+          assert {"port": 9001, "gue": None, "family": "inet"} in fous, "fou1 exists"
+          assert {"port": 9002, "ipproto": 41, "family": "inet"} in fous, "fou2 exists"
+        '' + optionalString (!networkd) ''
+          assert {
+              "port": 9003,
+              "gue": None,
+              "family": "inet",
+              "local": "192.168.1.1",
+          } in fous, "fou3 exists"
+          assert {
+              "port": 9004,
+              "gue": None,
+              "family": "inet",
+              "local": "192.168.1.1",
+              "dev": "eth1",
+          } in fous, "fou4 exists"
+        '';
+    };
     sit = let
       node = { address4, remote, address6 }: { pkgs, ... }: with pkgs.lib; {
         virtualisation.vlans = [ 1 ];
         networking = {
           useNetworkd = networkd;
-          firewall.enable = false;
           useDHCP = false;
           sits.sit = {
             inherit remote;
@@ -391,8 +445,30 @@ let
       };
     in {
       name = "Sit";
-      nodes.client1 = node { address4 = "192.168.1.1"; remote = "192.168.1.2"; address6 = "fc00::1"; };
-      nodes.client2 = node { address4 = "192.168.1.2"; remote = "192.168.1.1"; address6 = "fc00::2"; };
+      # note on firewalling: the two nodes are explicitly asymmetric.
+      # client1 sends SIT packets in UDP, but accepts only proto-41 incoming.
+      # client2 does the reverse, sending in proto-41 and accepting only UDP incoming.
+      # that way we'll notice when either SIT itself or FOU breaks.
+      nodes.client1 = args@{ pkgs, ... }:
+        mkMerge [
+          (node { address4 = "192.168.1.1"; remote = "192.168.1.2"; address6 = "fc00::1"; } args)
+          {
+            networking = {
+              firewall.extraCommands = "iptables -A INPUT -p 41 -j ACCEPT";
+              sits.sit.encapsulation = { type = "fou"; port = 9001; };
+            };
+          }
+        ];
+      nodes.client2 = args@{ pkgs, ... }:
+        mkMerge [
+          (node { address4 = "192.168.1.2"; remote = "192.168.1.1"; address6 = "fc00::2"; } args)
+          {
+            networking = {
+              firewall.allowedUDPPorts = [ 9001 ];
+              fooOverUDP.fou1 = { port = 9001; protocol = 41; };
+            };
+          }
+        ];
       testScript = { ... }:
         ''
           start_all()
@@ -411,6 +487,77 @@ let
 
               client2.wait_until_succeeds("ping -c 1 fc00::1")
               client2.wait_until_succeeds("ping -c 1 fc00::2")
+        '';
+    };
+    gre = let
+      node = { pkgs, ... }: with pkgs.lib; {
+        networking = {
+          useNetworkd = networkd;
+          useDHCP = false;
+        };
+      };
+    in {
+      name = "GRE";
+      nodes.client1 = args@{ pkgs, ... }:
+        mkMerge [
+          (node args)
+          {
+            virtualisation.vlans = [ 1 2 ];
+            networking = {
+              greTunnels = {
+                greTunnel = {
+                  local = "192.168.2.1";
+                  remote = "192.168.2.2";
+                  dev = "eth2";
+                  type = "tap";
+                };
+              };
+              bridges.bridge.interfaces = [ "greTunnel" "eth1" ];
+              interfaces.eth1.ipv4.addresses = mkOverride 0 [];
+              interfaces.bridge.ipv4.addresses = mkOverride 0 [
+                { address = "192.168.1.1"; prefixLength = 24; }
+              ];
+            };
+          }
+        ];
+      nodes.client2 = args@{ pkgs, ... }:
+        mkMerge [
+          (node args)
+          {
+            virtualisation.vlans = [ 2 3 ];
+            networking = {
+              greTunnels = {
+                greTunnel = {
+                  local = "192.168.2.2";
+                  remote = "192.168.2.1";
+                  dev = "eth1";
+                  type = "tap";
+                };
+              };
+              bridges.bridge.interfaces = [ "greTunnel" "eth2" ];
+              interfaces.eth2.ipv4.addresses = mkOverride 0 [];
+              interfaces.bridge.ipv4.addresses = mkOverride 0 [
+                { address = "192.168.1.2"; prefixLength = 24; }
+              ];
+            };
+          }
+        ];
+      testScript = { ... }:
+        ''
+          start_all()
+
+          with subtest("Wait for networking to be configured"):
+              client1.wait_for_unit("network.target")
+              client2.wait_for_unit("network.target")
+
+              # Print diagnostic information
+              client1.succeed("ip addr >&2")
+              client2.succeed("ip addr >&2")
+
+          with subtest("Test GRE tunnel bridge over VLAN"):
+              client1.wait_until_succeeds("ping -c 1 192.168.1.2")
+
+              client2.wait_until_succeeds("ping -c 1 192.168.1.1")
         '';
     };
     vlan = let
@@ -455,11 +602,14 @@ let
           ipv4.addresses = [ { address = "192.168.1.1"; prefixLength = 24; } ];
           ipv6.addresses = [ { address = "2001:1470:fffd:2096::"; prefixLength = 64; } ];
           virtual = true;
+          mtu = 1342;
+          macAddress = "02:de:ad:be:ef:01";
         };
         networking.interfaces.tun0 = {
           ipv4.addresses = [ { address = "192.168.1.2"; prefixLength = 24; } ];
           ipv6.addresses = [ { address = "2001:1470:fffd:2097::"; prefixLength = 64; } ];
           virtual = true;
+          mtu = 1343;
         };
       };
 
@@ -471,7 +621,7 @@ let
 
         with subtest("Wait for networking to come up"):
             machine.start()
-            machine.wait_for_unit("network-online.target")
+            machine.wait_for_unit("network.target")
 
         with subtest("Test interfaces set up"):
             list = machine.succeed("ip tuntap list | sort").strip()
@@ -486,7 +636,12 @@ let
             """.format(
                 list, targetList
             )
-
+        with subtest("Test MTU and MAC Address are configured"):
+            machine.wait_until_succeeds("ip link show dev tap0 | grep 'mtu 1342'")
+            machine.wait_until_succeeds("ip link show dev tun0 | grep 'mtu 1343'")
+            assert "02:de:ad:be:ef:01" in machine.succeed("ip link show dev tap0")
+      '' # network-addresses-* only exist in scripted networking
+      + optionalString (!networkd) ''
         with subtest("Test interfaces clean up"):
             machine.succeed("systemctl stop network-addresses-tap0")
             machine.sleep(10)
@@ -494,7 +649,7 @@ let
             machine.sleep(10)
             residue = machine.succeed("ip tuntap list")
             assert (
-                residue is ""
+                residue == ""
             ), "Some virtual interface has not been properly cleaned:\n{}".format(residue)
       '';
     };
@@ -602,17 +757,17 @@ let
       };
 
       testScript = ''
-        targetIPv4Table = """
-        10.0.0.0/16 proto static scope link mtu 1500 
-        192.168.1.0/24 proto kernel scope link src 192.168.1.2 
-        192.168.2.0/24 via 192.168.1.1 proto static 
-        """.strip()
+        targetIPv4Table = [
+            "10.0.0.0/16 proto static scope link mtu 1500",
+            "192.168.1.0/24 proto kernel scope link src 192.168.1.2",
+            "192.168.2.0/24 via 192.168.1.1 proto static",
+        ]
 
-        targetIPv6Table = """
-        2001:1470:fffd:2097::/64 proto kernel metric 256 pref medium
-        2001:1470:fffd:2098::/64 via fdfd:b3f0::1 proto static metric 1024 pref medium
-        fdfd:b3f0::/48 proto static metric 1024 pref medium
-        """.strip()
+        targetIPv6Table = [
+            "2001:1470:fffd:2097::/64 proto kernel metric 256 pref medium",
+            "2001:1470:fffd:2098::/64 via fdfd:b3f0::1 proto static metric 1024 pref medium",
+            "fdfd:b3f0::/48 proto static metric 1024 pref medium",
+        ]
 
         machine.start()
         machine.wait_for_unit("network.target")
@@ -620,9 +775,9 @@ let
         with subtest("test routing tables"):
             ipv4Table = machine.succeed("ip -4 route list dev eth0 | head -n3").strip()
             ipv6Table = machine.succeed("ip -6 route list dev eth0 | head -n3").strip()
-            assert (
-                ipv4Table == targetIPv4Table
-            ), """
+            assert [
+                l.strip() for l in ipv4Table.splitlines()
+            ] == targetIPv4Table, """
               The IPv4 routing table does not match the expected one:
                 Result:
                   {}
@@ -631,9 +786,9 @@ let
               """.format(
                 ipv4Table, targetIPv4Table
             )
-            assert (
-                ipv6Table == targetIPv6Table
-            ), """
+            assert [
+                l.strip() for l in ipv6Table.splitlines()
+            ] == targetIPv6Table, """
               The IPv6 routing table does not match the expected one:
                 Result:
                   {}
@@ -648,11 +803,78 @@ let
             ipv4Residue = machine.succeed("ip -4 route list dev eth0 | head -n-3").strip()
             ipv6Residue = machine.succeed("ip -6 route list dev eth0 | head -n-3").strip()
             assert (
-                ipv4Residue is ""
+                ipv4Residue == ""
             ), "The IPv4 routing table has not been properly cleaned:\n{}".format(ipv4Residue)
             assert (
-                ipv6Residue is ""
+                ipv6Residue == ""
             ), "The IPv6 routing table has not been properly cleaned:\n{}".format(ipv6Residue)
+      '';
+    };
+    rename = {
+      name = "RenameInterface";
+      machine = { pkgs, ... }: {
+        virtualisation.vlans = [ 1 ];
+        networking = {
+          useNetworkd = networkd;
+          useDHCP = false;
+        };
+      } //
+      (if networkd
+       then { systemd.network.links."10-custom_name" = {
+                matchConfig.MACAddress = "52:54:00:12:01:01";
+                linkConfig.Name = "custom_name";
+              };
+            }
+       else { services.udev.initrdRules = ''
+               SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="52:54:00:12:01:01", KERNEL=="eth*", NAME="custom_name"
+              '';
+            });
+      testScript = ''
+        machine.succeed("udevadm settle")
+        print(machine.succeed("ip link show dev custom_name"))
+      '';
+    };
+    # even with disabled networkd, systemd.network.links should work
+    # (as it's handled by udev, not networkd)
+    link = {
+      name = "Link";
+      nodes.client = { pkgs, ... }: {
+        virtualisation.vlans = [ 1 ];
+        networking = {
+          useNetworkd = networkd;
+          useDHCP = false;
+        };
+        systemd.network.links."50-foo" = {
+          matchConfig = {
+            Name = "foo";
+            Driver = "dummy";
+          };
+          linkConfig.MTUBytes = "1442";
+        };
+      };
+      testScript = ''
+        print(client.succeed("ip l add name foo type dummy"))
+        print(client.succeed("stat /etc/systemd/network/50-foo.link"))
+        client.succeed("udevadm settle")
+        assert "mtu 1442" in client.succeed("ip l show dummy0")
+      '';
+    };
+    wlanInterface = let
+      testMac = "06:00:00:00:02:00";
+    in {
+      name = "WlanInterface";
+      machine = { pkgs, ... }: {
+        boot.kernelModules = [ "mac80211_hwsim" ];
+        networking.wlanInterfaces = {
+          wlan0 = { device = "wlan0"; };
+          wap0 = { device = "wlan0"; mac = testMac; };
+        };
+      };
+      testScript = ''
+        machine.start()
+        machine.wait_for_unit("network.target")
+        machine.wait_until_succeeds("ip address show wap0 | grep -q ${testMac}")
+        machine.fail("ip address show wlan0 | grep -q ${testMac}")
       '';
     };
   };

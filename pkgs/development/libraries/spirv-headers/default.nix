@@ -1,19 +1,19 @@
-{ stdenv, fetchFromGitHub, cmake }:
+{ lib, stdenv, fetchFromGitHub, cmake }:
 
 stdenv.mkDerivation rec {
   pname = "spirv-headers";
-  version = "1.5.1";
+  version = "unstable-2021-08-11";
 
   src = fetchFromGitHub {
     owner = "KhronosGroup";
     repo = "SPIRV-Headers";
-    rev = version;
-    sha256 = "1fnd8qwss6pxcch5j9qi1pdz70828zxsg4m8apgrhyj0p9lm0rbg";
+    rev = "e71feddb3f17c5586ff7f4cfb5ed1258b800574b";
+    sha256 = "sha256-9m0EBcgdya+KCNJHC3x+YV2sXoSNToTcgDkpeKzId6U=";
   };
 
   nativeBuildInputs = [ cmake ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     inherit (src.meta) homepage;
     description = "Machine-readable components of the Khronos SPIR-V Registry";
     license = licenses.mit;

@@ -1,5 +1,5 @@
-{ stdenv, fetchFromGitHub
-, alsaLib, flac, libmad, libvorbis, mpg123
+{ lib, stdenv, fetchFromGitHub
+, alsa-lib, flac, libmad, libvorbis, mpg123
 , dsdSupport ? true
 , faad2Support ? true, faad2
 , ffmpegSupport ? true, ffmpeg
@@ -9,8 +9,8 @@
 }:
 
 let
-  concatStringsSep = stdenv.lib.concatStringsSep;
-  optional = stdenv.lib.optional;
+  concatStringsSep = lib.concatStringsSep;
+  optional = lib.optional;
   opts = [ "-DLINKALL" ]
     ++ optional dsdSupport "-DDSD"
     ++ optional (!faad2Support) "-DNO_FAAD"
@@ -33,7 +33,7 @@ in stdenv.mkDerivation {
     sha256 = "024ypr1da2r079k3hgiifzd3d3wcfprhbl5zdm40zm0c7frzmr8i";
   };
 
-  buildInputs = [ alsaLib flac libmad libvorbis mpg123 ]
+  buildInputs = [ alsa-lib flac libmad libvorbis mpg123 ]
     ++ optional faad2Support faad2
     ++ optional ffmpegSupport ffmpeg
     ++ optional opusSupport opusfile
@@ -60,9 +60,9 @@ in stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Lightweight headless squeezebox client emulator";
-    homepage = https://github.com/ralph-irving/squeezelite;
+    homepage = "https://github.com/ralph-irving/squeezelite";
     license = with licenses; [ gpl3 ] ++ optional dsdSupport bsd2;
     maintainers = with maintainers; [ samdoshi ];
     platforms = platforms.linux;

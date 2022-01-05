@@ -1,22 +1,22 @@
-{ stdenv, fetchFromGitHub, rustPlatform, Security, openssl, pkgconfig, libiconv, curl }:
+{ lib, stdenv, fetchFromGitHub, rustPlatform, Security, openssl, pkg-config, libiconv, curl }:
 
 rustPlatform.buildRustPackage rec {
   pname = "cargo-generate";
-  version = "0.5.0";
+  version = "0.11.1";
 
   src = fetchFromGitHub {
     owner = "ashleygwilliams";
     repo = "cargo-generate";
     rev = "v${version}";
-    sha256 = "07hklya22ixklb44f3qp6yyh5d03a7rjcn0g76icqr36hvcjyjjh";
+    sha256 = "sha256-t0vIuJUGPgHQFBezmEMOlEJItwOJHlIQMFvcUZlx9is=";
   };
 
-  cargoSha256 = "133n8j4d0j0rasns3a4kkflhrvmvkqfggcrfj4sp79am19pr146b";
+  cargoSha256 = "sha256-esfiMnnij3Tf1qROVViPAqXFJA4DAHarV44pK5zpDrc=";
 
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [ openssl  ]
-    ++ stdenv.lib.optionals stdenv.isDarwin [ Security libiconv curl ];
+    ++ lib.optionals stdenv.isDarwin [ Security libiconv curl ];
 
   preCheck = ''
     export HOME=$(mktemp -d) USER=nixbld
@@ -24,11 +24,16 @@ rustPlatform.buildRustPackage rec {
     git config --global user.email nixbld@localhost.localnet
   '';
 
-  meta = with stdenv.lib; {
+  # Exclude some tests that don't work in sandbox:
+  # - favorites_default_to_git_if_not_defined: requires network access to github.com
+  # - should_canonicalize: the test assumes that it will be called from the /Users/<project_dir>/ folder on darwin variant.
+  checkFlags = [ "--skip favorites::favorites_default_to_git_if_not_defined" ]
+      ++ lib.optionals stdenv.isDarwin [ "--skip git::should_canonicalize" ];
+
+  meta = with lib; {
     description = "cargo, make me a project";
-    homepage = https://github.com/ashleygwilliams/cargo-generate;
+    homepage = "https://github.com/ashleygwilliams/cargo-generate";
     license = licenses.asl20;
     maintainers = [ maintainers.turbomack ];
-    platforms = platforms.all;
   };
 }

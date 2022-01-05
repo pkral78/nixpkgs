@@ -1,85 +1,156 @@
-{ stdenv, fetchurl
-, p7zip, pkgconfig
-, libX11, libXv
+{ lib
+, stdenv
+, fetchFromGitHub
+, SDL2
+, alsa-lib
+, gtk3
+, gtksourceview3
+, libGL
+, libGLU
+, libX11
+, libXv
+, libao
+, libpulseaudio
+, openal
+, pkg-config
+, runtimeShell
 , udev
-, libGLU, libGL, SDL
-, libao, openal, libpulseaudio
-, gtk2, gtksourceview
-, runtimeShell }:
+# Darwin dependencies
+, libicns
+, Carbon
+, Cocoa
+, OpenAL
+, OpenGL
+}:
 
-with stdenv.lib;
 stdenv.mkDerivation rec {
-
   pname = "higan";
-  version = "106";
-  sourceName = "higan_v${version}-source";
+  version = "115+unstable=2021-08-18";
 
-  src = fetchurl {
-    urls = [ "https://download.byuu.org/${sourceName}.7z" ];
-    sha256 = "063dzp9wrdnbvagraxi31xg0154y2gf67rrd0mnc8h104cgzjr35";
-    curlOpts = "--user-agent 'Mozilla/5.0'"; # the good old user-agent trick...
+  src = fetchFromGitHub {
+    owner = "higan-emu";
+    repo = "higan";
+    rev = "9bf1b3314b2bcc73cbc11d344b369c31562aff10";
+    hash = "sha256-HZItJ97x20OjFKv2OVbMja7g+c1ZXcgcaC/XDe3vMZM=";
   };
 
-  patches = [ ./0001-change-flags.diff ];
-  postPatch = "sed '1i#include <cmath>' -i higan/fc/ppu/ppu.cpp";
+  nativeBuildInputs = [
+    pkg-config
+  ] ++ lib.optionals stdenv.isDarwin [
+    libicns
+  ];
 
-  buildInputs =
-  [ p7zip pkgconfig libX11 libXv udev libGLU libGL
-    SDL libao openal libpulseaudio gtk2 gtksourceview ];
+  buildInputs = [
+    SDL2
+    libao
+  ] ++ lib.optionals stdenv.isLinux [
+    alsa-lib
+    gtk3
+    gtksourceview3
+    libGL
+    libGLU
+    libX11
+    libXv
+    libpulseaudio
+    openal
+    udev
+  ] ++ lib.optionals stdenv.isDarwin [
+    Carbon
+    Cocoa
+    OpenAL
+    OpenGL
+  ];
 
-  unpackPhase = ''
-    7z x $src
-    sourceRoot=${sourceName}
-  '';
+  patches = [
+    # Includes cmath header
+    ./001-include-cmath.patch
+    # Uses png2icns instead of sips
+    ./002-sips-to-png2icns.patch
+  ];
+
+  dontConfigure = true;
+
+  enableParallelBuilding = true;
 
   buildPhase = ''
-    make compiler=c++ -C icarus
-    make compiler=c++ -C higan
+    runHook preBuild
+
+    make -j $NIX_BUILD_CORES compiler=${stdenv.cc.targetPrefix}c++ \
+         platform=linux openmp=true hiro=gtk3 build=accuracy local=false \
+         cores="cv fc gb gba md ms msx ngp pce sfc sg ws" -C higan-ui
+    make -j $NIX_BUILD_CORES compiler=${stdenv.cc.targetPrefix}c++ \
+         platform=linux openmp=true hiro=gtk3 -C icarus
+
+    runHook postBuild
   '';
 
-  # Now the cheats file will be distributed separately
   installPhase = ''
-    install -dm 755 $out/bin $out/share/applications $out/share/higan $out/share/pixmaps
-    install -m 755 icarus/out/icarus $out/bin/
-    install -m 755 higan/out/higan $out/bin/
-    install -m 644 higan/data/higan.desktop $out/share/applications/
-    install -m 644 higan/data/higan.png $out/share/pixmaps/higan-icon.png
-    install -m 644 higan/resource/logo/higan.png $out/share/pixmaps/higan-logo.png
-    cp --recursive --no-dereference --preserve='links' --no-preserve='ownership' \
-      higan/systems/* $out/share/higan/
-  '';
+    runHook preInstall
 
-  fixupPhase = ''
+  '' + (if stdenv.isDarwin then ''
+    mkdir ${placeholder "out"}
+    mv higan/out/higan.app ${placeholder "out"}/
+    mv icarus/out/icarus.app ${placeholder "out"}/
+  '' else ''
+    install -d ${placeholder "out"}/bin
+    install higan-ui/out/higan -t ${placeholder "out"}/bin/
+    install icarus/out/icarus -t ${placeholder "out"}/bin/
+
+    install -d ${placeholder "out"}/share/applications
+    install higan-ui/resource/higan.desktop -t ${placeholder "out"}/share/applications/
+    install icarus/resource/icarus.desktop -t ${placeholder "out"}/share/applications/
+
+    install -d ${placeholder "out"}/share/pixmaps
+    install higan/higan/resource/higan.svg ${placeholder "out"}/share/pixmaps/higan-icon.svg
+    install higan/higan/resource/logo.png ${placeholder "out"}/share/pixmaps/higan-icon.png
+    install icarus/resource/icarus.svg ${placeholder "out"}/share/pixmaps/icarus-icon.svg
+    install icarus/resource/icarus.png ${placeholder "out"}/share/pixmaps/icarus-icon.png
+  '') + ''
+    install -d ${placeholder "out"}/share/higan
+    cp -rd extras/ higan/System/ ${placeholder "out"}/share/higan/
+
+    install -d ${placeholder "out"}/share/icarus
+    cp -rd icarus/Database icarus/Firmware ${placeholder "out"}/share/icarus/
+  '' + (
     # A dirty workaround, suggested by @cpages:
     # we create a first-run script to populate
-    # the local $HOME with all the auxiliary
-    # stuff needed by higan at runtime
-
-    cat <<EOF > $out/bin/higan-init.sh
+    # $HOME with all the stuff needed at runtime
+    let
+      dest = if stdenv.isDarwin
+           then "\\$HOME/Library/Application Support/higan"
+           else "\\$HOME/higan";
+    in ''
+    mkdir -p ${placeholder "out"}/bin
+    cat <<EOF > ${placeholder "out"}/bin/higan-init.sh
     #!${runtimeShell}
 
-    cp --recursive --update $out/share/higan/*.sys \$HOME/.local/share/higan/
+    cp --recursive --update ${placeholder "out"}/share/higan/System/ "${dest}"/
 
     EOF
 
-    chmod +x $out/bin/higan-init.sh
+    chmod +x ${placeholder "out"}/bin/higan-init.sh
+  '') + ''
+
+    runHook postInstall
   '';
 
-  meta = {
-    description = "An open-source, cycle-accurate Nintendo multi-system emulator";
+  meta = with lib; {
+    homepage = "https://github.com/higan-emu/higan";
+    description = "An open-source, cycle-accurate multi-system emulator";
     longDescription = ''
-      higan (formerly bsnes) is a multi-system game console emulator.
-      It currently supports the following systems:
-        - Nintendo's Famicom, Super Famicom (with subsystems:
-          Super Game Boy, BS-X Satellaview, Sufami Turbo);
-          Game Boy, Game Boy Color, Game Boy Advance;
-        - Sega's Master System, Game Gear, Mega Drive;
-        - NEC's PC Engine, SuperGrafx;
-        - Bandai's WonderSwan, WonderSwan Color.
+      higan is a multi-system emulator, originally developed by Near, with an
+      uncompromising focus on accuracy and code readability.
+
+      It currently emulates the following systems: Famicom, Famicom Disk System,
+      Super Famicom, Super Game Boy, Game Boy, Game Boy Color, Game Boy Advance,
+      Game Boy Player, SG-1000, SC-3000, Master System, Game Gear, Mega Drive,
+      Mega CD, PC Engine, SuperGrafx, MSX, MSX2, ColecoVision, Neo Geo Pocket,
+      Neo Geo Pocket Color, WonderSwan, WonderSwan Color, SwanCrystal, Pocket
+      Challenge V2.
     '';
-    homepage = https://byuu.org/emulation/higan/;
     license = licenses.gpl3Plus;
     maintainers = with maintainers; [ AndersonTorres ];
-    platforms = with platforms; unix;
+    platforms = platforms.unix;
   };
 }
+# TODO: select between Qt, GTK2 and GTK3

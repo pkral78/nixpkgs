@@ -1,57 +1,60 @@
-{ stdenv
+{ lib
 , buildPythonPackage
-, pathlib
+, isPy27
 , fetchPypi
+, imageio-ffmpeg
+, numpy
 , pillow
 , psutil
-, imageio-ffmpeg
-, pytest
-, numpy
-, isPy3k
-, ffmpeg
-, futures
-, enum34
+, pytestCheckHook
+, tifffile
 }:
 
 buildPythonPackage rec {
   pname = "imageio";
-  version = "2.6.1";
+  version = "2.12.0";
+  disabled = isPy27;
 
   src = fetchPypi {
-    sha256 = "1bk7pijmrspdfj9nnlbnw1yiww9w1kyjvlpzy9s5hj6zp4qv4kpl";
+    sha256 = "c416dd68328ace8536ff333cbb8927954036be56e201fed416e53e8f95e08a6c";
     inherit pname version;
   };
 
-  checkInputs = [ pytest psutil ] ++ stdenv.lib.optionals isPy3k [
-    imageio-ffmpeg ffmpeg
-    ];
-  propagatedBuildInputs = [ numpy pillow ] ++ stdenv.lib.optionals (!isPy3k) [
-    futures
-    enum34
-    pathlib
+  propagatedBuildInputs = [
+    imageio-ffmpeg
+    numpy
+    pillow
   ];
 
-  checkPhase = ''
+  checkInputs = [
+    psutil
+    pytestCheckHook
+    tifffile
+  ];
+
+  preCheck = ''
     export IMAGEIO_USERDIR="$TMP"
     export IMAGEIO_NO_INTERNET="true"
     export HOME="$(mktemp -d)"
-    py.test
   '';
 
-  # For some reason, importing imageio also imports xml on Nix, see
-  # https://github.com/imageio/imageio/issues/395
+  disabledTests = [
+    # tries to pull remote resources, even with IMAGEIO_NO_INTERNET
+    "test_png_remote"
+    # needs git history
+    "test_mvolread_out_of_bytes"
+    "test_imiter"
+    "test_memory_size"
+    "test_legacy_write_empty"
+  ];
 
-  # Also, there are tests that test the downloading of ffmpeg if it's not installed.
-  # "Uncomment" those by renaming.
-  postPatch = ''
-    substituteInPlace tests/test_meta.py --replace '"urllib",' "\"urllib\",\"xml\","
-    substituteInPlace tests/test_ffmpeg.py --replace 'test_get_exe_installed' 'get_exe_installed'
-  '';
+  disabledTestPaths = [
+    "tests/test_pillow.py"
+  ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats";
-    homepage = http://imageio.github.io/;
+    homepage = "http://imageio.github.io/";
     license = licenses.bsd2;
   };
-
 }

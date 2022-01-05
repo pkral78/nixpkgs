@@ -1,17 +1,19 @@
 { lib
 , buildPythonPackage
 , fetchPypi
+, pythonOlder
 , coverage
 , pytest
 }:
 
 buildPythonPackage rec {
   pname = "pytest-testmon";
-  version = "1.0.1";
+  version = "1.2.2";
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "b823b03faf5778d1e15fb9f52e104df4da9c1021daeb313b339fccbbfb8dbd5f";
+    sha256 = "e69d5aeac4e371986f94e8ad06e56d70633870d026f2306fca44051f02fcb688";
   };
 
   propagatedBuildInputs = [ coverage ];

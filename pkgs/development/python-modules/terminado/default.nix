@@ -7,11 +7,11 @@
 
 buildPythonPackage rec {
   pname = "terminado";
-  version = "0.8.3";
+  version = "0.12.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "4804a774f802306a7d9af7322193c5390f1da0abb429e082a10ef1d46e6fb2c2";
+    sha256 = "b20fd93cc57c1678c799799d117874367cc07a3d2d55be95205b1a88fa08393f";
   };
 
   propagatedBuildInputs = [ ptyprocess tornado ];
@@ -21,7 +21,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Terminals served by Tornado websockets";
-    homepage = https://github.com/jupyter/terminado;
+    homepage = "https://github.com/jupyter/terminado";
     license = licenses.bsd2;
   };
 }

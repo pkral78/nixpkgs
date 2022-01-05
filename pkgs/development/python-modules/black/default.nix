@@ -1,42 +1,83 @@
-{ stdenv, buildPythonPackage, fetchPypi, pythonOlder
-, attrs, click, toml, appdirs, aiohttp, aiohttp-cors
-, glibcLocales, typed-ast, pathspec, regex
-, setuptools_scm, pytest }:
+{ stdenv, lib
+, buildPythonPackage, fetchPypi, pythonOlder, setuptools-scm, pytestCheckHook
+, aiohttp
+, aiohttp-cors
+, attrs
+, click
+, colorama
+, dataclasses
+, mypy-extensions
+, pathspec
+, parameterized
+, platformdirs
+, tomli
+, typed-ast
+, typing-extensions
+, uvloop
+}:
+
 
 buildPythonPackage rec {
   pname = "black";
-  version = "19.10b0";
+  version = "21.12b0";
 
   disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0f8mr0yzj78q1dx7v6ggbgfir2wv0n5z2shfbbvfdq7910xbgvf2";
+    hash = "sha256-d7gPaTpWni5SeVhFljTxjfmwuiYluk4MLV2lvkLm8rM=";
   };
 
-  nativeBuildInputs = [ setuptools_scm ];
-  checkInputs =  [ pytest glibcLocales ];
+  nativeBuildInputs = [ setuptools-scm ];
 
   # Necessary for the tests to pass on Darwin with sandbox enabled.
   # Black starts a local server and needs to bind a local address.
   __darwinAllowLocalNetworking = true;
 
-  # Don't know why these tests fails
-  # Disable test_expression_diff, because it fails on darwin
-  checkPhase = ''
-    LC_ALL="en_US.UTF-8" pytest \
-      --deselect tests/test_black.py::BlackTestCase::test_expression_diff \
-      --deselect tests/test_black.py::BlackTestCase::test_cache_multiple_files \
-      --deselect tests/test_black.py::BlackTestCase::test_failed_formatting_does_not_get_cached
+  checkInputs = [ pytestCheckHook parameterized ];
+
+  preCheck = ''
+    export PATH="$PATH:$out/bin"
+
+    # The top directory /build matches black's DEFAULT_EXCLUDE regex.
+    # Make /build the project root for black tests to avoid excluding files.
+    touch ../.git
+  '' + lib.optionalString stdenv.isDarwin ''
+    # Work around https://github.com/psf/black/issues/2105
+    export TMPDIR="/tmp"
   '';
 
-  propagatedBuildInputs = [ attrs appdirs click toml aiohttp aiohttp-cors pathspec regex typed-ast ];
+  disabledTests = [
+    # requires network access
+    "test_gen_check_output"
+  ] ++ lib.optionals stdenv.isDarwin [
+    # fails on darwin
+    "test_expression_diff"
+    # Fail on Hydra, see https://github.com/NixOS/nixpkgs/pull/130785
+    "test_bpo_2142_workaround"
+    "test_skip_magic_trailing_comma"
+  ];
 
-  meta = with stdenv.lib; {
+  propagatedBuildInputs = [
+    aiohttp
+    aiohttp-cors
+    attrs
+    click
+    colorama
+    mypy-extensions
+    pathspec
+    platformdirs
+    tomli
+    typed-ast # required for tests and python2 extra
+    uvloop
+  ] ++ lib.optional (pythonOlder "3.7") dataclasses
+    ++ lib.optional (pythonOlder "3.8") typing-extensions;
+
+  meta = with lib; {
     description = "The uncompromising Python code formatter";
-    homepage    = https://github.com/ambv/black;
-    license     = licenses.mit;
-    maintainers = with maintainers; [ sveitser ];
+    homepage = "https://github.com/psf/black";
+    changelog = "https://github.com/psf/black/blob/${version}/CHANGES.md";
+    license = licenses.mit;
+    maintainers = with maintainers; [ sveitser autophagy ];
   };
-
 }

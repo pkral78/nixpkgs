@@ -10,11 +10,11 @@
 
 buildPythonPackage rec {
   pname = "cli_helpers";
-  version = "1.2.1";
+  version = "2.2.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0rd194l06aw4612j09b44pgh8b8l4cwmz7xgwsgdj9v8m3m25nwq";
+    sha256 = "733f65d8c921e0cffa8f7ae4c8735bd7ecdffec383c5246f647ddd0fddb33448";
   };
 
   propagatedBuildInputs = [
@@ -55,7 +55,7 @@ buildPythonPackage rec {
 
       Read the documentation at http://cli-helpers.rtfd.io
     '';
-    homepage = https://cli-helpers.readthedocs.io/en/stable/;
+    homepage = "https://cli-helpers.readthedocs.io/en/stable/";
     license = licenses.bsd3 ;
     maintainers = [ maintainers.kalbasit ];
   };

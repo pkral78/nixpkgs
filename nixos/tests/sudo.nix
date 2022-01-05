@@ -6,11 +6,11 @@ let
 in
   import ./make-test-python.nix ({ pkgs, ...} : {
     name = "sudo";
-    meta = with pkgs.stdenv.lib.maintainers; {
+    meta = with pkgs.lib.maintainers; {
       maintainers = [ lschuermann ];
     };
 
-    machine =
+    nodes.machine =
       { lib, ... }:
       with lib;
       {
@@ -48,6 +48,19 @@ in
         };
       };
 
+    nodes.strict = { ... }: {
+      users.users = {
+        admin = { isNormalUser = true; extraGroups = [ "wheel" ]; };
+        noadmin = { isNormalUser = true; };
+      };
+
+      security.sudo = {
+        enable = true;
+        wheelNeedsPassword = false;
+        execWheelOnly = true;
+      };
+    };
+
     testScript =
       ''
         with subtest("users in wheel group should have passwordless sudo"):
@@ -74,10 +87,16 @@ in
         with subtest("test5 user should not be able to run commands under root"):
             machine.fail("sudo -u test5 sudo -n -u root true")
 
-        with subtest("test5 user should be able to keep his environment"):
+        with subtest("test5 user should be able to keep their environment"):
             machine.succeed("sudo -u test5 sudo -n -E -u test1 true")
 
         with subtest("users in group 'barfoo' should not be able to keep their environment"):
             machine.fail("sudo -u test3 sudo -n -E -u root true")
+
+        with subtest("users in wheel should be able to run sudo despite execWheelOnly"):
+            strict.succeed('su - admin -c "sudo -u root true"')
+
+        with subtest("non-wheel users should be unable to run sudo thanks to execWheelOnly"):
+            strict.fail('su - noadmin -c "sudo --help"')
       '';
   })

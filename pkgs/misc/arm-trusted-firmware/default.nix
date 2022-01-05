@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchFromGitHub, fetchpatch, openssl, pkgsCross, buildPackages }:
+{ lib, stdenv, fetchFromGitHub, openssl, pkgsCross, buildPackages }:
 
 let
   buildArmTrustedFirmware = { filesToInstall
@@ -6,7 +6,7 @@ let
             , platform ? null
             , extraMakeFlags ? []
             , extraMeta ? {}
-            , version ? "2.2"
+            , version ? "2.6"
             , ... } @ args:
            stdenv.mkDerivation ({
 
@@ -16,8 +16,8 @@ let
     src = fetchFromGitHub {
       owner = "ARM-software";
       repo = "arm-trusted-firmware";
-      rev = "refs/tags/v${version}";
-      sha256 = "03fjl5hy1bqlya6fg553bqz7jrvilzrzpbs87cv6jd04v8qrvry8";
+      rev = "v${version}";
+      sha256 = "sha256-qT9DdTvMcUrvRzgmVf2qmKB+Rb1WOB4p1rM+fsewGcg=";
     };
 
     depsBuildBuild = [ buildPackages.stdenv.cc ];
@@ -48,10 +48,10 @@ let
     enableParallelBuilding = false;
 
     meta = with lib; {
-      homepage = https://github.com/ARM-software/arm-trusted-firmware;
+      homepage = "https://github.com/ARM-software/arm-trusted-firmware";
       description = "A reference implementation of secure world software for ARMv8-A";
       license = licenses.bsd3;
-      maintainers = [ maintainers.lopsided98 ];
+      maintainers = with maintainers; [ lopsided98 ];
     } // extraMeta;
   } // builtins.removeAttrs args [ "extraMeta" ]);
 
@@ -76,6 +76,12 @@ in {
 
   armTrustedFirmwareAllwinner = buildArmTrustedFirmware rec {
     platform = "sun50i_a64";
+    extraMeta.platforms = ["aarch64-linux"];
+    filesToInstall = ["build/${platform}/release/bl31.bin"];
+  };
+
+  armTrustedFirmwareAllwinnerH616 = buildArmTrustedFirmware rec {
+    platform = "sun50i_h616";
     extraMeta.platforms = ["aarch64-linux"];
     filesToInstall = ["build/${platform}/release/bl31.bin"];
   };

@@ -6,26 +6,42 @@ let
 
   cfg = config.services.httpd;
 
+  certs = config.security.acme.certs;
+
   runtimeDir = "/run/httpd";
 
   pkg = cfg.package.out;
 
-  httpdConf = cfg.configFile;
+  apachectl = pkgs.runCommand "apachectl" { meta.priority = -1; } ''
+    mkdir -p $out/bin
+    cp ${pkg}/bin/apachectl $out/bin/apachectl
+    sed -i $out/bin/apachectl -e 's|$HTTPD -t|$HTTPD -t -f /etc/httpd/httpd.conf|'
+  '';
 
-  php = cfg.phpPackage.override { apacheHttpd = pkg.dev; /* otherwise it only gets .out */ };
+  php = cfg.phpPackage.override { apacheHttpd = pkg; };
 
-  phpMajorVersion = lib.versions.major (lib.getVersion php);
+  phpModuleName = let
+    majorVersion = lib.versions.major (lib.getVersion php);
+  in (if majorVersion == "8" then "php" else "php${majorVersion}");
 
   mod_perl = pkgs.apacheHttpdPackages.mod_perl.override { apacheHttpd = pkg; };
 
   vhosts = attrValues cfg.virtualHosts;
 
+  # certName is used later on to determine systemd service names.
+  acmeEnabledVhosts = map (hostOpts: hostOpts // {
+    certName = if hostOpts.useACMEHost != null then hostOpts.useACMEHost else hostOpts.hostName;
+  }) (filter (hostOpts: hostOpts.enableACME || hostOpts.useACMEHost != null) vhosts);
+
+  dependentCertNames = unique (map (hostOpts: hostOpts.certName) acmeEnabledVhosts);
+
   mkListenInfo = hostOpts:
-    if hostOpts.listen != [] then hostOpts.listen
-    else (
-      optional (hostOpts.onlySSL || hostOpts.addSSL || hostOpts.forceSSL) { ip = "*"; port = 443; ssl = true; } ++
-      optional (!hostOpts.onlySSL) { ip = "*"; port = 80; ssl = false; }
-    );
+    if hostOpts.listen != [] then
+      hostOpts.listen
+    else
+      optionals (hostOpts.onlySSL || hostOpts.addSSL || hostOpts.forceSSL) (map (addr: { ip = addr; port = 443; ssl = true; }) hostOpts.listenAddresses) ++
+      optionals (!hostOpts.onlySSL) (map (addr: { ip = addr; port = 80; ssl = false; }) hostOpts.listenAddresses)
+    ;
 
   listenInfo = unique (concatMap mkListenInfo vhosts);
 
@@ -41,14 +57,14 @@ let
       "mime" "autoindex" "negotiation" "dir"
       "alias" "rewrite"
       "unixd" "slotmem_shm" "socache_shmcb"
-      "mpm_${cfg.multiProcessingModule}"
+      "mpm_${cfg.mpm}"
     ]
-    ++ (if cfg.multiProcessingModule == "prefork" then [ "cgi" ] else [ "cgid" ])
+    ++ (if cfg.mpm == "prefork" then [ "cgi" ] else [ "cgid" ])
     ++ optional enableHttp2 "http2"
     ++ optional enableSSL "ssl"
     ++ optional enableUserDir "userdir"
     ++ optional cfg.enableMellon { name = "auth_mellon"; path = "${pkgs.apacheHttpdPackages.mod_auth_mellon}/modules/mod_auth_mellon.so"; }
-    ++ optional cfg.enablePHP { name = "php${phpMajorVersion}"; path = "${php}/modules/libphp${phpMajorVersion}.so"; }
+    ++ optional cfg.enablePHP { name = phpModuleName; path = "${php}/modules/lib${phpModuleName}.so"; }
     ++ optional cfg.enablePerl { name = "perl"; path = "${mod_perl}/modules/mod_perl.so"; }
     ++ cfg.extraModules;
 
@@ -111,6 +127,17 @@ let
     </IfModule>
   '';
 
+  luaSetPaths = let
+    # support both lua and lua.withPackages derivations
+    luaversion = cfg.package.lua5.lua.luaversion or cfg.package.lua5.luaversion;
+    in
+  ''
+    <IfModule mod_lua.c>
+      LuaPackageCPath ${cfg.package.lua5}/lib/lua/${luaversion}/?.so
+      LuaPackagePath  ${cfg.package.lua5}/share/lua/${luaversion}/?.lua
+    </IfModule>
+  '';
+
   mkVHostConf = hostOpts:
     let
       adminAddr = if hostOpts.adminAddr != null then hostOpts.adminAddr else cfg.adminAddr;
@@ -119,15 +146,15 @@ let
 
       useACME = hostOpts.enableACME || hostOpts.useACMEHost != null;
       sslCertDir =
-        if hostOpts.enableACME then config.security.acme.certs.${hostOpts.hostName}.directory
-        else if hostOpts.useACMEHost != null then config.security.acme.certs.${hostOpts.useACMEHost}.directory
+        if hostOpts.enableACME then certs.${hostOpts.hostName}.directory
+        else if hostOpts.useACMEHost != null then certs.${hostOpts.useACMEHost}.directory
         else abort "This case should never happen.";
 
-      sslServerCert = if useACME then "${sslCertDir}/full.pem" else hostOpts.sslServerCert;
+      sslServerCert = if useACME then "${sslCertDir}/fullchain.pem" else hostOpts.sslServerCert;
       sslServerKey = if useACME then "${sslCertDir}/key.pem" else hostOpts.sslServerKey;
-      sslServerChain = if useACME then "${sslCertDir}/fullchain.pem" else hostOpts.sslServerChain;
+      sslServerChain = if useACME then "${sslCertDir}/chain.pem" else hostOpts.sslServerChain;
 
-      acmeChallenge = optionalString useACME ''
+      acmeChallenge = optionalString (useACME && hostOpts.acmeRoot != null) ''
         Alias /.well-known/acme-challenge/ "${hostOpts.acmeRoot}/.well-known/acme-challenge/"
         <Directory "${hostOpts.acmeRoot}">
             AllowOverride None
@@ -176,7 +203,7 @@ let
     let
       documentRoot = if hostOpts.documentRoot != null
         then hostOpts.documentRoot
-        else pkgs.runCommand "empty" { preferLocalBuild = true; } "mkdir -p $out"
+        else pkgs.emptyDirectory
       ;
 
       mkLocations = locations: concatStringsSep "\n" (map (config: ''
@@ -264,7 +291,7 @@ let
 
     PidFile ${runtimeDir}/httpd.pid
 
-    ${optionalString (cfg.multiProcessingModule != "prefork") ''
+    ${optionalString (cfg.mpm != "prefork") ''
       # mod_cgid requires this.
       ScriptSock ${runtimeDir}/cgisock
     ''}
@@ -311,6 +338,8 @@ let
 
     ${sslConf}
 
+    ${optionalString cfg.package.luaSupport luaSetPaths}
+
     # Fascist default - deny access to everything.
     <Directory />
         Options FollowSymLinks
@@ -338,9 +367,9 @@ let
     }
     ''
       cat ${php}/etc/php.ini > $out
+      cat ${php.phpIni} > $out
       echo "$options" >> $out
     '';
-
 in
 
 
@@ -349,6 +378,7 @@ in
   imports = [
     (mkRemovedOptionModule [ "services" "httpd" "extraSubservices" ] "Most existing subservices have been ported to the NixOS module system. Please update your configuration accordingly.")
     (mkRemovedOptionModule [ "services" "httpd" "stateDir" ] "The httpd module now uses /run/httpd as a runtime directory.")
+    (mkRenamedOptionModule [ "services" "httpd" "multiProcessingModule" ] [ "services" "httpd" "mpm" ])
 
     # virtualHosts options
     (mkRemovedOptionModule [ "services" "httpd" "documentRoot" ] "Please define a virtual host using `services.httpd.virtualHosts`.")
@@ -377,7 +407,7 @@ in
       package = mkOption {
         type = types.package;
         default = pkgs.apacheHttpd;
-        defaultText = "pkgs.apacheHttpd";
+        defaultText = literalExpression "pkgs.apacheHttpd";
         description = ''
           Overridable attribute of the Apache HTTP Server package to use.
         '';
@@ -386,8 +416,8 @@ in
       configFile = mkOption {
         type = types.path;
         default = confFile;
-        defaultText = "confFile";
-        example = literalExample ''pkgs.writeText "httpd.conf" "# my custom config file ..."'';
+        defaultText = literalExpression "confFile";
+        example = literalExpression ''pkgs.writeText "httpd.conf" "# my custom config file ..."'';
         description = ''
           Override the configuration file used by Apache. By default,
           NixOS generates one automatically.
@@ -407,7 +437,7 @@ in
       extraModules = mkOption {
         type = types.listOf types.unspecified;
         default = [];
-        example = literalExample ''
+        example = literalExpression ''
           [
             "proxy_connect"
             { name = "jk"; path = "''${pkgs.tomcat_connectors}/modules/mod_jk.so"; }
@@ -433,7 +463,7 @@ in
         default = "common";
         example = "combined";
         description = ''
-          Log format for log files. Possible values are: combined, common, referer, agent.
+          Log format for log files. Possible values are: combined, common, referer, agent, none.
           See <link xlink:href="https://httpd.apache.org/docs/2.4/logs.html"/> for more details.
         '';
       };
@@ -453,7 +483,13 @@ in
         type = types.str;
         default = "wwwrun";
         description = ''
-          User account under which httpd runs.
+          User account under which httpd children processes run.
+
+          If you require the main httpd process to run as
+          <literal>root</literal> add the following configuration:
+          <programlisting>
+          systemd.services.httpd.serviceConfig.User = lib.mkForce "root";
+          </programlisting>
         '';
       };
 
@@ -461,7 +497,7 @@ in
         type = types.str;
         default = "wwwrun";
         description = ''
-          Group under which httpd runs.
+          Group under which httpd children processes run.
         '';
       };
 
@@ -480,7 +516,14 @@ in
             documentRoot = "${pkg}/htdocs";
           };
         };
-        example = literalExample ''
+        defaultText = literalExpression ''
+          {
+            localhost = {
+              documentRoot = "''${package.out}/htdocs";
+            };
+          }
+        '';
+        example = literalExpression ''
           {
             "foo.example.com" = {
               forceSSL = true;
@@ -514,7 +557,7 @@ in
       phpPackage = mkOption {
         type = types.package;
         default = pkgs.php;
-        defaultText = "pkgs.php";
+        defaultText = literalExpression "pkgs.php";
         description = ''
           Overridable attribute of the PHP package to use.
         '';
@@ -538,20 +581,19 @@ in
         '';
       };
 
-      multiProcessingModule = mkOption {
+      mpm = mkOption {
         type = types.enum [ "event" "prefork" "worker" ];
-        default = "prefork";
+        default = "event";
         example = "worker";
         description =
           ''
             Multi-processing module to be used by Apache. Available
-            modules are <literal>prefork</literal> (the default;
-            handles each request in a separate child process),
-            <literal>worker</literal> (hybrid approach that starts a
-            number of child processes each running a number of
-            threads) and <literal>event</literal> (a recent variant of
-            <literal>worker</literal> that handles persistent
-            connections more efficiently).
+            modules are <literal>prefork</literal> (handles each
+            request in a separate child process), <literal>worker</literal>
+            (hybrid approach that starts a number of child processes
+            each running a number of threads) and <literal>event</literal>
+            (the default; a recent variant of <literal>worker</literal>
+            that handles persistent connections more efficiently).
           '';
       };
 
@@ -634,25 +676,53 @@ in
       wwwrun.gid = config.ids.gids.wwwrun;
     };
 
-    security.acme.certs = mapAttrs (name: hostOpts: {
-      user = cfg.user;
-      group = mkDefault cfg.group;
-      email = if hostOpts.adminAddr != null then hostOpts.adminAddr else cfg.adminAddr;
-      webroot = hostOpts.acmeRoot;
-      extraDomains = genAttrs hostOpts.serverAliases (alias: null);
-      postRun = "systemctl reload httpd.service";
-    }) (filterAttrs (name: hostOpts: hostOpts.enableACME) cfg.virtualHosts);
+    security.acme.certs = let
+      acmePairs = map (hostOpts: let
+        hasRoot = hostOpts.acmeRoot != null;
+      in nameValuePair hostOpts.hostName {
+        group = mkDefault cfg.group;
+        # if acmeRoot is null inherit config.security.acme
+        # Since config.security.acme.certs.<cert>.webroot's own default value
+        # should take precedence set priority higher than mkOptionDefault
+        webroot = mkOverride (if hasRoot then 1000 else 2000) hostOpts.acmeRoot;
+        # Also nudge dnsProvider to null in case it is inherited
+        dnsProvider = mkOverride (if hasRoot then 1000 else 2000) null;
+        extraDomainNames = hostOpts.serverAliases;
+        # Use the vhost-specific email address if provided, otherwise let
+        # security.acme.email or security.acme.certs.<cert>.email be used.
+        email = mkOverride 2000 (if hostOpts.adminAddr != null then hostOpts.adminAddr else cfg.adminAddr);
+      # Filter for enableACME-only vhosts. Don't want to create dud certs
+      }) (filter (hostOpts: hostOpts.useACMEHost == null) acmeEnabledVhosts);
+    in listToAttrs acmePairs;
 
-    environment.systemPackages = [ pkg ];
+    # httpd requires a stable path to the configuration file for reloads
+    environment.etc."httpd/httpd.conf".source = cfg.configFile;
+    environment.systemPackages = [
+      apachectl
+      pkg
+    ];
 
-    # required for "apachectl configtest"
-    environment.etc."httpd/httpd.conf".source = httpdConf;
+    services.logrotate = optionalAttrs (cfg.logFormat != "none") {
+      enable = mkDefault true;
+      paths.httpd = {
+        path = "${cfg.logDir}/*.log";
+        user = cfg.user;
+        group = cfg.group;
+        frequency = "daily";
+        keep = 28;
+        extraConfig = ''
+          sharedscripts
+          compress
+          delaycompress
+          postrotate
+            systemctl reload httpd.service > /dev/null 2>/dev/null || true
+          endscript
+        '';
+      };
+    };
 
     services.httpd.phpOptions =
       ''
-        ; Needed for PHP's mail() function.
-        sendmail_path = sendmail -t -i
-
         ; Don't advertise PHP
         expose_php = off
       '' + optionalString (config.time.timeZone != null) ''
@@ -692,19 +762,15 @@ in
           "Z '${cfg.logDir}' - ${svc.User} ${svc.Group}"
         ];
 
-    systemd.services.httpd =
-      let
-        vhostsACME = filter (hostOpts: hostOpts.enableACME) vhosts;
-      in
-      { description = "Apache HTTPD";
-
+    systemd.services.httpd = {
+        description = "Apache HTTPD";
         wantedBy = [ "multi-user.target" ];
-        wants = concatLists (map (hostOpts: [ "acme-${hostOpts.hostName}.service" "acme-selfsigned-${hostOpts.hostName}.service" ]) vhostsACME);
-        after = [ "network.target" "fs.target" ] ++ map (hostOpts: "acme-selfsigned-${hostOpts.hostName}.service") vhostsACME;
+        wants = concatLists (map (certName: [ "acme-finished-${certName}.target" ]) dependentCertNames);
+        after = [ "network.target" ] ++ map (certName: "acme-selfsigned-${certName}.service") dependentCertNames;
+        before = map (certName: "acme-${certName}.service") dependentCertNames;
+        restartTriggers = [ cfg.configFile ];
 
-        path =
-          [ pkg pkgs.coreutils pkgs.gnugrep ]
-          ++ optional cfg.enablePHP pkgs.system-sendmail; # Needed for PHP's mail() function.
+        path = [ pkg pkgs.coreutils pkgs.gnugrep ];
 
         environment =
           optionalAttrs cfg.enablePHP { PHPRC = phpIni; }
@@ -715,16 +781,16 @@ in
             # Get rid of old semaphores.  These tend to accumulate across
             # server restarts, eventually preventing it from restarting
             # successfully.
-            for i in $(${pkgs.utillinux}/bin/ipcs -s | grep ' ${cfg.user} ' | cut -f2 -d ' '); do
-                ${pkgs.utillinux}/bin/ipcrm -s $i
+            for i in $(${pkgs.util-linux}/bin/ipcs -s | grep ' ${cfg.user} ' | cut -f2 -d ' '); do
+                ${pkgs.util-linux}/bin/ipcrm -s $i
             done
           '';
 
         serviceConfig = {
-          ExecStart = "@${pkg}/bin/httpd httpd -f ${httpdConf}";
-          ExecStop = "${pkg}/bin/httpd -f ${httpdConf} -k graceful-stop";
-          ExecReload = "${pkg}/bin/httpd -f ${httpdConf} -k graceful";
-          User = "root";
+          ExecStart = "@${pkg}/bin/httpd httpd -f /etc/httpd/httpd.conf";
+          ExecStop = "${pkg}/bin/httpd -f /etc/httpd/httpd.conf -k graceful-stop";
+          ExecReload = "${pkg}/bin/httpd -f /etc/httpd/httpd.conf -k graceful";
+          User = cfg.user;
           Group = cfg.group;
           Type = "forking";
           PIDFile = "${runtimeDir}/httpd.pid";
@@ -732,8 +798,36 @@ in
           RestartSec = "5s";
           RuntimeDirectory = "httpd httpd/runtime";
           RuntimeDirectoryMode = "0750";
+          AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
         };
       };
+
+    # postRun hooks on cert renew can't be used to restart Apache since renewal
+    # runs as the unprivileged acme user. sslTargets are added to wantedBy + before
+    # which allows the acme-finished-$cert.target to signify the successful updating
+    # of certs end-to-end.
+    systemd.services.httpd-config-reload = let
+      sslServices = map (certName: "acme-${certName}.service") dependentCertNames;
+      sslTargets = map (certName: "acme-finished-${certName}.target") dependentCertNames;
+    in mkIf (sslServices != []) {
+      wantedBy = sslServices ++ [ "multi-user.target" ];
+      # Before the finished targets, after the renew services.
+      # This service might be needed for HTTP-01 challenges, but we only want to confirm
+      # certs are updated _after_ config has been reloaded.
+      before = sslTargets;
+      after = sslServices;
+      restartTriggers = [ cfg.configFile ];
+      # Block reloading if not all certs exist yet.
+      # Happens when config changes add new vhosts/certs.
+      unitConfig.ConditionPathExists = map (certName: certs.${certName}.directory + "/fullchain.pem") dependentCertNames;
+      serviceConfig = {
+        Type = "oneshot";
+        TimeoutSec = 60;
+        ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active httpd.service";
+        ExecStartPre = "${pkg}/bin/httpd -f /etc/httpd/httpd.conf -t";
+        ExecStart = "/run/current-system/systemd/bin/systemctl reload httpd.service";
+      };
+    };
 
   };
 }

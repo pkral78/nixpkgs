@@ -25,8 +25,6 @@ let
     StateDirectory = "sympa";
     ProtectHome = true;
     ProtectSystem = "full";
-    ProtectKernelTunables = true;
-    ProtectKernelModules = true;
     ProtectControlGroups = true;
   };
 
@@ -155,7 +153,7 @@ in
         Email domains handled by this instance. There have
         to be MX records for keys of this attribute set.
       '';
-      example = literalExample ''
+      example = literalExpression ''
         {
           "lists.example.org" = {
             webHost = "lists.example.org";
@@ -202,7 +200,7 @@ in
       name = mkOption {
         type = str;
         default = if cfg.database.type == "SQLite" then "${dataDir}/sympa.sqlite" else "sympa";
-        defaultText = ''if database.type == "SQLite" then "${dataDir}/sympa.sqlite" else "sympa"'';
+        defaultText = literalExpression ''if database.type == "SQLite" then "${dataDir}/sympa.sqlite" else "sympa"'';
         description = ''
           Database name. When using SQLite this must be an absolute
           path to the database file.
@@ -281,7 +279,7 @@ in
     settings = mkOption {
       type = attrsOf (oneOf [ str int bool ]);
       default = {};
-      example = literalExample ''
+      example = literalExpression ''
         {
           default_home = "lists";
           viewlogs_page_size = 50;
@@ -316,7 +314,7 @@ in
         config.source = mkIf (config.text != null) (mkDefault (pkgs.writeText "sympa-${baseNameOf name}" config.text));
       }));
       default = {};
-      example = literalExample ''
+      example = literalExpression ''
         {
           "list_data/lists.example.org/help" = {
             text = "subject This list provides help to users";
@@ -415,7 +413,7 @@ in
       # force-copy static_content so it's up to date with package
       # set permissions for wwsympa which needs write access (...)
       "R  ${dataDir}/static_content    -    -       -        - -"
-      "C  ${dataDir}/static_content    0711 ${user} ${group} - ${pkg}/static_content"
+      "C  ${dataDir}/static_content    0711 ${user} ${group} - ${pkg}/var/lib/sympa/static_content"
       "e  ${dataDir}/static_content/*  0711 ${user} ${group} - -"
 
       "d  /run/sympa                   0755 ${user} ${group} - -"
@@ -497,7 +495,7 @@ in
           -F ${toString cfg.web.fcgiProcs} \
           -P /run/sympa/wwsympa.pid \
           -s /run/sympa/wwsympa.socket \
-          -- ${pkg}/bin/wwsympa.fcgi
+          -- ${pkg}/lib/sympa/cgi/wwsympa.fcgi
         '';
 
       } // commonServiceConfig;
@@ -515,10 +513,6 @@ in
           include ${config.services.nginx.package}/conf/fastcgi_params;
 
           fastcgi_pass unix:/run/sympa/wwsympa.socket;
-          fastcgi_split_path_info ^(${loc})(.*)$;
-
-          fastcgi_param PATH_INFO       $fastcgi_path_info;
-          fastcgi_param SCRIPT_FILENAME ${pkg}/bin/wwsympa.fcgi;
         '';
       }) // {
         "/static-sympa/".alias = "${dataDir}/static_content/";
@@ -550,7 +544,7 @@ in
           args = [
             "flags=hqRu"
             "user=${user}"
-            "argv=${pkg}/bin/queue"
+            "argv=${pkg}/libexec/queue"
             "\${nexthop}"
           ];
         };
@@ -562,7 +556,7 @@ in
           args = [
             "flags=hqRu"
             "user=${user}"
-            "argv=${pkg}/bin/bouncequeue"
+            "argv=${pkg}/libexec/bouncequeue"
             "\${nexthop}"
           ];
         };
