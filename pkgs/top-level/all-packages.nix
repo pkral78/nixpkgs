@@ -277,6 +277,10 @@ with pkgs;
 
   cm256cc = callPackage ../development/libraries/cm256cc {  };
 
+  cocogitto = callPackage ../development/tools/cocogitto {
+    inherit (darwin.apple_sdk.frameworks) Security;
+  };
+
   conftest = callPackage ../development/tools/conftest { };
 
   corgi = callPackage ../development/tools/corgi { };
@@ -2503,6 +2507,8 @@ with pkgs;
   chisel = callPackage ../tools/networking/chisel { };
 
   cht-sh = callPackage ../tools/misc/cht.sh { };
+
+  cinny = callPackage ../applications/networking/instant-messengers/cinny {};
 
   ckbcomp = callPackage ../tools/X11/ckbcomp { };
 
@@ -5619,7 +5625,7 @@ with pkgs;
 
   gexiv2 = callPackage ../development/libraries/gexiv2 { };
 
-  gftp = callPackage ../applications/networking/gftp {
+  gftp = callPackage ../applications/networking/ftp/gftp {
     gtk = gtk2;
   };
 
@@ -6683,6 +6689,8 @@ with pkgs;
 
   itm-tools = callPackage ../development/tools/misc/itm-tools { };
 
+  ite-backlight = callPackage ../misc/ite-backlight { };
+
   iwgtk = callPackage ../tools/networking/iwgtk { };
 
   ix = callPackage ../tools/misc/ix { };
@@ -7707,6 +7715,8 @@ with pkgs;
     guile = guile_1_8;
   };
 
+  mcstatus = with python3Packages; toPythonApplication mcstatus;
+
   mdbtools = callPackage ../tools/misc/mdbtools { };
 
   mdk = callPackage ../development/tools/mdk { };
@@ -8343,9 +8353,6 @@ with pkgs;
   openapi-generator-cli = callPackage ../tools/networking/openapi-generator-cli { jre = pkgs.jre_headless; };
   openapi-generator-cli-unstable = callPackage ../tools/networking/openapi-generator-cli/unstable.nix { jre = pkgs.jre_headless; };
 
-  openbazaar = callPackage ../applications/networking/openbazaar { };
-  openbazaar-client = callPackage ../applications/networking/openbazaar/client.nix { };
-
   openboard = libsForQt5.callPackage ../applications/graphics/openboard { };
 
   opencc = callPackage ../tools/text/opencc { };
@@ -8522,7 +8529,9 @@ with pkgs;
 
   ovh-ttyrec = callPackage ../tools/misc/ovh-ttyrec { };
 
-  ovito = libsForQt5.callPackage ../applications/graphics/ovito { };
+  ovito = libsForQt5.callPackage ../applications/graphics/ovito {
+    inherit (darwin.apple_sdk.frameworks) VideoDecodeAcceleration;
+  };
 
   owncloud-client = libsForQt5.callPackage ../applications/networking/owncloud-client { };
 
@@ -9084,7 +9093,9 @@ with pkgs;
 
   qprint = callPackage ../tools/text/qprint { };
 
-  qscintilla = callPackage ../development/libraries/qscintilla { };
+  qscintilla = libsForQt5.callPackage ../development/libraries/qscintilla { };
+
+  qscintilla-qt4 = callPackage ../development/libraries/qscintilla-qt4 { };
 
   qshowdiff = callPackage ../tools/text/qshowdiff { };
 
@@ -12398,6 +12409,10 @@ with pkgs;
 
   idris2 = callPackage ../development/compilers/idris2 { };
 
+  inherit (callPackage ../development/tools/database/indradb { })
+    indradb-server
+    indradb-client;
+
   intel-graphics-compiler = callPackage ../development/compilers/intel-graphics-compiler { };
 
   intercal = callPackage ../development/compilers/intercal { };
@@ -13577,6 +13592,8 @@ with pkgs;
   mujs = callPackage ../development/interpreters/mujs { };
 
   ngn-k = callPackage ../development/interpreters/ngn-k { };
+
+  obb = callPackage ../development/interpreters/clojure/obb.nix { };
 
   octave = callPackage ../development/interpreters/octave {
     python = python3;
@@ -14964,6 +14981,8 @@ with pkgs;
 
   kubectx = callPackage ../development/tools/kubectx { };
 
+  kube-linter = callPackage ../development/tools/kube-linter { };
+
   kube-prompt = callPackage ../development/tools/kube-prompt { };
 
   kubei = callPackage ../tools/security/kubei { };
@@ -15591,7 +15610,7 @@ with pkgs;
     inherit (darwin.apple_sdk.frameworks) CoreFoundation;
   };
 
-  uddup = python3Packages.callPackage ../tools/security/uddup { };
+  uddup = callPackage ../tools/security/uddup { };
 
   udis86 = callPackage  ../development/tools/udis86 { };
 
@@ -16802,8 +16821,6 @@ with pkgs;
   gperftools = callPackage ../development/libraries/gperftools { };
 
   grab-site = callPackage ../tools/backup/grab-site { };
-
-  grib-api = callPackage ../development/libraries/grib-api { };
 
   grilo = callPackage ../development/libraries/grilo { };
 
@@ -20885,6 +20902,8 @@ with pkgs;
   couchdb3 = callPackage ../servers/http/couchdb/3.nix {
     erlang = erlangR22;
   };
+
+  dcnnt = python3Packages.callPackage ../servers/dcnnt { };
 
   dendrite = callPackage ../servers/dendrite { };
 
@@ -25018,6 +25037,8 @@ with pkgs;
 
   elvis = callPackage ../applications/editors/elvis { };
 
+  em = callPackage ../applications/editors/em { };
+
   emacs = emacs27;
   emacs-nox = emacs27-nox;
 
@@ -26139,8 +26160,6 @@ with pkgs;
 
   smooth = callPackage ../development/libraries/smooth { };
 
-  smos = callPackage ../applications/misc/smos { };
-
   spectrwm = callPackage ../applications/window-managers/spectrwm { };
 
   spot = callPackage ../applications/audio/spot { };
@@ -26448,6 +26467,8 @@ with pkgs;
 
   jackmix = libsForQt5.callPackage ../applications/audio/jackmix { };
   jackmix_jack1 = jackmix.override { jack = jack1; };
+
+  jaeles = callPackage ../tools/security/jaeles { };
 
   jalv = callPackage ../applications/audio/jalv { };
 
@@ -27070,6 +27091,8 @@ with pkgs;
   miniaudicle = callPackage ../applications/audio/miniaudicle { };
 
   minicom = callPackage ../tools/misc/minicom { };
+
+  minigalaxy = callPackage ../applications/misc/minigalaxy { };
 
   minimodem = callPackage ../applications/radio/minimodem { };
 
@@ -27712,9 +27735,12 @@ with pkgs;
 
   opentimestamps-client = python3Packages.callPackage ../tools/misc/opentimestamps-client {};
 
-  opentoonz = (qt514.overrideScope' (_: _: {
-    libtiff = callPackage ../applications/graphics/opentoonz/libtiff.nix { };
-  })).callPackage ../applications/graphics/opentoonz { };
+  opentoonz = let
+    opentoonz-libtiff = callPackage ../applications/graphics/opentoonz/libtiff.nix { };
+  in qt5.callPackage ../applications/graphics/opentoonz {
+    libtiff = opentoonz-libtiff;
+    opencv = opencv.override { libtiff = opentoonz-libtiff; };
+  };
 
   opentabletdriver = callPackage ../tools/X11/opentabletdriver { };
 
@@ -27822,7 +27848,11 @@ with pkgs;
 
   pdfslicer = callPackage ../applications/misc/pdfslicer { };
 
-  pekwm = callPackage ../applications/window-managers/pekwm { };
+  pekwm = callPackage ../applications/window-managers/pekwm {
+    awk = gawk;
+    grep = gnugrep;
+    sed = gnused;
+  };
 
   pencil = callPackage ../applications/graphics/pencil {
   };
@@ -27964,9 +27994,7 @@ with pkgs;
 
   pinpoint = callPackage ../applications/office/pinpoint { };
 
-  pinta = callPackage ../applications/graphics/pinta {
-    gtksharp = gtk-sharp-2_0;
-  };
+  pinta = callPackage ../applications/graphics/pinta { };
 
   pistol = callPackage ../tools/misc/pistol { };
 
@@ -28085,6 +28113,8 @@ with pkgs;
   };
 
   qemu-utils = callPackage ../applications/virtualization/qemu/utils.nix {};
+
+  wrapQemuBinfmtP = callPackage ../applications/virtualization/qemu/binfmt-p-wrapper.nix { };
 
   qgis-unwrapped = libsForQt5.callPackage ../applications/gis/qgis/unwrapped.nix {
     withGrass = false;
@@ -28355,7 +28385,7 @@ with pkgs;
 
   udevil = callPackage ../applications/misc/udevil {};
 
-  udiskie = python3Packages.callPackage ../applications/misc/udiskie { };
+  udiskie = python3.pkgs.callPackage ../applications/misc/udiskie { };
 
   sacc = callPackage ../applications/networking/gopher/sacc { };
 
@@ -29365,7 +29395,7 @@ with pkgs;
 
   wad = callPackage ../tools/security/wad { };
 
-  wafw00f = python3Packages.callPackage ../tools/security/wafw00f { };
+  wafw00f = callPackage ../tools/security/wafw00f { };
 
   whispers = callPackage ../tools/security/whispers { };
 

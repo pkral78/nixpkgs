@@ -349,6 +349,7 @@ mapAliases ({
   graalvm8 = throw "graalvm8-ce has been removed by upstream."; # added 2021-10-19
   graalvm8-ce = throw "graalvm8-ce has been removed by upstream."; # added 2021-10-19
   graalvm11 = graalvm11-ce;
+  grib-api = throw "grib-api has been replaced by ecCodes => https://confluence.ecmwf.int/display/ECC/GRIB-API+migration"; # added 2022-01-05
   gsettings_desktop_schemas = gsettings-desktop-schemas; # added 2018-02-25
   gtk_doc = gtk-doc; # added 2018-02-25
   gtklick = throw "gtklick has been removed from nixpkgs as the project is stuck on python2"; # added 2022-01-01
@@ -633,6 +634,8 @@ mapAliases ({
   octoprint-plugins = throw "octoprint-plugins are now part of the octoprint.python.pkgs package set."; # added 2021-01-24
   ofp = throw "ofp is not compatible with odp-dpdk";
   olifant = throw "olifant has been removed from nixpkgs, as it was unmaintained."; # added 2021-08-05
+  openbazaar = throw "openbazzar has been removed from nixpkgs as upstream has abandoned the project"; # added 2022-01-06
+  openbazaar-client = throw "openbazzar-client has been removed from nixpkgs as upstream has abandoned the project"; # added 2022-01-06
   opencl-icd = ocl-icd; # added 2017-01-20
   openconnect_pa = throw "openconnect_pa fork has been discontinued, support for GlobalProtect is now available in openconnect"; # added 2021-05-21
   openelec-dvb-firmware = libreelec-dvb-firmware; # added 2021-05-10
