@@ -61,6 +61,7 @@ mapAliases ({
   ardour_5 = throw "ardour_5 has been removed. see https://github.com/NixOS/nixpkgs/issues/139549"; # added 2021-09-28
   arora = throw "arora has been removed."; # added 2020-09-09
   asciidocFull = asciidoc-full;  # added 2014-06-22
+  asn1c = throw "asn1c has been removed: deleted by upstream"; # added 2022-01-07
   asterisk_15 = throw "asterisk_15: Asterisk 15 is end of life and has been removed."; # added 2020-10-07
   at_spi2_atk = at-spi2-atk; # added 2018-02-25
   at_spi2_core = at-spi2-core; # added 2018-02-25
@@ -70,6 +71,7 @@ mapAliases ({
   azureus = throw "azureus is now known as vuze and the version in nixpkgs was really outdated"; # added 2021-08-02
   badtouch = authoscope; # Project was renamed, added 20210626
   bar-xft = lemonbar-xft;  # added 2015-01-16
+  bashburn = throw "bashburn has been removed: deleted by upstream"; # added 2022-01-07
   bashCompletion = bash-completion; # Added 2016-09-28
   bash_5 = bash; # added 2021-08-20
   bashInteractive_5 = bashInteractive; # added 2021-08-20
@@ -81,6 +83,7 @@ mapAliases ({
   beret = throw "beret has been removed"; # added 2021-11-16
   blastem = throw "blastem has been removed from nixpkgs as it would still require python2."; # added 2022-01-01
   bluezFull = bluez; # Added 2019-12-03
+  bin_replace_string = throw "bin_replace_string has been removed: deleted by upstream"; # added 2022-01-07
   bpftool = bpftools; # Added 2021-05-03
   brackets = throw "brackets has been removed, it was unmaintained and had open vulnerabilities"; # added 2021-01-24
   bridge_utils = bridge-utils;  # added 2015-02-20
@@ -98,12 +101,15 @@ mapAliases ({
   bitwarden_rs-vault = vaultwarden-vault;
 
   bs1770gain = throw "bs1770gain has been removed from nixpkgs, as it had no maintainer or reverse dependencies."; # added 2021-01-02
+  bsod = throw "bsod has been removed: deleted by upstream"; # added 2022-01-07
   btc1 = throw "btc1 has been removed, it was abandoned by upstream"; # added 2020-11-03
   buildPerlPackage = perlPackages.buildPerlPackage; # added 2018-10-12
   buildGo112Package = throw "buildGo112Package has been removed"; # added 2020-04-26
   buildGo112Module = throw "buildGo112Module has been removed"; # added 2020-04-26
   buildkite-agent3 = buildkite-agent; # added 2018-09-26
   bundler_HEAD = bundler; # added 2015-11-15
+  bunny = throw "bunny has been removed: deleted by upstream"; # added 2022-01-07
+  bypass403 = throw "bypass403 has been removed: deleted by upstream"; # added 2022-01-07
   calibre-py2 = throw "calibre-py2 has been removed from nixpkgs, as calibre has upgraded to python 3. Please use calibre as replacement."; # added 2021-01-13
   calibre-py3 = throw "calibre-py3 has been removed from nixpkgs, as calibre's default python version is now 3. Please use calibre as replacement."; # added 2021-01-13
   caddy1 = throw "caddy 1.x has been removed from nixpkgs, as it's unmaintained: https://github.com/caddyserver/caddy/blob/master/.github/SECURITY.md#supported-versions"; # added 2020-10-02
@@ -115,6 +121,7 @@ mapAliases ({
   cgmanager = throw "cgmanager was deprecated by lxc and therefore removed from nixpkgs."; # added 2020-06-05
   checkbashism = checkbashisms; # added 2016-08-16
   chronos = throw "chronos has been removed from nixpkgs, as it was unmaintained"; # added 2020-08-15
+  chunkwm = throw "chunkwm has been removed: abandoned by upstream"; # added 2022-01-07
   cide = throw "cide was deprecated on 2019-09-11: abandoned by upstream";
   cinepaint = throw "cinepaint has been removed from nixpkgs, as it was unmaintained"; # added 2019-12-10
   cifs_utils = cifs-utils; # added 2016-08
@@ -148,6 +155,8 @@ mapAliases ({
   couchdb2 = throw "couchdb2 was removed from nixpkgs, use couchdb3 instead"; # added 2021-03-03
   coredumper = throw "coredumper has been removed: abandoned by upstream."; # added 2019-11-16
   cpp_ethereum = throw "cpp_ethereum has been removed; abandoned upstream."; # added 2020-11-30
+  cpuminer-multi = throw "cpuminer-multi has been removed: deleted by upstream"; # added 2022-01-07
+  crafty = throw "crafty has been removed: deleted by upstream"; # 2022-01-07
   cryptol = throw "cryptol was removed due to prolonged broken build"; # added 2020-08-21
   cpp-gsl = microsoft_gsl; # added 2019-05-24
   cudatoolkit_6 = throw "cudatoolkit_6 has been removed in favor of newer versions"; # added 2021-02-14
@@ -208,6 +217,7 @@ mapAliases ({
   dmtx = dmtx-utils; # added 2018-04-25
   dnnl = oneDNN; # added 2020-04-22
   docbook5_xsl = docbook_xsl_ns; # added 2018-04-25
+  docbookrx = throw "docbookrx has been removed since it was unmaintained"; # added 2021-01-12
   docbook_xml_xslt = docbook_xsl; # added 2018-04-25
   dolphinEmu = dolphin-emu; # added 2021-11-10
   dolphinEmuMaster = dolphin-emu-beta; # added 2021-11-10
@@ -253,6 +263,7 @@ mapAliases ({
   firefoxWrapper = firefox;           # 2015-09
 
   firestr = throw "firestr has been removed."; # added 2019-12-08
+  firmwareLinuxNonfree = linux-firmware; # added 2022-01-09
   fish-foreign-env = throw "fish-foreign-env has been replaced with fishPlugins.foreign-env"; # added 2020-12-29, modified 2021-01-10
   flameGraph = flamegraph; # added 2018-04-25
   flashplayer = throw "flashplayer has been removed as Adobe Flash Player is now deprecated."; # added 2021-02-07
@@ -410,6 +421,7 @@ mapAliases ({
   julia_11 = throw "julia_11 has been deprecated in favor of the latest stable version"; # added 2020-09-15
   julia_13 = throw "julia_13 has been deprecated in favor of the latest stable version"; # added 2021-03-13
   julia_10-bin = throw "julia_10-bin has been deprecated in favor of the latest LTS version"; # added 2021-12-02
+  k3d = throw "k3d has been removed because it was broken and has seen no release since 2016"; # added 2022-01-04
   kbdKeymaps = throw "kbdKeymaps is not needed anymore since dvp and neo are now part of kbd"; # added 2021-04-11
   kdeconnect = plasma5Packages.kdeconnect-kde; # added 2020-10-28
   kdiff3-qt5 = kdiff3; # added 2017-02-18
@@ -498,6 +510,7 @@ mapAliases ({
   linuxPackages_5_4 = linuxKernel.packages.linux_5_4;
   linuxPackages_5_10 = linuxKernel.packages.linux_5_10;
   linuxPackages_5_15 = linuxKernel.packages.linux_5_15;
+  linuxPackages_5_16 = linuxKernel.packages.linux_5_16;
 
   linux_mptcp_95 = linuxKernel.kernels.linux_mptcp_95;
   linux_rpi1 = linuxKernel.kernels.linux_rpi1;
@@ -513,6 +526,7 @@ mapAliases ({
   linux_5_10 = linuxKernel.kernels.linux_5_10;
   linux-rt_5_10 = linuxKernel.kernels.linux_rt_5_10;
   linux_5_15 = linuxKernel.kernels.linux_5_15;
+  linux_5_16 = linuxKernel.kernels.linux_5_16;
 
   # added 2020-04-04
   linuxPackages_testing_hardened = throw "linuxPackages_testing_hardened has been removed, please use linuxPackages_latest_hardened";
@@ -659,6 +673,7 @@ mapAliases ({
   packet-cli = metal-cli; # added 2021-10-25
   paperless = paperless-ng; # added 2021-06-06
   parity = openethereum; # added 2020-08-01
+  parity-ui = throw "parity-ui was removed because it was broken and unmaintained by upstream"; # added 2022-01-10
   parquet-cpp = arrow-cpp; # added 2018-09-08
   pass-otp = pass.withExtensions (ext: [ext.pass-otp]); # added 2018-05-04
   pdfread = throw "pdfread has been remove because it is unmaintained for years and the sources are no longer available"; # added 2021-07-22

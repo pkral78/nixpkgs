@@ -6,13 +6,13 @@
 
 buildGoModule rec {
   pname = "kubescape";
-  version = "1.0.137";
+  version = "1.0.139";
 
   src = fetchFromGitHub {
     owner = "armosec";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-2VjC5icIKF7VO7Tli/mk/gXbIzZxkFm7Aigwl+BVQ6g=";
+    sha256 = "sha256-CsIdr/+orDTGdEs4R069+PF3ZKuXx8uLxEsymFOLfOY=";
   };
 
   nativeBuildInputs = [
