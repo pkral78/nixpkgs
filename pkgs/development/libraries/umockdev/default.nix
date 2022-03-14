@@ -19,13 +19,13 @@
 
 stdenv.mkDerivation rec {
   pname = "umockdev";
-  version = "0.17.0";
+  version = "0.17.7";
 
   outputs = [ "bin" "out" "dev" "devdoc" ];
 
   src = fetchurl {
     url = "https://github.com/martinpitt/umockdev/releases/download/${version}/${pname}-${version}.tar.xz";
-    sha256 = "sha256-rrZtftnvKWJ8f8qIjAOcudn2uvE1upwgByoLrtv1leY=";
+    sha256 = "sha256-BdZCoW3QHM4Oue4bpuSFsuwIU1vsZ5pjqVv9TfGNC7U=";
   };
 
   nativeBuildInputs = [

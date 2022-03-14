@@ -6,24 +6,28 @@
 , pkg-config
 , libiconv
 , openssl
+, DiskArbitration
+, Foundation
+, mandown
 , zellij
 , testVersion
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "zellij";
-  version = "0.23.0";
+  version = "0.25.0";
 
   src = fetchFromGitHub {
     owner = "zellij-org";
     repo = "zellij";
     rev = "v${version}";
-    sha256 = "sha256-DJ7FGtcsWGk4caS22aXo+8chCcvEdRlVrSRmIHsETD4=";
+    sha256 = "sha256-MTSM8fYAcNcmjg6bkOEN+U5+WilaEy52EJOfyoIy3Zg=";
   };
 
-  cargoSha256 ="sha256-dWdFBSZwTEvxrPiXtTWcYLtC+4XFb5R7Wu4r1YpHQRk=";
+  cargoSha256 = "sha256-2QEDrxTz7I9hF+WfVKkGLXHWZjQ5by/zuO16NGOJSKk=";
 
   nativeBuildInputs = [
+    mandown
     installShellFiles
     pkg-config
   ];
@@ -32,6 +36,8 @@ rustPlatform.buildRustPackage rec {
     openssl
   ] ++ lib.optionals stdenv.isDarwin [
     libiconv
+    DiskArbitration
+    Foundation
   ];
 
   preCheck = ''
@@ -39,6 +45,9 @@ rustPlatform.buildRustPackage rec {
   '';
 
   postInstall = ''
+    mandown docs/MANPAGE.md > zellij.1
+    installManPage zellij.1
+
     installShellCompletion --cmd $pname \
       --bash <($out/bin/zellij setup --generate-completion bash) \
       --fish <($out/bin/zellij setup --generate-completion fish) \
@@ -52,6 +61,6 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://zellij.dev/";
     changelog = "https://github.com/zellij-org/zellij/blob/v${version}/Changelog.md";
     license = with licenses; [ mit ];
-    maintainers = with maintainers; [ therealansh _0x4A6F ];
+    maintainers = with maintainers; [ therealansh _0x4A6F abbe ];
   };
 }

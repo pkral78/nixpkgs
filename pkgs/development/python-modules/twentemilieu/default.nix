@@ -2,10 +2,10 @@
 , buildPythonPackage
 , pythonOlder
 , fetchFromGitHub
-, poetry-core
 , aiohttp
 , yarl
 , aresponses
+, poetry-core
 , pytest-asyncio
 , pytestCheckHook
 }:
@@ -26,7 +26,8 @@ buildPythonPackage rec {
 
   postPatch = ''
     substituteInPlace pyproject.toml \
-      --replace "--cov" ""
+      --replace "--cov" "" \
+      --replace '"0.0.0"' '"${version}"'
   '';
 
   nativeBuildInputs = [

@@ -536,6 +536,7 @@ stdenv.mkDerivation rec {
     unzip
     which
     zip
+    python3.pkgs.absl-py   # Needed to build fish completion
   ] ++ lib.optionals (stdenv.isDarwin) [ cctools libcxx CoreFoundation CoreServices Foundation ];
 
   # Bazel makes extensive use of symlinks in the WORKSPACE.
@@ -549,8 +550,6 @@ stdenv.mkDerivation rec {
     shopt -s dotglob extglob
     mv !(bazel_src) bazel_src
   '';
-  # Needed to build fish completion
-  propagatedBuildInputs = [ python3.pkgs.absl-py ];
   buildPhase = ''
     runHook preBuild
 
@@ -661,6 +660,10 @@ stdenv.mkDerivation rec {
   postFixup = ''
     mkdir -p $out/nix-support
     echo "${defaultShellPath}" >> $out/nix-support/depends
+    # The string literal specifying the path to the bazel-rc file is sometimes
+    # stored non-contiguously in the binary due to gcc optimisations, which leads
+    # Nix to miss the hash when scanning for dependencies
+    echo "${bazelRC}" >> $out/nix-support/depends
   '' + lib.optionalString stdenv.isDarwin ''
     echo "${cctools}" >> $out/nix-support/depends
   '';

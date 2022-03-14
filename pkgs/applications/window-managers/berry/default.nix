@@ -1,23 +1,34 @@
-{ lib, stdenv
+{ lib
+, stdenv
 , fetchFromGitHub
+, copyDesktopItems
+, fontconfig
+, freetype
 , libX11
 , libXext
 , libXft
 , libXinerama
-, fontconfig
-, freetype
+, makeDesktopItem
+, pkg-config
+, which
 }:
 
 stdenv.mkDerivation rec {
   pname = "berry";
-  version = "0.1.7";
+  version = "0.1.10";
 
   src = fetchFromGitHub {
     owner = "JLErvin";
     repo = pname;
     rev = version;
-    sha256 = "sha256-2kFVOE5l1KQvDb5KDL7y0p4M7awJLrxJF871cyc0YZ8=";
+    hash = "sha256-6asph0QXzhmHuYcfrLcQ8RTP4QzX8m6AcCp5ImA++9M=";
   };
+
+  nativeBuildInputs = [
+    copyDesktopItems
+    pkg-config
+    which
+  ];
 
   buildInputs =[
     libX11
@@ -28,15 +39,20 @@ stdenv.mkDerivation rec {
     freetype
   ];
 
-  preBuild = ''
-    makeFlagsArray+=( PREFIX="${placeholder "out"}"
-                      X11INC="${libX11.dev}/include"
-                      X11LIB="${libX11}/lib"
-                      XINERAMALIBS="-lXinerama"
-                      XINERAMAFLAGS="-DXINERAMA"
-                      FREETYPELIBS="-lfontconfig -lXft"
-                      FREETYPEINC="${freetype.dev}/include/freetype2" )
+  preConfigure = ''
+    patchShebangs configure
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      name = pname;
+      exec = "berry";
+      comment = meta.description;
+      desktopName = "Berry Window Manager";
+      genericName = "Berry Window Manager";
+      categories = [ "Utility" ];
+    })
+  ];
 
   meta = with lib; {
     description = "A healthy, bite-sized window manager";

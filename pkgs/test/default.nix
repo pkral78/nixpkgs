@@ -61,9 +61,12 @@ with pkgs;
     writeStringReferencesToFile = callPackage ../build-support/trivial-builders/test/writeStringReferencesToFile.nix {};
     references = callPackage ../build-support/trivial-builders/test/references.nix {};
     overriding = callPackage ../build-support/trivial-builders/test-overriding.nix {};
+    concat = callPackage ../build-support/trivial-builders/test/concat-test.nix {};
   };
 
   writers = callPackage ../build-support/writers/test.nix {};
 
   dhall = callPackage ./dhall { };
+
+  makeWrapper = callPackage ./make-wrapper {};
 }

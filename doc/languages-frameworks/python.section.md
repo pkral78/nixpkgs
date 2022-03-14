@@ -764,7 +764,7 @@ and in this case the `python38` interpreter is automatically used.
 
 ### Interpreters {#interpreters}
 
-Versions 2.7, 3.6, 3.7, 3.8 and 3.9 of the CPython interpreter are available as
+Versions 2.7, 3.7, 3.8 and 3.9 of the CPython interpreter are available as
 respectively `python27`, `python37`, `python38` and `python39`. The
 aliases `python2` and `python3` correspond to respectively `python27` and
 `python39`. The attribute `python` maps to `python2`. The PyPy interpreters
@@ -834,6 +834,7 @@ sets are
 * `pkgs.python38Packages`
 * `pkgs.python39Packages`
 * `pkgs.python310Packages`
+* `pkgs.python311Packages`
 * `pkgs.pypyPackages`
 
 and the aliases
@@ -977,6 +978,31 @@ with import <nixpkgs> {};
 
 in python.withPackages(ps: [ps.blaze])).env
 ```
+
+#### Optional extra dependencies
+
+Some packages define optional dependencies for additional features. With
+`setuptools` this is called `extras_require` and `flit` calls it `extras-require`. A
+method for supporting this is by declaring the extras of a package in its
+`passthru`, e.g. in case of the package `dask`
+
+```nix
+passthru.extras-require = {
+  complete = [ distributed ];
+};
+```
+
+and letting the package requiring the extra add the list to its dependencies
+
+```nix
+propagatedBuildInputs = [
+  ...
+] ++ dask.extras-require.complete;
+```
+
+Note this method is preferred over adding parameters to builders, as that can
+result in packages depending on different variants and thereby causing
+collisions.
 
 #### `buildPythonApplication` function {#buildpythonapplication-function}
 
