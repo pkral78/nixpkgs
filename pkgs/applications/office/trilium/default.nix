@@ -8,7 +8,7 @@ let
     icon = "trilium";
     comment = description;
     desktopName = "Trilium Notes";
-    categories = "Office";
+    categories = [ "Office" ];
   };
 
   meta = with lib; {
@@ -19,16 +19,16 @@ let
     maintainers = with maintainers; [ fliegendewurst ];
   };
 
-  version = "0.49.4";
+  version = "0.50.2";
 
   desktopSource = {
     url = "https://github.com/zadam/trilium/releases/download/v${version}/trilium-linux-x64-${version}.tar.xz";
-    sha256 = "078w7jjkn8af3i0y0s236ky54h08b2wgzcaiakqiqx4gxdpf6jrq";
+    sha256 = "0fljza5afpjxgrzgskjhs7w86aa51d88xzv2h43666638j3c5mvk";
   };
 
   serverSource = {
     url = "https://github.com/zadam/trilium/releases/download/v${version}/trilium-linux-x64-server-${version}.tar.xz";
-    sha256 = "0hygdxb97373z5cn3s4wr66wc41w7a55kxjyb8alck1fl9l6agn1";
+    sha256 = "0jqpi1gc48jxvc68yzx80jp553haihybj3g3c5ymvqmgivwn7n4c";
   };
 
 in {

@@ -245,12 +245,9 @@ let
         defaultListen =
           if vhost.listen != [] then vhost.listen
           else
-            let addrs = if vhost.listenAddresses != [] then vhost.listenAddresses else (
-              [ "0.0.0.0" ] ++ optional enableIPv6 "[::0]"
-            );
-            in
-          optionals (hasSSL || vhost.rejectSSL) (map (addr: { inherit addr; port = 443; ssl = true; }) addrs)
-          ++ optionals (!onlySSL) (map (addr: { inherit addr; port = 80; ssl = false; }) addrs);
+            let addrs = if vhost.listenAddresses != [] then vhost.listenAddresses else cfg.defaultListenAddresses;
+            in optionals (hasSSL || vhost.rejectSSL) (map (addr: { inherit addr; port = 443; ssl = true; }) addrs)
+              ++ optionals (!onlySSL) (map (addr: { inherit addr; port = 80; ssl = false; }) addrs);
 
         hostListen =
           if vhost.forceSSL
@@ -429,6 +426,16 @@ in
         example = "20s";
         description = "
           Change the proxy related timeouts in recommendedProxySettings.
+        ";
+      };
+
+      defaultListenAddresses = mkOption {
+        type = types.listOf types.str;
+        default = [ "0.0.0.0" ] ++ optional enableIPv6 "[::0]";
+        defaultText = literalExpression ''[ "0.0.0.0" ] ++ lib.optional config.networking.enableIPv6 "[::0]"'';
+        example = literalExpression ''[ "10.0.0.12" "[2002:a00:1::]" ]'';
+        description = "
+          If vhosts do not specify listenAddresses, use these addresses by default.
         ";
       };
 
@@ -917,7 +924,8 @@ in
         PrivateMounts = true;
         # System Call Filtering
         SystemCallArchitectures = "native";
-        SystemCallFilter = [ "~@cpu-emulation @debug @keyring @mount @obsolete @privileged @setuid @mincore" ] ++ optionals (cfg.package != pkgs.tengine) [ "~@ipc" ];
+        SystemCallFilter = [ "~@cpu-emulation @debug @keyring @mount @obsolete @privileged @setuid" ]
+          ++ optionals ((cfg.package != pkgs.tengine) && (!lib.any (mod: (mod.disableIPC or false)) cfg.package.modules)) [ "~@ipc" ];
       };
     };
 
@@ -981,5 +989,17 @@ in
       nginx.gid = config.ids.gids.nginx;
     };
 
+    services.logrotate.paths.nginx = mapAttrs (_: mkDefault) {
+      path = "/var/log/nginx/*.log";
+      frequency = "weekly";
+      keep = 26;
+      extraConfig = ''
+        compress
+        delaycompress
+        postrotate
+          [ ! -f /var/run/nginx/nginx.pid ] || kill -USR1 `cat /var/run/nginx/nginx.pid`
+        endscript
+      '';
+    };
   };
 }

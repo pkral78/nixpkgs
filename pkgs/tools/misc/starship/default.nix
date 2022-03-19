@@ -8,25 +8,24 @@
 , libiconv
 , nixosTests
 , Security
+, Foundation
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "starship";
-  version = "1.1.1";
+  version = "1.3.0";
 
   src = fetchFromGitHub {
     owner = "starship";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-Rr0HCr/uJDsBQiKJIPdEL3WOaLgMY2Nq2JGOq4dEUxQ=";
+    sha256 = "sha256-mqUE4JzNBhvtDpT2LM23eHX8q93wtPqA+/zr/PxEDiE=";
   };
 
   nativeBuildInputs = [ installShellFiles ] ++ lib.optionals stdenv.isLinux [ pkg-config ];
 
   buildInputs = lib.optionals stdenv.isLinux [ openssl ]
-    ++ lib.optionals stdenv.isDarwin [ libiconv Security ];
-
-  buildFeatures = lib.optional (!stdenv.isDarwin) "notify-rust";
+    ++ lib.optionals stdenv.isDarwin [ libiconv Security Foundation ];
 
   postInstall = ''
     for shell in bash fish zsh; do
@@ -35,7 +34,7 @@ rustPlatform.buildRustPackage rec {
     done
   '';
 
-  cargoSha256 = "sha256-UT6t1GbyON/wrIF/oXXhsT3Z61LFjggSPWKpSDHp+PI=";
+  cargoSha256 = "sha256-hQNDiayVT4UgbxcxdXssi/evPvwgyvG/UOFyEHj7jpo=";
 
   preCheck = ''
     HOME=$TMPDIR
