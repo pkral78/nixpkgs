@@ -2,7 +2,7 @@
 # Do not edit!
 
 {
-  version = "2022.4.5";
+  version = "2022.4.6";
   components = {
     "abode" = ps: with ps; [
       abodepy
@@ -382,7 +382,8 @@
     ];
     "climacell" = ps: with ps; [
       pyclimacell
-    ]; # missing inputs: pytomorrowio
+      pytomorrowio
+    ];
     "climate" = ps: with ps; [
     ];
     "cloud" = ps: with ps; [
@@ -821,7 +822,8 @@
       fitbit
     ];
     "fivem" = ps: with ps; [
-    ]; # missing inputs: fivem-api
+      fivem-api
+    ];
     "fixer" = ps: with ps; [
       fixerio
     ];
@@ -1243,7 +1245,10 @@
     "input_text" = ps: with ps; [
     ];
     "insteon" = ps: with ps; [
+      aiohttp-cors
       pyinsteon
+      pyserial
+      pyudev
     ];
     "integration" = ps: with ps; [
     ];
@@ -2287,7 +2292,8 @@
       aiosenseme
     ];
     "sensibo" = ps: with ps; [
-    ]; # missing inputs: pysensibo
+      pysensibo
+    ];
     "sensor" = ps: with ps; [
       fnvhash
       lru-dict
@@ -2518,7 +2524,8 @@
       pymodbus
     ]; # missing inputs: pystiebeleltron
     "stookalert" = ps: with ps; [
-    ]; # missing inputs: stookalert
+      stookalert
+    ];
     "stream" = ps: with ps; [
       pyturbojpeg
       aiohttp-cors
@@ -2696,7 +2703,8 @@
     "tomato" = ps: with ps; [
     ];
     "tomorrowio" = ps: with ps; [
-    ]; # missing inputs: pytomorrowio
+      pytomorrowio
+    ];
     "toon" = ps: with ps; [
       pyturbojpeg
       aiohttp-cors
@@ -3191,6 +3199,7 @@
     "canary"
     "cast"
     "cert_expiry"
+    "climacell"
     "climate"
     "cloud"
     "cloudflare"
@@ -3274,6 +3283,7 @@
     "filter"
     "fireservicerota"
     "firmata"
+    "fivem"
     "fjaraskupan"
     "flic"
     "flick_electric"
@@ -3560,6 +3570,7 @@
     "select"
     "sense"
     "senseme"
+    "sensibo"
     "sensor"
     "sentry"
     "seventeentrack"
@@ -3607,6 +3618,7 @@
     "statistics"
     "statsd"
     "steamist"
+    "stookalert"
     "stream"
     "stt"
     "subaru"
@@ -3642,6 +3654,7 @@
     "todoist"
     "tolo"
     "tomato"
+    "tomorrowio"
     "toon"
     "totalconnect"
     "tplink"
