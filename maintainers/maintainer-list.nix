@@ -11316,6 +11316,12 @@
     githubId = 307899;
     name = "Gurkan Gur";
   };
+  serge = {
+    email = "sb@canva.com";
+    github = "serge-belov";
+    githubId = 38824235;
+    name = "Serge Belov";
+  };
   sersorrel = {
     email = "ash@sorrel.sh";
     github = "sersorrel";
@@ -14375,5 +14381,11 @@
     email = "martin+nixpkgs@elias.sx";
     github = "melias122";
     githubId = 1027766;
+  };
+  bryanhonof = {
+    name = "Bryan Honof";
+    email = "bryanhonof@gmail.com";
+    github = "bryanhonof";
+    githubId = 5932804;
   };
 }

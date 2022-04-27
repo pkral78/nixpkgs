@@ -2,7 +2,7 @@
 # Do not edit!
 
 {
-  version = "2022.4.6";
+  version = "2022.4.7";
   components = {
     "abode" = ps: with ps; [
       abodepy
@@ -162,7 +162,8 @@
       pyarlo
     ];
     "arris_tg2492lg" = ps: with ps; [
-    ]; # missing inputs: arris-tg2492lg
+      arris-tg2492lg
+    ];
     "aruba" = ps: with ps; [
       pexpect
     ];
@@ -1054,7 +1055,8 @@
       hangups
     ];
     "harman_kardon_avr" = ps: with ps; [
-    ]; # missing inputs: hkavr
+      hkavr
+    ];
     "harmony" = ps: with ps; [
       aioharmony
     ];
@@ -1906,7 +1908,8 @@
       pyopnsense
     ];
     "opple" = ps: with ps; [
-    ]; # missing inputs: pyoppleio
+      pyoppleio
+    ];
     "oru" = ps: with ps; [
     ]; # missing inputs: oru
     "orvibo" = ps: with ps; [
@@ -1958,9 +1961,11 @@
       sqlalchemy
     ];
     "peco" = ps: with ps; [
-    ]; # missing inputs: peco
+      peco
+    ];
     "pencom" = ps: with ps; [
-    ]; # missing inputs: pencompy
+      pencompy
+    ];
     "persistent_notification" = ps: with ps; [
     ];
     "person" = ps: with ps; [
@@ -2141,7 +2146,8 @@
       praw
     ];
     "rejseplanen" = ps: with ps; [
-    ]; # missing inputs: rjpl
+      rjpl
+    ];
     "remember_the_milk" = ps: with ps; [
       httplib2
     ]; # missing inputs: RtmAPI
@@ -2242,7 +2248,8 @@
       sqlalchemy
     ];
     "saj" = ps: with ps; [
-    ]; # missing inputs: pysaj
+      pysaj
+    ];
     "samsungtv" = ps: with ps; [
       aiohttp-cors
       async-upnp-client
@@ -3124,7 +3131,8 @@
       ifaddr
       url-normalize
       zeroconf
-    ]; # missing inputs: zwave_me_ws
+      zwave-me-ws
+    ];
   };
   # components listed in tests/components for which all dependencies are packaged
   supportedComponentsWithTests = [
@@ -3508,6 +3516,7 @@
     "p1_monitor"
     "panel_custom"
     "panel_iframe"
+    "peco"
     "persistent_notification"
     "person"
     "philips_js"
@@ -3739,5 +3748,6 @@
     "zodiac"
     "zone"
     "zwave_js"
+    "zwave_me"
   ];
 }
