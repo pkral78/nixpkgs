@@ -627,7 +627,7 @@ in {
 
   argh = callPackage ../development/python-modules/argh { };
 
-  argon2_cffi = callPackage ../development/python-modules/argon2_cffi { };
+  argon2-cffi = callPackage ../development/python-modules/argon2-cffi { };
 
   argon2-cffi-bindings = callPackage ../development/python-modules/argon2-cffi-bindings { };
 
@@ -2432,6 +2432,8 @@ in {
     inherit (pkgs) dlib;
   };
 
+  dlinfo = callPackage ../development/python-modules/dlinfo { };
+
   dlx = callPackage ../development/python-modules/dlx { };
 
   dmenu-python = callPackage ../development/python-modules/dmenu { };
@@ -2677,6 +2679,8 @@ in {
 
   enamlx = callPackage ../development/python-modules/enamlx { };
 
+  enhancements = callPackage ../development/python-modules/enhancements { };
+
   enlighten = callPackage ../development/python-modules/enlighten { };
 
   enocean = callPackage ../development/python-modules/enocean { };
@@ -2770,6 +2774,8 @@ in {
   evernote = callPackage ../development/python-modules/evernote { };
 
   evohome-async = callPackage ../development/python-modules/evohome-async { };
+
+  evtx = callPackage ../development/python-modules/evtx { };
 
   ewmh = callPackage ../development/python-modules/ewmh { };
 
@@ -3619,6 +3625,8 @@ in {
   gpxpy = callPackage ../development/python-modules/gpxpy { };
 
   gpy = callPackage ../development/python-modules/gpy { };
+
+  gpt-2-simple = callPackage ../development/python-modules/gpt-2-simple { };
 
   gpyopt = callPackage ../development/python-modules/gpyopt { };
 
@@ -5834,6 +5842,8 @@ in {
   nvchecker = callPackage ../development/python-modules/nvchecker { };
 
   python-nvd3 = callPackage ../development/python-modules/python-nvd3 { };
+
+  py-deprecate = callPackage ../development/python-modules/py-deprecate { };
 
   nwdiag = callPackage ../development/python-modules/nwdiag { };
 
@@ -9881,6 +9891,8 @@ in {
 
   sseclient-py = callPackage ../development/python-modules/sseclient-py { };
 
+  ssh-mitm = callPackage ../development/python-modules/ssh-mitm { };
+
   sshpubkeys = callPackage ../development/python-modules/sshpubkeys { };
 
   sshtunnel = callPackage ../development/python-modules/sshtunnel { };
@@ -10352,6 +10364,8 @@ in {
 
   torchgpipe = callPackage ../development/python-modules/torchgpipe { };
 
+  torchmetrics = callPackage ../development/python-modules/torchmetrics { };
+
   torchinfo = callPackage ../development/python-modules/torchinfo { };
 
   torchvision = callPackage ../development/python-modules/torchvision { };
@@ -10587,6 +10601,8 @@ in {
   ua-parser = callPackage ../development/python-modules/ua-parser { };
 
   uarray = callPackage ../development/python-modules/uarray { };
+
+  uasiren = callPackage ../development/python-modules/uasiren { };
 
   uc-micro-py = callPackage ../development/python-modules/uc-micro-py { };
 
