@@ -1170,6 +1170,12 @@
     githubId = 706854;
     name = "Etienne Laurin";
   };
+  atry = {
+    name = "Bo Yang";
+    email = "atry@fb.com";
+    github = "Atry";
+    githubId = 601530;
+  };
   attila-lendvai = {
     name = "Attila Lendvai";
     email = "attila@lendvai.name";
@@ -3758,6 +3764,13 @@
     github = "em0lar";
     githubId = 11006031;
     name = "Leo Maroni";
+  };
+  emmabastas = {
+    email = "emma.bastas@protonmail.com";
+    matrix = "@emmabastas:matrix.org";
+    github = "emmabastas";
+    githubId = 22533224;
+    name = "Emma Bastås";
   };
   emmanuelrosa = {
     email = "emmanuelrosa@protonmail.com";
@@ -6680,7 +6693,7 @@
   };
   khushraj = {
     email = "khushraj.rathod@gmail.com";
-    github = "KhushrajRathod";
+    github = "khrj";
     githubId = 44947946;
     name = "Khushraj Rathod";
     keys = [{
@@ -7893,6 +7906,12 @@
     github = "marsam";
     githubId = 65531;
     name = "Mario Rodas";
+  };
+  marsupialgutz = {
+    email = "mars@possums.xyz";
+    github = "marsupialgutz";
+    githubId = 33522919;
+    name = "Marshall Arruda";
   };
   martijnvermaat = {
     email = "martijn@vermaat.name";
@@ -11391,7 +11410,7 @@
       longkeyid = "rsa2048/0x8E8FF66E2AE8D970";
       fingerprint = "30BB FF3F AB0B BB3E 0435  F83C 8E8F F66E 2AE8 D970";
     }];
-};
+  };
   scode = {
     email = "peter.schuller@infidyne.com";
     github = "scode";
@@ -12080,10 +12099,10 @@
     name = "Steve Elliott";
   };
   stehessel = {
-      email = "stephan@stehessel.de";
-      github = "stehessel";
-      githubId = 55607356;
-      name = "Stephan Heßelmann";
+    email = "stephan@stehessel.de";
+    github = "stehessel";
+    githubId = 55607356;
+    name = "Stephan Heßelmann";
   };
   steinybot = {
     name = "Jason Pickens";
@@ -14664,5 +14683,11 @@
     name = "Philippe Schaaf";
     github = "snpschaaf";
     githubId = 105843013;
+  };
+  jali-clarke = {
+    email = "jinnah.ali-clarke@outlook.com";
+    name = "Jinnah Ali-Clarke";
+    github = "jali-clarke";
+    githubId = 17733984;
   };
 }
