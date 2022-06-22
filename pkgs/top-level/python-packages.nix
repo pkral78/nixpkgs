@@ -889,6 +889,8 @@ in {
 
   azure-cosmosdb-table = callPackage ../development/python-modules/azure-cosmosdb-table { };
 
+  azure-data-tables = callPackage ../development/python-modules/azure-data-tables { };
+
   azure-datalake-store = callPackage ../development/python-modules/azure-datalake-store { };
 
   azure-eventgrid = callPackage ../development/python-modules/azure-eventgrid { };
@@ -2440,7 +2442,7 @@ in {
 
   djangorestframework-simplejwt = callPackage ../development/python-modules/djangorestframework-simplejwt { };
 
-  django_reversion = callPackage ../development/python-modules/django_reversion { };
+  django-reversion = callPackage ../development/python-modules/django-reversion { };
 
   django-sampledatahelper = callPackage ../development/python-modules/django-sampledatahelper { };
 
@@ -4249,6 +4251,8 @@ in {
 
   incremental = callPackage ../development/python-modules/incremental { };
 
+  infinity = callPackage ../development/python-modules/infinity { };
+
   inflect = callPackage ../development/python-modules/inflect { };
 
   inflection = callPackage ../development/python-modules/inflection { };
@@ -4320,8 +4324,6 @@ in {
   iowait = callPackage ../development/python-modules/iowait { };
 
   ipaddr = callPackage ../development/python-modules/ipaddr { };
-
-  ipaddress = callPackage ../development/python-modules/ipaddress { };
 
   ipdb = callPackage ../development/python-modules/ipdb { };
 
@@ -4825,7 +4827,6 @@ in {
 
   ledger = (toPythonModule (pkgs.ledger.override {
     usePython = true;
-    boost = pkgs.boost179; # Current default boost (1.77) doesn’t work with Python 3.10.
     python3 = python;
   })).py;
 
@@ -5304,6 +5305,8 @@ in {
 
   md-toc = callPackage ../development/python-modules/md-toc { };
 
+  mdx-truly-sane-lists = callPackage ../development/python-modules/mdx-truly-sane-lists { };
+
   md2gemini = callPackage ../development/python-modules/md2gemini { };
 
   mdformat = callPackage ../development/python-modules/mdformat { };
@@ -5437,6 +5440,8 @@ in {
 
   mkdocs = callPackage ../development/python-modules/mkdocs { };
   mkdocs-drawio-exporter = callPackage ../development/python-modules/mkdocs-drawio-exporter { };
+  mkdocs-exclude = callPackage ../development/python-modules/mkdocs-exclude { };
+  mkdocs-gitlab = callPackage ../development/python-modules/mkdocs-gitlab-plugin { };
   mkdocs-macros = callPackage ../development/python-modules/mkdocs-macros { };
   mkdocs-material = callPackage ../development/python-modules/mkdocs-material { };
   mkdocs-material-extensions = callPackage ../development/python-modules/mkdocs-material/mkdocs-material-extensions.nix { };
@@ -5929,8 +5934,6 @@ in {
 
   nsapi = callPackage ../development/python-modules/nsapi { };
 
-  ntfy-webpush = callPackage ../tools/misc/ntfy-webpush { };
-
   ntc-templates = callPackage ../development/python-modules/ntc-templates { };
 
   ntlm-auth = callPackage ../development/python-modules/ntlm-auth { };
@@ -6136,8 +6139,6 @@ in {
   optuna = callPackage ../development/python-modules/optuna { };
 
   opuslib = callPackage ../development/python-modules/opuslib { };
-
-  ordereddict = callPackage ../development/python-modules/ordereddict { };
 
   orderedmultidict = callPackage ../development/python-modules/orderedmultidict { };
 
@@ -6423,7 +6424,7 @@ in {
 
   pg8000 = callPackage ../development/python-modules/pg8000 { };
 
-  pgcli = callPackage ../development/tools/database/pgcli { };
+  pgcli = callPackage ../development/python-modules/pgcli { };
 
   pglast = callPackage ../development/python-modules/pglast { };
 
@@ -6926,7 +6927,9 @@ in {
 
   psd-tools = callPackage ../development/python-modules/psd-tools { };
 
-  psutil = callPackage ../development/python-modules/psutil { };
+  psutil = callPackage ../development/python-modules/psutil {
+    inherit (pkgs.darwin.apple_sdk.frameworks) IOKit;
+  };
 
   psycopg2 = callPackage ../development/python-modules/psycopg2 { };
 
@@ -7148,6 +7151,8 @@ in {
 
   pychef = callPackage ../development/python-modules/pychef { };
 
+  pychm = callPackage ../development/python-modules/pychm { };
+
   PyChromecast = callPackage ../development/python-modules/pychromecast { };
 
   pyclimacell = callPackage ../development/python-modules/pyclimacell { };
@@ -7195,8 +7200,6 @@ in {
   pycrypto = callPackage ../development/python-modules/pycrypto { };
 
   pycryptodome = callPackage ../development/python-modules/pycryptodome { };
-
-  pycryptodome-test-vectors = callPackage ../development/python-modules/pycryptodome-test-vectors { };
 
   pycryptodomex = callPackage ../development/python-modules/pycryptodomex { };
 
@@ -8762,6 +8765,8 @@ in {
 
   pytorch = callPackage ../development/python-modules/pytorch {
     cudaSupport = pkgs.config.cudaSupport or false;
+    inherit (pkgs.darwin.apple_sdk.frameworks) CoreServices;
+    inherit (pkgs.darwin) libobjc;
   };
 
   pytorch-bin = callPackage ../development/python-modules/pytorch/bin.nix { };
@@ -9477,6 +9482,8 @@ in {
   schema-salad = callPackage ../development/python-modules/schema-salad { };
 
   schiene = callPackage ../development/python-modules/schiene { };
+
+  schwifty = callPackage ../development/python-modules/schwifty { };
 
   scikit-bio = callPackage ../development/python-modules/scikit-bio { };
 
@@ -10466,6 +10473,8 @@ in {
 
   threadpoolctl = callPackage ../development/python-modules/threadpoolctl { };
 
+  threat9-test-bed = callPackage ../development/python-modules/threat9-test-bed { };
+
   three-merge = callPackage ../development/python-modules/three-merge { };
 
   thrift = callPackage ../development/python-modules/thrift { };
@@ -10650,6 +10659,8 @@ in {
 
   trio-asyncio = callPackage ../development/python-modules/trio-asyncio { };
 
+  trio-websocket = callPackage ../development/python-modules/trio-websocket { };
+
   trueskill = callPackage ../development/python-modules/trueskill { };
 
   trustme = callPackage ../development/python-modules/trustme { };
@@ -10765,6 +10776,8 @@ in {
   types-protobuf = callPackage ../development/python-modules/types-protobuf { };
 
   types-pytz = callPackage ../development/python-modules/types-pytz { };
+
+  types-pyyaml = callPackage ../development/python-modules/types-pyyaml { };
 
   types-redis = callPackage ../development/python-modules/types-redis { };
 
