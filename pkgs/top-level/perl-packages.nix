@@ -1359,6 +1359,20 @@ let
     buildInputs = [ DBI ];
   };
 
+  AWSSignature4 = perlPackages.buildPerlModule {
+    pname = "AWS-Signature4";
+    version = "1.02";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/L/LD/LDS/AWS-Signature4-1.02.tar.gz";
+      sha256 = "20bbc16cb3454fe5e8cf34fe61f1a91fe26c3f17e449ff665fcbbb92ab443ebd";
+    };
+    propagatedBuildInputs = [ LWP TimeDate URI ];
+    meta = {
+      description = "Create a version4 signature for Amazon Web Services";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+
   autovivification = buildPerlPackage {
     pname = "autovivification";
     version = "0.18";
@@ -9617,10 +9631,10 @@ let
 
   GnuPGInterface = buildPerlPackage {
     pname = "GnuPG-Interface";
-    version = "1.00";
+    version = "1.02";
     src = fetchurl {
-      url = "mirror://cpan/authors/id/J/JE/JESSE/GnuPG-Interface-1.00.tar.gz";
-      sha256 = "97e9c809491a061b2e99fb4e50c7bf74eb42e1deb11c64b081b21b4dbe6aec2f";
+      url = "mirror://cpan/authors/id/B/BP/BPS/GnuPG-Interface-1.02.tar.gz";
+      sha256 = "c27a48c3d48e1a9205e362eeea66d46b032bd84637991fdf0b13828bcafdd3e6";
     };
     buildInputs = [ pkgs.which pkgs.gnupg1compat ];
     propagatedBuildInputs = [ MooXHandlesVia MooXlate ];
