@@ -63,6 +63,7 @@ broken-packages:
   - adp-multi
   - adtrees
   - advent-of-code-ocr
+  - aern2-fun
   - AERN-Basics
   - aeson-applicative
   - aeson-bson
@@ -870,6 +871,7 @@ broken-packages:
   - CoreDump
   - CoreErlang
   - core-haskell
+  - corenlp-parser
   - core-telemetry
   - core-webserver-warp
   - Coroutine
@@ -1422,7 +1424,6 @@ broken-packages:
   - fast-nats
   - fastpbkdf2
   - FastPush
-  - fast-tags
   - FastxPipe
   - fathead-util
   - fb
@@ -1891,6 +1892,7 @@ broken-packages:
   - hack-handler-happstack
   - hack-handler-kibro
   - HackMail
+  - hackport
   - hactor
   - hactors
   - haddock-api
@@ -2996,6 +2998,7 @@ broken-packages:
   - libpafe
   - libpq
   - librandomorg
+  - libsecp256k1
   - libsystemd-daemon
   - libsystemd-journal
   - libtagc
@@ -4079,6 +4082,7 @@ broken-packages:
   - PriorityChansConverger
   - priority-queue
   - probable
+  - prob-fx
   - Probnet
   - process-conduit
   - processing
@@ -4457,6 +4461,7 @@ broken-packages:
   - salvia-protocol
   - sandlib
   - sandman
+  - sandwich-hedgehog
   - sarasvati
   - sat
   - satchmo
@@ -4662,7 +4667,6 @@ broken-packages:
   - simple-form
   - simple-genetic-algorithm
   - SimpleH
-  - SimpleServer
   - simple-index
   - simpleirc
   - simple-log
@@ -4673,6 +4677,7 @@ broken-packages:
   - simpleprelude
   - simple-rope
   - simple-server
+  - SimpleServer
   - simplesmtpclient
   - simple-sql-parser
   - simple-stacked-vm
@@ -4999,6 +5004,7 @@ broken-packages:
   - swearjure
   - swf
   - swift-lda
+  - swiss
   - swiss-ephemeris
   - SWMMoutGetMB
   - sws
@@ -5505,7 +5511,6 @@ broken-packages:
   - vector-endian
   - vector-fftw
   - vector-functorlazy
-  - vector-hashtables
   - vector-heterogenous
   - vector-random
   - vector-read-instances
