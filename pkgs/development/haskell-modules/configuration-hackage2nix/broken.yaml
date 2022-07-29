@@ -94,7 +94,6 @@ broken-packages:
   - aeson-streams
   - aeson-t
   - aeson-toolkit
-  - aeson-typescript
   - aeson-utils
   - aeson-via
   - aeson-with
@@ -447,6 +446,7 @@ broken-packages:
   - bogocopy
   - bolt
   - boltzmann-brain
+  - bookhound
   - bookkeeper
   - boolean-normal-forms
   - boolexpr
@@ -501,6 +501,7 @@ broken-packages:
   - buttplug-hs-core
   - bv-little
   - byline
+  - by-other-names
   - bytearray-parsing
   - bytestring-aeson-orphans
   - bytestring-arbitrary
@@ -688,7 +689,13 @@ broken-packages:
   - clanki
   - clarifai
   - CLASE
+  - clashilator
+  - clash-multisignal
+  - clash-prelude-quickcheck
   - Clash-Royale-Hack-Cheats
+  - clash-systemverilog
+  - clash-verilog
+  - clash-vhdl
   - ClassLaws
   - classy-influxdb-simple
   - classy-parallel
@@ -1169,7 +1176,6 @@ broken-packages:
   - dockerfile-creator
   - docrecords
   - doctest-discover-configurator
-  - doctest-parallel
   - doctest-prop
   - docusign-example
   - docvim
@@ -1707,6 +1713,7 @@ broken-packages:
   - ghc-parmake
   - ghc-pkg-autofix
   - ghc-pkg-lib
+  - ghc-plugin-non-empty
   - ghc-plugs-out
   - ghc-prof
   - ghc-proofs
@@ -2777,7 +2784,6 @@ broken-packages:
   - json-ast-quickcheck
   - JSONb
   - json-builder
-  - json-directory
   - json-encoder
   - jsonextfilter
   - json-extra
@@ -3040,6 +3046,7 @@ broken-packages:
   - linux-kmod
   - linux-perf
   - linx-gateway
+  - lion
   - lipsum-gen
   - liquid
   - liquidhaskell-cabal
@@ -3314,7 +3321,6 @@ broken-packages:
   - MonadCatchIO-transformers
   - monad-choice
   - MonadCompose
-  - monad-control-identity
   - monad-fork
   - monad-http
   - monadiccp
@@ -3852,6 +3858,7 @@ broken-packages:
   - persistent-odbc
   - persistent-protobuf
   - persistent-ratelimit
+  - persistent-stm
   - persistent-template-classy
   - persistent-typed-db
   - persistent-zookeeper
