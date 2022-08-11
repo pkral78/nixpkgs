@@ -287,6 +287,8 @@ in {
 
   aioeagle = callPackage ../development/python-modules/aioeagle { };
 
+  aioecowitt = callPackage ../development/python-modules/aioecowitt { };
+
   aioemonitor = callPackage ../development/python-modules/aioemonitor { };
 
   aioesphomeapi = callPackage ../development/python-modules/aioesphomeapi { };
@@ -1700,6 +1702,8 @@ in {
 
   ci-py = callPackage ../development/python-modules/ci-py { };
 
+  cinemagoer = callPackage ../development/python-modules/cinemagoer { };
+
   circuit-webhook = callPackage ../development/python-modules/circuit-webhook { };
 
   circuitbreaker = callPackage ../development/python-modules/circuitbreaker { };
@@ -1891,6 +1895,8 @@ in {
   colorspacious = callPackage ../development/python-modules/colorspacious { };
 
   colorthief = callPackage ../development/python-modules/colorthief { };
+
+  colorzero = callPackage ../development/python-modules/colorzero { };
 
   colour = callPackage ../development/python-modules/colour { };
 
@@ -3770,6 +3776,8 @@ in {
 
   gpapi = callPackage ../development/python-modules/gpapi { };
 
+  gpiozero = callPackage ../development/python-modules/gpiozero { };
+
   gplaycli = callPackage ../development/python-modules/gplaycli { };
 
   gpgme = toPythonModule (pkgs.gpgme.override {
@@ -4285,8 +4293,6 @@ in {
   imap-tools = callPackage ../development/python-modules/imap-tools { };
 
   imbalanced-learn = callPackage ../development/python-modules/imbalanced-learn { };
-
-  imdbpy = callPackage ../development/python-modules/imdbpy { };
 
   img2pdf = callPackage ../development/python-modules/img2pdf { };
 
@@ -5458,6 +5464,8 @@ in {
   metar = callPackage ../development/python-modules/metar { };
 
   meteoalertapi = callPackage ../development/python-modules/meteoalertapi { };
+
+  meteocalc = callPackage ../development/python-modules/meteocalc { };
 
   meteofrance-api = callPackage ../development/python-modules/meteofrance-api { };
 
@@ -8195,6 +8203,12 @@ in {
   pysideTools = callPackage ../development/python-modules/pyside/tools.nix { };
 
   pysigma = callPackage ../development/python-modules/pysigma { };
+
+  pysigma-backend-elasticsearch = callPackage ../development/python-modules/pysigma-backend-elasticsearch { };
+
+  pysigma-backend-opensearch = callPackage ../development/python-modules/pysigma-backend-opensearch { };
+
+  pysigma-backend-qradar = callPackage ../development/python-modules/pysigma-backend-qradar { };
 
   pysigma-backend-splunk = callPackage ../development/python-modules/pysigma-backend-splunk { };
 
@@ -11694,6 +11708,8 @@ in {
   z3 = (toPythonModule (pkgs.z3.override {
     inherit python;
   })).python;
+
+  zadnegoale = callPackage ../development/python-modules/zadnegoale { };
 
   zake = callPackage ../development/python-modules/zake { };
 
