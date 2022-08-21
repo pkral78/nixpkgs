@@ -1359,6 +1359,12 @@
     githubId = 9315;
     name = "Zhong Jianxin";
   };
+  a-kenji = {
+    email = "aks.kenji@protonmail.com";
+    github = "a-kenji";
+    githubId = 65275785;
+    name = "Alexander Kenji Berthold";
+  };
   b4dm4n = {
     email = "fabianm88@gmail.com";
     github = "B4dM4n";
@@ -3737,6 +3743,12 @@
     github = "ehmry";
     githubId = 537775;
     name = "Emery Hemingway";
+  };
+  eigengrau = {
+    email = "seb@schattenkopie.de";
+    name = "Sebastian Reuße";
+    github = "eigengrau";
+    githubId = 4939947;
   };
   eikek = {
     email = "eike.kettner@posteo.de";
@@ -13504,6 +13516,15 @@
     githubId = 619015;
     name = "Svintsov Dmitry";
   };
+  urandom = {
+    email = "colin@urandom.co.uk";
+    github = "arnottcr";
+    githubId = 2526260;
+    keys = [{
+      fingerprint = "04A3 A2C6 0042 784A AEA7  D051 0447 A663 F7F3 E236";
+    }];
+    name = "Colin Arnott";
+  };
   urbas = {
     email = "matej.urbas@gmail.com";
     github = "urbas";
@@ -13871,6 +13892,12 @@
     email = "github-dev@mail2013.wamser.eu";
     github = "wamserma";
     githubId = 60148;
+  };
+  water-sucks = {
+    email = "varun@cvte.org";
+    name = "Varun Narravula";
+    github = "water-sucks";
+    githubId = 68445574;
   };
   waynr = {
     name = "Wayne Warren";
