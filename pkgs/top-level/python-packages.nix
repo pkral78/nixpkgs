@@ -257,6 +257,8 @@ in {
 
   aioairzone = callPackage ../development/python-modules/aioairzone { };
 
+  aioairq = callPackage ../development/python-modules/aioairq { };
+
   aioaladdinconnect = callPackage ../development/python-modules/aioaladdinconnect { };
 
   aioambient = callPackage ../development/python-modules/aioambient { };
@@ -1401,6 +1403,8 @@ in {
 
   bluetooth-adapters = callPackage ../development/python-modules/bluetooth-adapters { };
 
+  bluetooth-auto-recovery = callPackage ../development/python-modules/bluetooth-auto-recovery { };
+
   bluetooth-data-tools= callPackage ../development/python-modules/bluetooth-data-tools { };
 
   bluetooth-sensor-state-data = callPackage ../development/python-modules/bluetooth-sensor-state-data { };
@@ -1513,6 +1517,10 @@ in {
   btrfs = callPackage ../development/python-modules/btrfs { };
 
   btrfsutil = toPythonModule (pkgs.btrfs-progs.override { python3 = self.python; });
+
+  btsocket = callPackage ../development/python-modules/btsocket { };
+
+  bucketstore = callPackage ../development/python-modules/bucketstore { };
 
   bugsnag = callPackage ../development/python-modules/bugsnag { };
 
@@ -1729,6 +1737,8 @@ in {
   charset-normalizer = callPackage ../development/python-modules/charset-normalizer { };
 
   chart-studio = callPackage ../development/python-modules/chart-studio { };
+
+  chat-downloader = callPackage ../development/python-modules/chat-downloader { };
 
   check-manifest = callPackage ../development/python-modules/check-manifest { };
 
@@ -2400,6 +2410,8 @@ in {
 
   dingz = callPackage ../development/python-modules/dingz { };
 
+  dinghy = callPackage ../development/python-modules/dinghy { };
+
   diofant = callPackage ../development/python-modules/diofant { };
 
   dipy = callPackage ../development/python-modules/dipy { };
@@ -2479,6 +2491,8 @@ in {
   django-discover-runner = callPackage ../development/python-modules/django-discover-runner { };
 
   django-dynamic-preferences = callPackage ../development/python-modules/django-dynamic-preferences { };
+
+  django-encrypted-model-fields = callPackage ../development/python-modules/django-encrypted-model-fields { };
 
   django-environ = callPackage ../development/python-modules/django_environ { };
 
@@ -3265,6 +3279,8 @@ in {
   flaskbabel = callPackage ../development/python-modules/flaskbabel { };
 
   flask-babelex = callPackage ../development/python-modules/flask-babelex { };
+
+  flask-basicauth = callPackage ../development/python-modules/flask-basicauth { };
 
   flask-bcrypt = callPackage ../development/python-modules/flask-bcrypt { };
 
@@ -5241,6 +5257,8 @@ in {
 
   livestreamer-curses = callPackage ../development/python-modules/livestreamer-curses { };
 
+  lizard = callPackage ../development/python-modules/lizard { };
+
   llfuse = callPackage ../development/python-modules/llfuse {
     inherit (pkgs) fuse;
   };
@@ -5637,6 +5655,7 @@ in {
   mkdocs-material-extensions = callPackage ../development/python-modules/mkdocs-material/mkdocs-material-extensions.nix { };
   mkdocs-minify = callPackage ../development/python-modules/mkdocs-minify { };
   mkdocs-redirects = callPackage ../development/python-modules/mkdocs-redirects { };
+  mkdocs-swagger-ui-tag = callPackage ../development/python-modules/mkdocs-swagger-ui-tag { };
 
   mkdocstrings = callPackage ../development/python-modules/mkdocstrings { };
 
@@ -8216,6 +8235,8 @@ in {
 
   pyres = callPackage ../development/python-modules/pyres { };
 
+  pyric = callPackage ../development/python-modules/pyric { };
+
   pyrisco = callPackage ../development/python-modules/pyrisco { };
 
   pyrituals = callPackage ../development/python-modules/pyrituals { };
@@ -9508,6 +9529,8 @@ in {
   rig = callPackage ../development/python-modules/rig { };
 
   ring-doorbell = callPackage ../development/python-modules/ring-doorbell { };
+
+  ripe-atlas-cousteau = callPackage ../development/python-modules/ripe-atlas-cousteau { };
 
   riprova = callPackage ../development/python-modules/riprova { };
 
@@ -10994,6 +11017,8 @@ in {
   tumpa = callPackage ../development/python-modules/tumpa {
     inherit (pkgs.libsForQt5) wrapQtAppsHook;
   };
+
+  turnt = callPackage ../development/python-modules/turnt { };
 
   tuya-iot-py-sdk = callPackage ../development/python-modules/tuya-iot-py-sdk { };
 
