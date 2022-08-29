@@ -476,6 +476,8 @@ in {
 
   airly = callPackage ../development/python-modules/airly { };
 
+  airthings-ble = callPackage ../development/python-modules/airthings-ble { };
+
   airthings-cloud = callPackage ../development/python-modules/airthings-cloud { };
 
   airtouch4pyapi = callPackage ../development/python-modules/airtouch4pyapi { };
@@ -2488,6 +2490,8 @@ in {
   django_contrib_comments = callPackage ../development/python-modules/django_contrib_comments { };
 
   django-cors-headers = callPackage ../development/python-modules/django-cors-headers { };
+
+  django-cryptography = callPackage ../development/python-modules/django-cryptography { };
 
   django-csp = callPackage ../development/python-modules/django-csp { };
 
@@ -4871,6 +4875,8 @@ in {
   Kajiki = callPackage ../development/python-modules/kajiki { };
 
   kaldi-active-grammar = callPackage ../development/python-modules/kaldi-active-grammar { };
+
+  kanidm = callPackage ../development/python-modules/kanidm { };
 
   kaptan = callPackage ../development/python-modules/kaptan { };
 
@@ -10800,6 +10806,10 @@ in {
     cudaSupport = false;
     cudnnSupport = false;
   };
+
+  thermobeacon-ble = callPackage ../development/python-modules/thermobeacon-ble { };
+
+  thermopro-ble = callPackage ../development/python-modules/thermopro-ble { };
 
   thespian = callPackage ../development/python-modules/thespian { };
 
