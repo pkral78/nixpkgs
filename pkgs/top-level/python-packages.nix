@@ -3251,6 +3251,8 @@ in {
 
   fire = callPackage ../development/python-modules/fire { };
 
+  fireflyalgorithm = callPackage ../development/python-modules/fireflyalgorithm { };
+
   firetv = callPackage ../development/python-modules/firetv { };
 
   first = callPackage ../development/python-modules/first { };
@@ -4804,6 +4806,8 @@ in {
 
   jsonrpc-websocket = callPackage ../development/python-modules/jsonrpc-websocket { };
 
+  jsons = callPackage ../development/python-modules/jsons { };
+
   jsonschema = callPackage ../development/python-modules/jsonschema { };
 
   jsonstreams = callPackage ../development/python-modules/jsonstreams { };
@@ -5056,6 +5060,8 @@ in {
   leather = callPackage ../development/python-modules/leather { };
 
   leb128 = callPackage ../development/python-modules/leb128 { };
+
+  led-ble = callPackage ../development/python-modules/led-ble { };
 
   ledger = (toPythonModule (pkgs.ledger.override {
     usePython = true;
@@ -6480,6 +6486,8 @@ in {
 
   ovh = callPackage ../development/python-modules/ovh { };
 
+  ovmfvartool = callPackage ../development/python-modules/ovmfvartool { };
+
   ovoenergy = callPackage ../development/python-modules/ovoenergy { };
 
   owslib = callPackage ../development/python-modules/owslib { };
@@ -7240,6 +7248,8 @@ in {
   psutil = callPackage ../development/python-modules/psutil {
     inherit (pkgs.darwin.apple_sdk.frameworks) IOKit;
   };
+
+  psutil-home-assistant = callPackage ../development/python-modules/psutil-home-assistant { };
 
   psycopg = callPackage ../development/python-modules/psycopg { };
 
@@ -10962,6 +10972,8 @@ in {
   tololib = callPackage ../development/python-modules/tololib { };
 
   toml = callPackage ../development/python-modules/toml { };
+
+  toml-adapt = callPackage ../development/python-modules/toml-adapt { };
 
   tomli = callPackage ../development/python-modules/tomli { };
 
