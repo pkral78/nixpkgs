@@ -12,6 +12,8 @@
 , qtbase ? null
 , qtwebengine ? null
 , wrapGAppsHook ? null
+, enableWideVine ? false
+, widevine-cdm
 }: let
   isQt6 = mkDerivationWith == null;
 
@@ -75,7 +77,8 @@ buildPythonApplication {
   nativeBuildInputs = [
     wrapQtAppsHook wrapGAppsHook asciidoc
     docbook_xml_dtd_45 docbook_xsl libxml2 libxslt
-  ];
+  ]
+    ++ lib.optional isQt6 python3Packages.pygments;
 
   propagatedBuildInputs = with python3Packages; ([
     pyyaml backendPackage jinja2 pygments
@@ -97,16 +100,18 @@ buildPythonApplication {
   dontWrapGApps = true;
   dontWrapQtApps = true;
 
+  preConfigure = ''
+    a2x -f manpage doc/qutebrowser.1.asciidoc
+  '' + lib.optionalString isQt6 ''
+    python scripts/asciidoc2html.py
+  '';
+
   postPatch = ''
     substituteInPlace qutebrowser/misc/quitter.py --subst-var-by qutebrowser "$out/bin/qutebrowser"
 
     sed -i "s,/usr,$out,g" qutebrowser/utils/standarddir.py
   '' + lib.optionalString withPdfReader ''
     sed -i "s,/usr/share/pdf.js,${pdfjs},g" qutebrowser/browser/pdfjs.py
-  '';
-
-  postBuild = ''
-    a2x -f manpage doc/qutebrowser.1.asciidoc
   '';
 
   postInstall = ''
@@ -146,6 +151,7 @@ buildPythonApplication {
       --add-flags '--backend ${backend}'
       --set QUTE_QTWEBENGINE_VERSION_OVERRIDE "${lib.getVersion qtwebengine}"
       ${lib.optionalString (pipewireSupport && backend == "webengine") ''--prefix LD_LIBRARY_PATH : ${libPath}''}
+      ${lib.optionalString enableWideVine ''--add-flags "--qt-flag widevine-path=${widevine-cdm}/libwidevinecdm.so"''}
     )
   '';
 
@@ -154,6 +160,6 @@ buildPythonApplication {
     description = "Keyboard-focused browser with a minimal GUI";
     license     = licenses.gpl3Plus;
     maintainers = with maintainers; [ jagajaga rnhmjoj ebzzry dotlambda ];
-    inherit (backendPackage.meta) platforms;
+    platforms   = if enableWideVine then [ "x86_64-linux" ] else backendPackage.meta.platforms;
   };
 }
