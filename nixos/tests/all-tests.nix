@@ -110,8 +110,6 @@ in {
   cage = handleTest ./cage.nix {};
   cagebreak = handleTest ./cagebreak.nix {};
   calibre-web = handleTest ./calibre-web.nix {};
-  cassandra_2_1 = handleTest ./cassandra.nix { testPackage = pkgs.cassandra_2_1; };
-  cassandra_2_2 = handleTest ./cassandra.nix { testPackage = pkgs.cassandra_2_2; };
   cassandra_3_0 = handleTest ./cassandra.nix { testPackage = pkgs.cassandra_3_0; };
   cassandra_3_11 = handleTest ./cassandra.nix { testPackage = pkgs.cassandra_3_11; };
   ceph-multi-node = handleTestOn ["x86_64-linux"] ./ceph-multi-node.nix {};
@@ -693,6 +691,7 @@ in {
   wmderland = handleTest ./wmderland.nix {};
   wpa_supplicant = handleTest ./wpa_supplicant.nix {};
   wordpress = handleTest ./wordpress.nix {};
+  wrappers = handleTest ./wrappers.nix {};
   writefreely = handleTest ./web-apps/writefreely.nix {};
   xandikos = handleTest ./xandikos.nix {};
   xautolock = handleTest ./xautolock.nix {};
