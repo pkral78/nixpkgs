@@ -2098,10 +2098,7 @@ with pkgs;
 
   arandr = callPackage ../tools/X11/arandr { };
 
-  inherit (callPackages ../servers/nosql/arangodb {
-    stdenv = gcc8Stdenv;
-  }) arangodb_3_3 arangodb_3_4 arangodb_3_5;
-  arangodb = arangodb_3_4;
+  arangodb = callPackage ../servers/nosql/arangodb { };
 
   # arcanist currently crashes with some workflows on php8.1, use 8.0
   arcanist = callPackage ../development/tools/misc/arcanist { php = php80; };
@@ -4833,7 +4830,9 @@ with pkgs;
 
   shab = callPackage ../tools/text/shab { };
 
-  sheldon = callPackage ../tools/misc/sheldon { };
+  sheldon = callPackage ../tools/misc/sheldon {
+    inherit (darwin.apple_sdk.frameworks) Security;
+  };
 
   shell-hist = callPackage ../tools/misc/shell-hist { };
 
@@ -11155,7 +11154,7 @@ with pkgs;
 
   safe-rm = callPackage ../tools/system/safe-rm { };
 
-  safeeyes = with python3.pkgs; toPythonApplication safeeyes;
+  safeeyes = callPackage ../applications/misc/safeeyes { };
 
   sagoin = callPackage ../tools/misc/sagoin { };
 
@@ -12733,6 +12732,7 @@ with pkgs;
 
   unicorn = callPackage ../development/libraries/unicorn {
     inherit (darwin.apple_sdk.frameworks) IOKit;
+    inherit (darwin) cctools;
   };
 
   units = callPackage ../tools/misc/units {
@@ -18197,6 +18197,10 @@ with pkgs;
 
   belr = callPackage ../development/libraries/belr { };
 
+  bencode = callPackage ../development/libraries/bencode {
+    stdenv = gcc10StdenvCompat;
+  };
+
   bencodetools = callPackage ../development/libraries/bencodetools { };
 
   beignet = callPackage ../development/libraries/beignet {
@@ -18548,6 +18552,8 @@ with pkgs;
   dillo = callPackage ../applications/networking/browsers/dillo {
     fltk = fltk13;
   };
+
+  dillong = callPackage ../applications/networking/browsers/dillong { };
 
   directfb = callPackage ../development/libraries/directfb { };
 
@@ -21958,7 +21964,7 @@ with pkgs;
       inherit newScope;
       inherit lib stdenv fetchurl fetchpatch fetchgit fetchFromGitHub makeSetupHook makeWrapper writeText;
       inherit bison cups dconf harfbuzz libGL perl gtk3 ninja;
-      inherit (gst_all_1) gstreamer gst-plugins-base;
+      inherit (gst_all_1) gstreamer gst-plugins-base gst-plugins-good gst-libav gst-vaapi;
       inherit buildPackages;
       cmake = cmake.overrideAttrs (attrs: {
         patches = attrs.patches ++ [
@@ -25330,6 +25336,8 @@ with pkgs;
   mdadm = mdadm4;
   mdadm4 = callPackage ../os-specific/linux/mdadm { };
 
+  mdevctl = callPackage ../os-specific/linux/mdevctl { };
+
   metastore = callPackage ../os-specific/linux/metastore { };
 
   mingetty = callPackage ../os-specific/linux/mingetty { };
@@ -25468,8 +25476,7 @@ with pkgs;
   go-migrate = callPackage ../development/tools/go-migrate { };
 
   go-mockery = callPackage ../development/tools/go-mockery {
-    # pinned due to build failure or vendoring problems. When unpinning double check with: nix-build -A $name.go-modules --rebuild
-    buildGoModule = buildGo117Module;
+    buildGoModule = buildGo118Module; # tests fail with 1.19
   };
 
   gomacro = callPackage ../development/tools/gomacro { };
@@ -27345,6 +27352,8 @@ with pkgs;
 
   join-desktop = callPackage ../applications/misc/join-desktop { };
 
+  json-plot = callPackage ../applications/graphics/json-plot {};
+
   libbitcoin = callPackage ../tools/misc/libbitcoin/libbitcoin.nix {
     boost = boost175; # fatal error: 'boost/interprocess/detail/posix_time_types_wrk.hpp' file not found
   };
@@ -27557,7 +27566,7 @@ with pkgs;
       inherit (gnome2) libglade;
   };
 
-  calcmysky = libsForQt5.callPackage ../applications/science/astronomy/calcmysky { };
+  calcmysky = qt6Packages.callPackage ../applications/science/astronomy/calcmysky { };
 
   calcurse = callPackage ../applications/misc/calcurse { };
 
@@ -28105,7 +28114,7 @@ with pkgs;
 
   inherit (gnome) empathy;
 
-  endeavour = callPackage ../applications/misc/endeavour { };
+  endeavour = callPackage ../applications/office/endeavour { };
 
   enhanced-ctorrent = callPackage ../applications/networking/enhanced-ctorrent { };
 
@@ -30238,7 +30247,6 @@ with pkgs;
   merkaartor = libsForQt5.callPackage ../applications/misc/merkaartor { };
 
   mepo = callPackage ../applications/misc/mepo { };
-  mepo-x11 = callPackage ../applications/misc/mepo { withX11 = true; };
 
   meshcentral = callPackage ../tools/admin/meshcentral { };
 
@@ -31888,6 +31896,8 @@ with pkgs;
 
   lightdm-mini-greeter = callPackage ../applications/display-managers/lightdm-mini-greeter { };
 
+  lightdm-mobile-greeter = callPackage ../applications/display-managers/lightdm-mobile-greeter { };
+
   lightdm-tiny-greeter = callPackage ../applications/display-managers/lightdm-tiny-greeter {
     conf = config.lightdm-tiny-greeter.conf or "";
   };
@@ -33226,10 +33236,6 @@ with pkgs;
 
   xnotify = callPackage ../tools/X11/xnotify { };
 
-  xvidcap = callPackage ../applications/video/xvidcap {
-    inherit (gnome2) scrollkeeper libglade;
-  };
-
   xygrib = libsForQt514.callPackage ../applications/misc/xygrib {};
 
   xzgv = callPackage ../applications/graphics/xzgv { };
@@ -33392,6 +33398,8 @@ with pkgs;
     withGui = false;
     inherit (darwin) autoSignDarwinBinariesHook;
   };
+
+  btcd = callPackage ../applications/blockchains/btcd { };
 
   cgminer = callPackage ../applications/blockchains/cgminer { };
 
@@ -34674,7 +34682,7 @@ with pkgs;
     inherit winetricks steam-run yad;
   };
 
-  protonup = with python3Packages; toPythonApplication protonup;
+  protonup-ng = with python3Packages; toPythonApplication protonup-ng;
 
   steam-rom-manager = callPackage ../tools/games/steam-rom-manager {};
 
@@ -36184,7 +36192,7 @@ with pkgs;
 
   sq = callPackage ../development/tools/sq { };
 
-  stellarium = libsForQt5.callPackage ../applications/science/astronomy/stellarium { };
+  stellarium = qt6Packages.callPackage ../applications/science/astronomy/stellarium { };
 
   stellarsolver = libsForQt5.callPackage ../development/libraries/science/astronomy/stellarsolver { };
 
@@ -37842,9 +37850,7 @@ with pkgs;
 
   zfs-replicate = python3Packages.callPackage ../tools/backup/zfs-replicate { };
 
-  zrepl = callPackage ../tools/backup/zrepl {
-    buildGoModule = buildGo118Module; # nixosTests.zrepl fails with 1.19
-  };
+  zrepl = callPackage ../tools/backup/zrepl { };
 
   uhubctl = callPackage ../tools/misc/uhubctl {};
 
