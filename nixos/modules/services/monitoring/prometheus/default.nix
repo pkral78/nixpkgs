@@ -1563,13 +1563,7 @@ in
 
   options.services.prometheus = {
 
-    enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = lib.mdDoc ''
-        Enable the Prometheus monitoring daemon.
-      '';
-    };
+    enable = mkEnableOption (lib.mdDoc "Prometheus monitoring daemon");
 
     package = mkOption {
       type = types.package;
@@ -1822,7 +1816,7 @@ in
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
-        SystemCallFilter = [ "@system-service" "~@privileged" "~@resources" ];
+        SystemCallFilter = [ "@system-service" "~@privileged" ];
       };
     };
     # prometheus-config-reload will activate after prometheus. However, what we

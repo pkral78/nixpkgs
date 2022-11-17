@@ -157,6 +157,7 @@
   ./programs/extra-container.nix
   ./programs/feedbackd.nix
   ./programs/file-roller.nix
+  ./programs/firefox.nix
   ./programs/firejail.nix
   ./programs/fish.nix
   ./programs/flashrom.nix
@@ -575,7 +576,6 @@
   ./services/misc/etcd.nix
   ./services/misc/etebase-server.nix
   ./services/misc/etesync-dav.nix
-  ./services/misc/ethminer.nix
   ./services/misc/exhibitor.nix
   ./services/misc/felix.nix
   ./services/misc/freeswitch.nix
@@ -774,6 +774,7 @@
   ./services/networking/blockbook-frontend.nix
   ./services/networking/blocky.nix
   ./services/networking/charybdis.nix
+  ./services/networking/chisel-server.nix
   ./services/networking/cjdns.nix
   ./services/networking/cloudflare-dyndns.nix
   ./services/networking/cntlm.nix
@@ -1224,6 +1225,7 @@
   ./services/x11/xfs.nix
   ./services/x11/xserver.nix
   ./system/activation/activation-script.nix
+  ./system/activation/specialisation.nix
   ./system/activation/top-level.nix
   ./system/boot/binfmt.nix
   ./system/boot/emergency-mode.nix
