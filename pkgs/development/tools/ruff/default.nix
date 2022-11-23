@@ -8,16 +8,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "ruff";
-  version = "0.0.128";
+  version = "0.0.132";
 
   src = fetchFromGitHub {
     owner = "charliermarsh";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-QJGlhwLXCj4lGI7VMu+1wHmy8K4wYnUFxwsut2q1MUs=";
+    sha256 = "sha256-0UcZBGD1l2hP8VH0tdNKY/SiXVTPLL0/eZpOwYnUgPs=";
   };
 
-  cargoSha256 = "sha256-vpfVXhJT65N18l/DZVi5ROgYKIi42rHW4Me+quqiG18=";
+  cargoSha256 = "sha256-DlSSzFf2AludfAKrXSsI/V0K2ZjCy/ehZd3ULe3fjK4=";
 
   buildInputs = lib.optionals stdenv.isDarwin [
     CoreServices
@@ -27,6 +27,7 @@ rustPlatform.buildRustPackage rec {
   meta = with lib; {
     description = "An extremely fast Python linter";
     homepage = "https://github.com/charliermarsh/ruff";
+    changelog = "https://github.com/charliermarsh/ruff/releases/tag/v${version}";
     license = licenses.mit;
     maintainers = with maintainers; [ figsoda ];
   };
