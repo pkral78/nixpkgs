@@ -3560,6 +3560,8 @@ self: super: with self; {
 
   fuzzywuzzy = callPackage ../development/python-modules/fuzzywuzzy { };
 
+  fvs = callPackage ../development/python-modules/fvs { };
+
   fx2 = callPackage ../development/python-modules/fx2 { };
 
   g2pkk = callPackage ../development/python-modules/g2pkk { };
@@ -4153,6 +4155,8 @@ self: super: with self; {
 
   heapdict = callPackage ../development/python-modules/heapdict { };
 
+  heatshrink2 = callPackage ../development/python-modules/heatshrink2 { };
+
   heatzypy = callPackage ../development/python-modules/heatzypy { };
 
   helpdev = callPackage ../development/python-modules/helpdev { };
@@ -4402,6 +4406,8 @@ self: super: with self; {
   ics = callPackage ../development/python-modules/ics { };
 
   idasen = callPackage ../development/python-modules/idasen { };
+
+  icoextract = callPackage ../development/python-modules/icoextract { };
 
   icontract = callPackage ../development/python-modules/icontract { };
 
@@ -5554,6 +5560,8 @@ self: super: with self; {
   marshmallow-sqlalchemy = callPackage ../development/python-modules/marshmallow-sqlalchemy { };
 
   mask-rcnn = callPackage ../development/python-modules/mask-rcnn { };
+
+  masky = callPackage ../development/python-modules/masky { };
 
   mastodon-py = callPackage ../development/python-modules/mastodon-py { };
 
@@ -7059,6 +7067,8 @@ self: super: with self; {
 
   pysyncthru = callPackage ../development/python-modules/pysyncthru { };
 
+  pytest-mockito = callPackage ../development/python-modules/pytest-mockito { };
+
   python-codon-tables = callPackage ../development/python-modules/python-codon-tables { };
 
   python-crfsuite = callPackage ../development/python-modules/python-crfsuite { };
@@ -8141,6 +8151,8 @@ self: super: with self; {
   pymetno = callPackage ../development/python-modules/pymetno { };
 
   pymicrobot = callPackage ../development/python-modules/pymicrobot { };
+
+  pymilter = callPackage ../development/python-modules/pymilter { };
 
   pymitv = callPackage ../development/python-modules/pymitv { };
 
@@ -9811,6 +9823,8 @@ self: super: with self; {
   robotframework = callPackage ../development/python-modules/robotframework { };
 
   robotframework-databaselibrary = callPackage ../development/python-modules/robotframework-databaselibrary { };
+
+  robotframework-pythonlibcore = callPackage ../development/python-modules/robotframework-pythonlibcore { };
 
   robotframework-requests = callPackage ../development/python-modules/robotframework-requests { };
 

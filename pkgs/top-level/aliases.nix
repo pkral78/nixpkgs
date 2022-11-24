@@ -177,6 +177,7 @@ mapAliases ({
   cask = emacs.pkgs.cask; # Added 2022-11-12
   cargo-download = throw "cargo-download has been removed from nixpkgs as it is unmaintained, use cargo-clone instead"; # Added 2022-10-11
   cargo-tree = throw "cargo-tree has been removed, use the builtin `cargo tree` command instead"; # Added 2020-08-20
+  carnix = throw "carnix has been removed, use alternatives such as naersk and crate2nix instead"; # Added 2022-11-22
   casperjs = throw "casperjs has been removed, it was abandoned by upstream and broken";
   cassandra_2_1 = throw "cassandra_2_1 has been removed, please use cassandra_3_11 instead"; # Added 2022-10-29
   cassandra_2_2 = throw "cassandra_2_2 has been removed, please use cassandra_3_11 instead"; # Added 2022-10-29
@@ -195,6 +196,7 @@ mapAliases ({
   clickshare-csc1 = throw "'clickshare-csc1' has been removed as it requires qt4 which is being removed"; # Added 2022-06-16
   inherit (libsForQt5.mauiPackages) clip; # added 2022-05-17
   cpp-ipfs-api = cpp-ipfs-http-client; # Project has been renamed. Added 2022-05-15
+  cratesIO = throw "cratesIO has been removed, use alternatives such as naersk and crate2nix instead"; # Added 2022-11-22
   creddump = throw "creddump has been removed from nixpkgs as the upstream has abandoned the project"; # Added 2022-01-01
 
   # these are for convenience, not for backward compat and shouldn't expire
@@ -676,8 +678,10 @@ mapAliases ({
   # Julia
   julia_07 = throw "julia_07 has been deprecated in favor of the latest LTS version"; # Added 2020-09-15
   julia_1 = throw "julia_1 has been deprecated in favor of julia_10 as it was ambiguous"; # Added 2021-03-13
+  julia_10 = throw "julia_10 has been deprecated in favor of the latest stable version"; # Added 2022-11-15
   julia_11 = throw "julia_11 has been deprecated in favor of the latest stable version"; # Added 2020-09-15
   julia_13 = throw "julia_13 has been deprecated in favor of the latest stable version"; # Added 2021-03-13
+  julia_15 = throw "julia_15 has been deprecated in favor of the latest stable version"; # Added 2022-11-15
   julia_10-bin = throw "julia_10-bin has been deprecated in favor of the latest LTS version"; # Added 2021-12-02
   julia_17-bin = throw "julia_17-bin has been deprecated in favor of the latest stable version"; # Added 2022-09-04
 
@@ -1232,6 +1236,7 @@ mapAliases ({
   pyload = throw "pyload has been removed from nixpkgs, as it was unmaintained"; # Added 2021-03-21
   pynagsystemd = throw "pynagsystemd was removed as it was unmaintained and incompatible with recent systemd versions. Instead use its fork check_systemd"; # Added 2020-10-24
   pyo3-pack = maturin;
+  pypolicyd-spf = spf-engine; # Added 2022-10-09
   pyrex = throw "pyrex has been removed from nixpkgs as the project is still stuck on python2"; # Added 2022-01-12
   pyrex095 = throw "pyrex has been removed from nixpkgs as the project is still stuck on python2"; # Added 2022-01-12
   pyrex096 = throw "pyrex has been removed from nixpkgs as the project is still stuck on python2"; # Added 2022-01-12
