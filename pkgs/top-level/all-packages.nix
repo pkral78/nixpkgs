@@ -1478,7 +1478,6 @@ with pkgs;
 
   winbox = callPackage ../tools/admin/winbox {
     wine = wineWowPackages.staging;
-    use64 = true;
   };
 
   wwcd = callPackage ../tools/misc/wwcd { };
@@ -4342,9 +4341,13 @@ with pkgs;
 
   hypr = callPackage ../applications/window-managers/hyprwm/hypr { };
 
-  hyprland = callPackage ../applications/window-managers/hyprwm/hyprland { };
+  hyprland = callPackage ../applications/window-managers/hyprwm/hyprland {
+    stdenv = gcc11Stdenv;
+  };
 
-  hyprpaper = callPackage ../applications/window-managers/hyprwm/hyprpaper { };
+  hyprpaper = callPackage ../applications/window-managers/hyprwm/hyprpaper {
+    stdenv = gcc11Stdenv;
+  };
 
   hysteria = callPackage ../tools/networking/hysteria { };
 
@@ -12478,6 +12481,8 @@ with pkgs;
 
   versus = callPackage ../applications/networking/versus { };
 
+  vexctl = callPackage ../tools/security/vexctl { };
+
   vgrep = callPackage ../tools/text/vgrep { };
 
   vhd2vl = callPackage ../applications/science/electronics/vhd2vl { };
@@ -12897,6 +12902,8 @@ with pkgs;
   veracrypt = callPackage ../applications/misc/veracrypt {
     wxGTK = wxGTK32;
   };
+
+  veryfasttree = callPackage ../applications/science/biology/veryfasttree { };
 
   vlan = callPackage ../tools/networking/vlan { };
 
@@ -18207,6 +18214,8 @@ with pkgs;
   asio_1_10 = callPackage ../development/libraries/asio/1.10.nix { };
   asio = callPackage ../development/libraries/asio { };
 
+  asmjit = callPackage ../development/libraries/asmjit { };
+
   aspell = callPackage ../development/libraries/aspell { };
 
   aspellDicts = recurseIntoAttrs (callPackages ../development/libraries/aspell/dictionaries.nix {});
@@ -23117,8 +23126,6 @@ with pkgs;
 
   yojimbo = callPackage ../development/libraries/yojimbo { };
 
-  yubioath-desktop = libsForQt5.callPackage ../applications/misc/yubioath-desktop { };
-
   yubico-pam = callPackage ../development/libraries/yubico-pam { };
 
   yubico-piv-tool = callPackage ../tools/misc/yubico-piv-tool {
@@ -24472,7 +24479,7 @@ with pkgs;
 
   roon-server = callPackage ../servers/roon-server { };
 
-  rustic-rs = callPackage ../tools/backup/rustic-rs { };
+  rustic-rs = callPackage ../tools/backup/rustic-rs { inherit (darwin) Security; };
 
   supervise = callPackage ../tools/system/supervise { };
 
@@ -28295,6 +28302,8 @@ with pkgs;
     inherit (darwin.apple_sdk.frameworks) Cocoa;
   };
 
+  furtherance = callPackage ../applications/misc/furtherance { };
+
   gg-scm = callPackage ../applications/version-management/git-and-tools/gg { };
 
   gigalixir = callPackage ../tools/misc/gigalixir { };
@@ -30354,6 +30363,8 @@ with pkgs;
   mercurial = callPackage ../applications/version-management/mercurial {
     inherit (darwin.apple_sdk.frameworks) ApplicationServices;
   };
+
+  sapling = callPackage ../applications/version-management/sapling { };
 
   mercurialFull = mercurial.override { fullBuild = true; };
 
@@ -33548,30 +33559,12 @@ with pkgs;
     withGui = false;
   };
 
-  bitcoin-unlimited  = libsForQt514.callPackage ../applications/blockchains/bitcoin-unlimited {
+  bitcoin-unlimited  = libsForQt5.callPackage ../applications/blockchains/bitcoin-unlimited {
     inherit (darwin.apple_sdk.frameworks) Foundation ApplicationServices AppKit;
     withGui = true;
   };
   bitcoind-unlimited = callPackage ../applications/blockchains/bitcoin-unlimited {
     inherit (darwin.apple_sdk.frameworks) Foundation ApplicationServices AppKit;
-    withGui = false;
-  };
-
-  bitcoin-classic  = libsForQt514.callPackage ../applications/blockchains/bitcoin-classic {
-    boost = boost165;
-    withGui = true;
-  };
-  bitcoind-classic = callPackage ../applications/blockchains/bitcoin-classic {
-    boost = boost165;
-    withGui = false;
-  };
-
-  bitcoin-gold = libsForQt514.callPackage ../applications/blockchains/bitcoin-gold {
-    boost = boost165;
-    withGui = true;
-  };
-  bitcoind-gold = callPackage ../applications/blockchains/bitcoin-gold {
-    boost = boost165;
     withGui = false;
   };
 
@@ -33583,15 +33576,6 @@ with pkgs;
 
   dcrd = callPackage ../applications/blockchains/dcrd { };
   dcrwallet = callPackage ../applications/blockchains/dcrwallet { };
-
-  digibyte = libsForQt514.callPackage ../applications/blockchains/digibyte {
-    withGui = true;
-    boost = boost170;
-  };
-  digibyted = callPackage ../applications/blockchains/digibyte {
-    withGui = false;
-    boost = boost170;
-  };
 
   dogecoin  = libsForQt5.callPackage ../applications/blockchains/dogecoin {
     boost = boost165;
@@ -33737,7 +33721,7 @@ with pkgs;
 
   tessera = callPackage ../applications/blockchains/tessera { };
 
-  vertcoin  = libsForQt514.callPackage ../applications/blockchains/vertcoin {
+  vertcoin  = libsForQt5.callPackage ../applications/blockchains/vertcoin {
     boost = boost165;
     withGui = true;
   };
