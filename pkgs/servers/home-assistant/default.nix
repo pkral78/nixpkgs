@@ -41,6 +41,16 @@ let
         };
       });
 
+      arcam-fmj = super.arcam-fmj.overridePythonAttrs (old: rec {
+        disabledTestPaths = [
+          # incompatible with pytest-aiohttp 0.3.0
+          # see https://github.com/elupus/arcam_fmj/pull/12
+          "tests/test_fake.py"
+          "tests/test_standard.py"
+          "tests/test_utils.py"
+        ];
+      });
+
       backoff = super.backoff.overridePythonAttrs (oldAttrs: rec {
         version = "1.11.1";
         src = fetchFromGitHub {
@@ -49,6 +59,22 @@ let
           rev = "v${version}";
           hash = "sha256-87IMcLaoCn0Vns8Ub/AFmv0gXtS0aPZX0cSt7+lOPm4=";
         };
+      });
+
+      caldav = super.caldav.overridePythonAttrs (old: rec {
+        version = "0.9.1";
+        src = fetchFromGitHub {
+          owner = "python-caldav";
+          repo = "caldav";
+          rev = "v${version}";
+          hash = "sha256-Gil0v4pGyp5+TnYPjb8Vk0xTqnQKaeD8Ko/ZWhvkbUk=";
+        };
+        postPatch = ''
+          substituteInPlace setup.py \
+            --replace ", 'xandikos<0.2.4'" "" \
+            --replace ", 'radicale'" ""
+        '';
+        checkInputs = old.checkInputs ++ [ self.nose ];
       });
 
       gridnet = super.gridnet.overridePythonAttrs (oldAttrs: rec {
