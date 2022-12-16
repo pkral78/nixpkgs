@@ -468,6 +468,8 @@ with pkgs;
     inherit (darwin.apple_sdk.frameworks) Security;
   };
 
+  ea = callPackage ../tools/misc/ea { };
+
   each = callPackage ../tools/text/each { };
 
   eclipse-mat = callPackage ../development/tools/eclipse-mat { };
@@ -1500,6 +1502,8 @@ with pkgs;
     wine = wineWowPackages.staging;
   };
 
+  wtwitch = callPackage ../tools/video/wtwitch {};
+
   wwcd = callPackage ../tools/misc/wwcd { };
 
   writedisk = callPackage ../tools/misc/writedisk { };
@@ -1942,6 +1946,8 @@ with pkgs;
 
   cen64 = callPackage ../applications/emulators/cen64 { };
 
+  citations = callPackage ../applications/misc/citations { };
+
   citra-canary = callPackage ../applications/emulators/citra {
     branch = "canary";
   };
@@ -1962,7 +1968,9 @@ with pkgs;
 
   dlx = callPackage ../applications/emulators/dlx { };
 
-  dosbox = callPackage ../applications/emulators/dosbox { };
+  dosbox = callPackage ../applications/emulators/dosbox {
+    SDL = if stdenv.isDarwin then SDL else SDL_compat;
+  };
 
   dosbox-staging = callPackage ../applications/emulators/dosbox-staging { };
 
@@ -3883,8 +3891,6 @@ with pkgs;
   clusterctl = callPackage ../applications/networking/cluster/clusterctl { };
 
   coloredlogs = with python3Packages; toPythonApplication coloredlogs;
-
-  colord-kde = libsForQt5.callPackage ../tools/misc/colord-kde {};
 
   colpack = callPackage ../applications/science/math/colpack { };
 
@@ -12199,6 +12205,8 @@ with pkgs;
 
   threema-desktop = callPackage ../applications/networking/instant-messengers/threema-desktop { };
 
+  thumbdrives = callPackage ../applications/system/thumbdrives { };
+
   tidy-viewer = callPackage ../tools/text/tidy-viewer { };
 
   tiled = libsForQt5.callPackage ../applications/editors/tiled { };
@@ -17975,7 +17983,7 @@ with pkgs;
     shards;
 
   shellcheck = callPackage ../development/tools/shellcheck {
-    inherit (haskellPackages) ShellCheck;
+    inherit (__splicedPackages.haskellPackages) ShellCheck;
   };
 
   shellharden = callPackage ../development/tools/shellharden {};
@@ -18760,6 +18768,8 @@ with pkgs;
     boost = boost169; # fatal error: 'boost/asio/stream_socket_service.hpp' file not found
   };
 
+  cpp-jwt = callPackage ../development/libraries/cpp-jwt { };
+
   ubus = callPackage ../development/libraries/ubus { };
 
   uci = callPackage ../development/libraries/uci { };
@@ -18779,6 +18789,8 @@ with pkgs;
   criterion = callPackage ../development/libraries/criterion { };
 
   croaring = callPackage ../development/libraries/croaring { };
+
+  crocoddyl = callPackage ../development/libraries/crocoddyl { };
 
   crossguid = callPackage ../development/libraries/crossguid { };
 
@@ -18950,6 +18962,8 @@ with pkgs;
   libesmtp = callPackage ../development/libraries/libesmtp { };
 
   liberasurecode = callPackage ../applications/misc/liberasurecode { };
+
+  example-robot-data = callPackage ../development/libraries/example-robot-data { };
 
   exiv2 = callPackage ../development/libraries/exiv2 { };
 
@@ -21280,6 +21294,8 @@ with pkgs;
 
   libversion = callPackage ../development/libraries/libversion { };
 
+  libverto = callPackage ../development/libraries/libverto { };
+
   libvgm = callPackage ../development/libraries/libvgm {
     inherit (darwin.apple_sdk.frameworks) CoreAudio AudioToolbox;
   };
@@ -22045,6 +22061,8 @@ with pkgs;
 
   pico-sdk = callPackage ../development/libraries/pico-sdk { };
 
+  pinocchio = callPackage ../development/libraries/pinocchio { };
+
   pipelight = callPackage ../tools/misc/pipelight {
     stdenv = stdenv_32bit;
     wine-staging = pkgsi686Linux.wine-staging;
@@ -22742,6 +22760,8 @@ with pkgs;
 
   stduuid = callPackage ../development/libraries/stduuid { };
 
+  steghide = callPackage ../tools/graphics/steghide { };
+
   stegsolve = callPackage ../tools/graphics/stegsolve { };
 
   StormLib = callPackage ../development/libraries/StormLib { };
@@ -22927,6 +22947,8 @@ with pkgs;
   tomlc99 = callPackage ../development/libraries/tomlc99 { };
 
   tomlcpp = callPackage ../development/libraries/tomlcpp { };
+
+  toml11 = callPackage ../development/libraries/toml11 { };
 
   tomlplusplus = callPackage ../development/libraries/tomlplusplus { };
 
@@ -23913,6 +23935,8 @@ with pkgs;
   inspircd = callPackage ../servers/irc/inspircd { };
 
   inspircdMinimal = inspircd.override { extraModules = []; };
+
+  imaginary = callPackage ../servers/imaginary {};
 
   imgproxy = callPackage ../servers/imgproxy { };
 
@@ -24979,6 +25003,8 @@ with pkgs;
   b43Firmware_6_30_163_46 = callPackage ../os-specific/linux/firmware/b43-firmware/6.30.163.46.nix { };
 
   b43FirmwareCutter = callPackage ../os-specific/linux/firmware/b43-firmware-cutter { };
+
+  below = callPackage ../os-specific/linux/below { };
 
   bt-fw-converter = callPackage ../os-specific/linux/firmware/bt-fw-converter { };
 
@@ -27397,6 +27423,8 @@ with pkgs;
       requests requests-toolbelt setuptools sqlalchemy fusepy;
   };
 
+  acorn = callPackage ../applications/networking/cluster/acorn {};
+
   adobe-reader = pkgsi686Linux.callPackage ../applications/misc/adobe-reader { };
 
   adl = callPackage ../applications/video/adl { };
@@ -29291,6 +29319,8 @@ with pkgs;
   hactool = callPackage ../tools/compression/hactool { };
 
   hdhomerun-config-gui = callPackage ../applications/video/hdhomerun-config-gui { };
+
+  headlines = callPackage ../applications/networking/headlines { };
 
   hedgedoc-cli = callPackage ../tools/admin/hedgedoc-cli { };
 
@@ -34496,6 +34526,8 @@ with pkgs;
 
   minecraft = callPackage ../games/minecraft { };
 
+  minecraft-server-hibernation = callPackage ../tools/games/minecraft/minecraft-server-hibernation { };
+
   minecraftServers = import ../games/minecraft-servers { inherit callPackage lib javaPackages; };
   minecraft-server = minecraftServers.vanilla; # backwards compatibility
 
@@ -37136,6 +37168,8 @@ with pkgs;
 
   stork = callPackage ../applications/misc/stork { };
 
+  superd = callPackage ../misc/superd { };
+
   oclgrind = callPackage ../development/tools/analysis/oclgrind { };
 
   opkg = callPackage ../tools/package-management/opkg { };
@@ -37507,8 +37541,6 @@ with pkgs;
   vaultwarden-sqlite = vaultwarden;
   vaultwarden-mysql = vaultwarden.override { dbBackend = "mysql"; };
   vaultwarden-postgresql = vaultwarden.override { dbBackend = "postgresql"; };
-
-  vaultwarden-vault = callPackage ../tools/security/vaultwarden/vault.nix { };
 
   vazir-fonts = callPackage ../data/fonts/vazir-fonts { };
 
