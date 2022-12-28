@@ -673,6 +673,14 @@ self: super: {
     dependencies = with self; [ plenary-nvim ];
   });
 
+  nvim-teal-maker = super.nvim-teal-maker.overrideAttrs (old: {
+    postPatch = ''
+      substituteInPlace lua/tealmaker/init.lua \
+        --replace cyan ${luaPackages.cyan}/bin/cyan
+    '';
+    vimCommandCheck = "TealBuild";
+  });
+
   nvim-treesitter = super.nvim-treesitter.overrideAttrs (old:
     callPackage ./nvim-treesitter/overrides.nix { } self super
   );
@@ -1042,6 +1050,10 @@ self: super: {
     });
   });
 
+  vim-dadbod-ui = super.vim-dadbod-ui.overrideAttrs (old: {
+    dependencies = with self; [ vim-dadbod ];
+  });
+
   vim-dasht = super.vim-dasht.overrideAttrs (old: {
     preFixup = ''
       substituteInPlace $out/autoload/dasht.vim \
@@ -1151,6 +1163,8 @@ self: super: {
         pname = "vim-markdown-composer-bin";
         inherit (super.vim-markdown-composer) src version;
         cargoSha256 = "sha256-Vie8vLTplhaVU4E9IohvxERfz3eBpd62m8/1Ukzk8e4=";
+        # tests require network access
+        doCheck = false;
       };
     in
     super.vim-markdown-composer.overrideAttrs (old: {
