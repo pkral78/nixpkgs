@@ -6852,6 +6852,12 @@
     githubId = 3967312;
     name = "Jocelyn Thode";
   };
+  joedevivo = {
+     email = "55951+joedevivo@users.noreply.github.com";
+     github = "joedevivo";
+     githubId = 55951;
+     name = "Joe DeVivo";
+   };
   joelancaster = {
     email = "joe.a.lancas@gmail.com";
     github = "JoeLancaster";
@@ -9419,6 +9425,12 @@
     githubId = 1776903;
     name = "Andrew Abbott";
   };
+  mislavzanic = {
+    email = "mislavzanic3@gmail.com";
+    github = "mislavzanic";
+    githubId = 48838244;
+    name = "Mislav Zanic";
+  };
   misterio77 = {
     email = "eu@misterio.me";
     github = "Misterio77";
@@ -9818,6 +9830,16 @@
     github = "multun";
     githubId = 5047140;
     name = "Victor Collod";
+  };
+  munksgaard = {
+    name = "Philip Munksgaard";
+    email = "philip@munksgaard.me";
+    github = "munksgaard";
+    githubId = 230613;
+    matrix = "@philip:matrix.munksgaard.me";
+    keys = [{
+      fingerprint = "5658 4D09 71AF E45F CC29 6BD7 4CE6 2A90 EFC0 B9B2";
+    }];
   };
   muscaln = {
     email = "muscaln@protonmail.com";
@@ -16258,5 +16280,11 @@
     email = "git@ziguana.dev";
     github = "ziguana";
     githubId = 45833444;
+  };
+  detegr = {
+    name = "Antti Keränen";
+    email = "detegr@rbx.email";
+    github = "Detegr";
+    githubId = 724433;
   };
 }
