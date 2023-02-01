@@ -2381,13 +2381,13 @@ self: super: with self; {
 
   dicom2nifti = callPackage ../development/python-modules/dicom2nifti { };
 
+  dicom-numpy = callPackage ../development/python-modules/dicom-numpy { };
+
   dict2xml = callPackage ../development/python-modules/dict2xml { };
 
   dictdiffer = callPackage ../development/python-modules/dictdiffer { };
 
   dictionaries = callPackage ../development/python-modules/dictionaries { };
-
-  dictpath = callPackage ../development/python-modules/dictpath { };
 
   dicttoxml = callPackage ../development/python-modules/dicttoxml { };
 
@@ -2812,6 +2812,10 @@ self: super: with self; {
 
   dragonfly = callPackage ../development/python-modules/dragonfly { };
 
+  drawille = callPackage ../development/python-modules/drawille { };
+
+  drawilleplot = callPackage ../development/python-modules/drawilleplot { };
+
   dremel3dpy = callPackage ../development/python-modules/dremel3dpy { };
 
   drf-jwt = callPackage ../development/python-modules/drf-jwt { };
@@ -2934,6 +2938,10 @@ self: super: with self; {
   editdistance-s = callPackage ../development/python-modules/editdistance-s { };
 
   editorconfig = callPackage ../development/python-modules/editorconfig { };
+
+  edlib = callPackage ../development/python-modules/edlib {
+    inherit (pkgs) edlib;
+  };
 
   edward = callPackage ../development/python-modules/edward { };
 
@@ -3708,6 +3716,8 @@ self: super: with self; {
 
   gemfileparser = callPackage ../development/python-modules/gemfileparser { };
 
+  gemfileparser2 = callPackage ../development/python-modules/gemfileparser2 { };
+
   genanki = callPackage ../development/python-modules/genanki { };
 
   generic = callPackage ../development/python-modules/generic { };
@@ -4313,6 +4323,8 @@ self: super: with self; {
 
   hkdf = callPackage ../development/python-modules/hkdf { };
 
+  hledger-utils = callPackage ../development/python-modules/hledger-utils { };
+
   hlk-sw16 = callPackage ../development/python-modules/hlk-sw16 { };
 
   hmmlearn = callPackage ../development/python-modules/hmmlearn { };
@@ -4753,6 +4765,8 @@ self: super: with self; {
 
   itemloaders = callPackage ../development/python-modules/itemloaders { };
 
+  iteration-utilities = callPackage ../development/python-modules/iteration-utilities { };
+
   iterm2 = callPackage ../development/python-modules/iterm2 { };
 
   itsdangerous = callPackage ../development/python-modules/itsdangerous { };
@@ -4844,6 +4858,8 @@ self: super: with self; {
   jieba = callPackage ../development/python-modules/jieba { };
 
   jinja2 = callPackage ../development/python-modules/jinja2 { };
+
+  jinja2-ansible-filters = callPackage ../development/python-modules/jinja2-ansible-filters { };
 
   jinja2-git = callPackage ../development/python-modules/jinja2-git { };
 
@@ -5538,6 +5554,8 @@ self: super: with self; {
 
   lsassy = callPackage ../development/python-modules/lsassy { };
 
+  lsprotocol = callPackage ../development/python-modules/lsprotocol { };
+
   luddite = callPackage ../development/python-modules/luddite { };
 
   ludios_wpull = callPackage ../development/python-modules/ludios_wpull { };
@@ -5908,6 +5926,8 @@ self: super: with self; {
 
   mkdocstrings-python = callPackage ../development/python-modules/mkdocstrings-python { };
 
+  mkdocs-mermaid2-plugin = callPackage ../development/python-modules/mkdocs-mermaid2-plugin { };
+
   mkl-service = callPackage ../development/python-modules/mkl-service { };
 
   ml-collections = callPackage ../development/python-modules/ml-collections { };
@@ -6159,6 +6179,8 @@ self: super: with self; {
   nanoleaf = callPackage ../development/python-modules/nanoleaf { };
 
   nomadnet = callPackage ../development/python-modules/nomadnet { };
+
+  nox = callPackage ../development/python-modules/nox { };
 
   nanomsg-python = callPackage ../development/python-modules/nanomsg-python {
     inherit (pkgs) nanomsg;
@@ -6633,6 +6655,8 @@ self: super: with self; {
 
   openrouteservice = callPackage ../development/python-modules/openrouteservice { };
 
+  opensearch-py = callPackage ../development/python-modules/opensearch-py { };
+
   opensensemap-api = callPackage ../development/python-modules/opensensemap-api { };
 
   opensfm = callPackage ../development/python-modules/opensfm { };
@@ -6760,8 +6784,6 @@ self: super: with self; {
   packet-python = callPackage ../development/python-modules/packet-python { };
 
   packvers = callPackage ../development/python-modules/packvers { };
-
-  pafy = callPackage ../development/python-modules/pafy { };
 
   pagelabels = callPackage ../development/python-modules/pagelabels { };
 
@@ -8300,6 +8322,8 @@ self: super: with self; {
 
   pymediaroom = callPackage ../development/python-modules/pymediaroom { };
 
+  pymedio = callPackage ../development/python-modules/pymedio { };
+
   pymeeus = callPackage ../development/python-modules/pymeeus { };
 
   pymelcloud = callPackage ../development/python-modules/pymelcloud { };
@@ -8895,6 +8919,8 @@ self: super: with self; {
   pyte = callPackage ../development/python-modules/pyte { };
 
   pytenable = callPackage ../development/python-modules/pytenable { };
+
+  pytensor = callPackage ../development/python-modules/pytensor { };
 
   pytelegrambotapi = callPackage ../development/python-modules/pyTelegramBotAPI { };
 
@@ -9637,6 +9663,8 @@ self: super: with self; {
 
   pyyaml-env-tag = callPackage ../development/python-modules/pyyaml-env-tag { };
 
+  pyyaml-include = callPackage ../development/python-modules/pyyaml-include { };
+
   pyzerproc = callPackage ../development/python-modules/pyzerproc { };
 
   pyzmq = callPackage ../development/python-modules/pyzmq { };
@@ -9832,6 +9860,8 @@ self: super: with self; {
 
   rednose = callPackage ../development/python-modules/rednose { };
 
+  redshift-connector = callPackage ../development/python-modules/redshift-connector { };
+
   reedsolo = callPackage ../development/python-modules/reedsolo { };
 
   reflink = callPackage ../development/python-modules/reflink { };
@@ -9853,6 +9883,8 @@ self: super: with self; {
   remarshal = callPackage ../development/python-modules/remarshal { };
 
   remi = callPackage ../development/python-modules/remi { };
+
+  remote-pdb = callPackage ../development/python-modules/remote-pdb { };
 
   renault-api = callPackage ../development/python-modules/renault-api { };
 
@@ -10161,6 +10193,8 @@ self: super: with self; {
   sacremoses = callPackage ../development/python-modules/sacremoses { };
 
   safe = callPackage ../development/python-modules/safe { };
+
+  safe-pysha3 = callPackage ../development/python-modules/safe-pysha3 { };
 
   safeio = callPackage ../development/python-modules/safeio { };
 
@@ -10503,6 +10537,8 @@ self: super: with self; {
 
   sip_4 = callPackage ../development/python-modules/sip/4.x.nix { };
 
+  siuba = callPackage ../development/python-modules/siuba { };
+
   six = callPackage ../development/python-modules/six { };
 
   sjcl = callPackage ../development/python-modules/sjcl { };
@@ -10731,6 +10767,8 @@ self: super: with self; {
 
   sphinx-book-theme = callPackage ../development/python-modules/sphinx-book-theme { };
 
+  sphinx-codeautolink = callPackage ../development/python-modules/sphinx-codeautolink { };
+
   sphinx-comments = callPackage ../development/python-modules/sphinx-comments { };
 
   sphinx-design = callPackage ../development/python-modules/sphinx-design { };
@@ -10739,13 +10777,21 @@ self: super: with self; {
 
   sphinx-fortran = callPackage ../development/python-modules/sphinx-fortran { };
 
+  sphinx-hoverxref = callPackage ../development/python-modules/sphinx-hoverxref { };
+
   sphinx-jupyterbook-latex = callPackage ../development/python-modules/sphinx-jupyterbook-latex { };
 
   sphinx-multitoc-numbering = callPackage ../development/python-modules/sphinx-multitoc-numbering { };
 
+  sphinx-notfound-page = callPackage ../development/python-modules/sphinx-notfound-page { };
+
   sphinx-pytest = callPackage ../development/python-modules/sphinx-pytest { };
 
+  sphinx-prompt = callPackage ../development/python-modules/sphinx-prompt { };
+
   sphinx-thebe = callPackage ../development/python-modules/sphinx-thebe { };
+
+  sphinx-tabs = callPackage ../development/python-modules/sphinx-tabs { };
 
   sphinx-togglebutton = callPackage ../development/python-modules/sphinx-togglebutton { };
 
@@ -10815,6 +10861,8 @@ self: super: with self; {
 
   sphinx-argparse = callPackage ../development/python-modules/sphinx-argparse { };
 
+  sphinx-jquery = callPackage ../development/python-modules/sphinx-jquery { };
+
   sphinx-autobuild = callPackage ../development/python-modules/sphinx-autobuild { };
 
   sphinx-autodoc-typehints = callPackage ../development/python-modules/sphinx-autodoc-typehints { };
@@ -10846,6 +10894,8 @@ self: super: with self; {
   sphinx-serve = callPackage ../development/python-modules/sphinx-serve { };
 
   sphinx-testing = callPackage ../development/python-modules/sphinx-testing { };
+
+  sphinx-version-warning = callPackage ../development/python-modules/sphinx-version-warning { };
 
   sphinxext-opengraph = callPackage ../development/python-modules/sphinxext-opengraph { };
 
@@ -11209,7 +11259,7 @@ self: super: with self; {
 
   tensorflow-datasets = callPackage ../development/python-modules/tensorflow-datasets { };
 
-  tensorflow-estimator = callPackage ../development/python-modules/tensorflow-estimator { };
+  tensorflow-estimator-bin = callPackage ../development/python-modules/tensorflow-estimator/bin.nix { };
 
   tensorflow-metadata = callPackage ../development/python-modules/tensorflow-metadata { };
 
@@ -11581,6 +11631,8 @@ self: super: with self; {
 
   trytond = callPackage ../development/python-modules/trytond { };
 
+  ttach = callPackage ../development/python-modules/ttach { };
+
   ttls = callPackage ../development/python-modules/ttls { };
 
   ttp = callPackage ../development/python-modules/ttp { };
@@ -11855,6 +11907,8 @@ self: super: with self; {
   uproot = callPackage ../development/python-modules/uproot { };
 
   uptime = callPackage ../development/python-modules/uptime { };
+
+  uptime-kuma-api = callPackage ../development/python-modules/uptime-kuma-api { };
 
   uptime-kuma-monitor = callPackage ../development/python-modules/uptime-kuma-monitor { };
 
