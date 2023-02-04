@@ -6595,6 +6595,13 @@
     githubId = 20176306;
     name = "jammerful";
   };
+  janik = {
+    name = "Janik";
+    email = "janik@aq0.de";
+    matrix = "@janik0:matrix.org";
+    github = "Janik-Haag";
+    githubId = 80165193;
+  };
   jansol = {
     email = "jan.solanti@paivola.fi";
     github = "jansol";
@@ -11510,6 +11517,12 @@
     github = "pjones";
     githubId = 3737;
     name = "Peter Jones";
+  };
+  phip1611 = {
+    email = "phip1611@gmail.com";
+    github = "phip1611";
+    githubId = 5737016;
+    name = "Philipp Schuster";
   };
   pkharvey = {
     email = "kayharvey@protonmail.com";
