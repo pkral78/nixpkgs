@@ -693,6 +693,15 @@
       fingerprint = "7FDB 17B3 C29B 5BA6 E5A9  8BB2 9FAA 63E0 9750 6D9D";
     }];
   };
+  Alper-Celik = {
+    email = "dev.alpercelik@gmail.com";
+    name = "Alper Çelik";
+    github = "Alper-Celik";
+    githubId = 110625473;
+    keys = [{
+      fingerprint = "6B69 19DD CEE0 FAF3 5C9F  2984 FA90 C0AB 738A B873";
+    }];
+  };
   almac = {
     email = "alma.cemerlic@gmail.com";
     github = "a1mac";
@@ -6062,6 +6071,12 @@
     githubId = 1592375;
     name = "Walter Huf";
   };
+  hughobrien = {
+    email = "github@hughobrien.ie";
+    github = "hughobrien";
+    githubId = 3400690;
+    name = "Hugh O'Brien";
+  };
   hugolgst = {
     email = "hugo.lageneste@pm.me";
     github = "hugolgst";
@@ -8930,8 +8945,8 @@
     githubId = 2914269;
     name = "Malo Bourgon";
   };
-  malvo = {
-    email = "malte@malvo.org";
+  malte-v = {
+    email = "nixpkgs@mal.tc";
     github = "malte-v";
     githubId = 34393802;
     name = "Malte Voos";
@@ -9998,6 +10013,12 @@
     github = "mredaelli";
     githubId = 3073833;
     name = "Massimo Redaelli";
+  };
+  mrityunjaygr8 = {
+    email = "mrityunjaysaxena1996@gmail.com";
+    github = "mrityunjaygr8";
+    name = "Mrityunjay Saxena";
+    githubId = 14573967;
   };
   mrkkrp = {
     email = "markkarpov92@gmail.com";
@@ -13338,6 +13359,12 @@
     githubId = 16765155;
     name = "Shardul Baral";
   };
+  sharzy = {
+    email = "me@sharzy.in";
+    github = "SharzyL";
+    githubId = 46294732;
+    name = "Sharzy";
+  };
   shawndellysse = {
     email = "sdellysse@gmail.com";
     github = "sdellysse";
@@ -13662,6 +13689,12 @@
     github = "snicket2100";
     githubId = 57048005;
     name = "snicket2100";
+  };
+  sno2wman = {
+    name = "SnO2WMaN";
+    email = "me@sno2wman.net";
+    github = "sno2wman";
+    githubId = 15155608;
   };
   snpschaaf = {
     email = "philipe.schaaf@secunet.com";
@@ -15281,6 +15314,12 @@
     github = "Valodim";
     githubId = 27813;
     name = "Vincent Breitmoser";
+  };
+  vamega = {
+    email = "github@madiathv.com";
+    github = "vamega";
+    githubId = 223408;
+    name = "Varun Madiath";
   };
   vandenoever = {
     email = "jos@vandenoever.info";
