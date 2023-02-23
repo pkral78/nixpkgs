@@ -492,6 +492,7 @@ mapAliases ({
   '';
 
   foomatic_filters = throw "'foomatic_filters' has been renamed to/replaced by 'foomatic-filters'"; # Converted to throw 2022-02-22
+  foxitreader = throw "foxitreader has been removed because it had vulnerabilities and was unmaintained"; # added 2023-02-20
   fscryptctl-experimental = throw "The package fscryptctl-experimental has been removed. Please switch to fscryptctl"; # Added 2021-11-07
   fsharp41 = throw "fsharp41 has been removed, please use dotnet-sdk_5 or later";
   fslint = throw "fslint has been removed: end of life. Upstream recommends using czkawka (https://qarmin.github.io/czkawka/) instead"; # Added 2022-01-15
@@ -694,6 +695,8 @@ mapAliases ({
   jack2Full = jack2; # moved from top-level 2021-03-14
   jami-client-gnome = throw "jami-client-gnome has been removed: abandoned upstream"; # Added 2022-05-15
   jami-client-qt = jami-client; # Added 2022-11-06
+  jami-client = jami; # Added 2023-02-10
+  jami-daemon = jami.daemon; # Added 2023-02-10
   jami-libclient = throw "jami-libclient has been removed: moved into jami-qt"; # Added 2022-07-29
   jamomacore = throw "jamomacore has been removed: abandoned upstream"; # Added 2020-11-21
   jbidwatcher = throw "jbidwatcher was discontinued in march 2021"; # Added 2021-03-15
@@ -860,6 +863,7 @@ mapAliases ({
   linuxPackages_5_4 = linuxKernel.packages.linux_5_4;
   linuxPackages_6_0 = linuxKernel.packages.linux_6_0;
   linuxPackages_6_1 = linuxKernel.packages.linux_6_1;
+  linuxPackages_6_2 = linuxKernel.packages.linux_6_2;
   linuxPackages_hardkernel_4_14 = linuxKernel.packages.hardkernel_4_14;
   linuxPackages_rpi0 = linuxKernel.packages.linux_rpi1;
   linuxPackages_rpi02w = linuxKernel.packages.linux_rpi3;
@@ -880,6 +884,7 @@ mapAliases ({
   linux_5_4 = linuxKernel.kernels.linux_5_4;
   linux_6_0 = linuxKernel.kernels.linux_6_0;
   linux_6_1 = linuxKernel.kernels.linux_6_1;
+  linux_6_2 = linuxKernel.kernels.linux_6_2;
   linuxPackages_mptcp = throw "'linuxPackages_mptcp' has been moved to https://github.com/teto/mptcp-flake"; # Converted to throw 2022-10-04
   linux_mptcp = throw "'linux_mptcp' has been moved to https://github.com/teto/mptcp-flake"; # Converted to throw 2022-10-04
   linux_mptcp_95 = throw "'linux_mptcp_95' has been moved to https://github.com/teto/mptcp-flake"; # Converted to throw 2022-10-04
@@ -1295,6 +1300,7 @@ mapAliases ({
   pyrex096 = throw "pyrex has been removed from nixpkgs as the project is still stuck on python2"; # Added 2022-01-12
   pyrit = throw "pyrit has been removed from nixpkgs as the project is still stuck on python2"; # Added 2022-01-01
   python = python2; # Added 2022-01-11
+  python-language-server = throw "python-language-server has been removed as it is no longer maintained. Use e.g. python-lsp-server instead"; # Added 2023-01-07
   python-swiftclient = swiftclient; # Added 2021-09-09
   python2nix = throw "python2nix has been removed as it is outdated. Use e.g. nixpkgs-pytools instead"; # Added 2021-03-08
   pythonFull = python2Full; # Added 2022-01-11
