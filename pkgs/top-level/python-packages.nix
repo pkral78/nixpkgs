@@ -278,6 +278,8 @@ self: super: with self; {
 
   aioopenexchangerates = callPackage ../development/python-modules/aioopenexchangerates { };
 
+  aioopenssl = callPackage ../development/python-modules/aioopenssl { };
+
   aiopg = callPackage ../development/python-modules/aiopg { };
 
   aioprocessing = callPackage ../development/python-modules/aioprocessing { };
@@ -317,6 +319,8 @@ self: super: with self; {
   aioruuvigateway = callPackage ../development/python-modules/aioruuvigateway { };
 
   aiorwlock = callPackage ../development/python-modules/aiorwlock { };
+
+  aiosasl = callPackage ../development/python-modules/aiosasl { };
 
   aiosenseme = callPackage ../development/python-modules/aiosenseme { };
 
@@ -367,6 +371,8 @@ self: super: with self; {
   aiowebostv = callPackage ../development/python-modules/aiowebostv { };
 
   aiowinreg = callPackage ../development/python-modules/aiowinreg { };
+
+  aioxmpp = callPackage ../development/python-modules/aioxmpp { };
 
   aioymaps = callPackage ../development/python-modules/aioymaps { };
 
@@ -532,6 +538,8 @@ self: super: with self; {
 
   aplpy = callPackage ../development/python-modules/aplpy { };
 
+  app-model = callPackage ../development/python-modules/app-model { };
+
   appdirs = callPackage ../development/python-modules/appdirs { };
 
   applicationinsights = callPackage ../development/python-modules/applicationinsights { };
@@ -651,6 +659,8 @@ self: super: with self; {
   asn1crypto = callPackage ../development/python-modules/asn1crypto { };
 
   asn1tools = callPackage ../development/python-modules/asn1tools { };
+
+  aspectlib = callPackage ../development/python-modules/aspectlib { };
 
   aspell-python = callPackage ../development/python-modules/aspell-python { };
 
@@ -3864,8 +3874,6 @@ self: super: with self; {
 
   glances-api = callPackage ../development/python-modules/glances-api { };
 
-  glasgow = callPackage ../development/python-modules/glasgow { };
-
   glcontext = callPackage ../development/python-modules/glcontext { };
 
   glean-parser = callPackage ../development/python-modules/glean-parser { };
@@ -3907,8 +3915,6 @@ self: super: with self; {
   google-api-core = callPackage ../development/python-modules/google-api-core { };
 
   google-api-python-client = callPackage ../development/python-modules/google-api-python-client { };
-
-  google-apitools = callPackage ../development/python-modules/google-apitools { };
 
   googleapis-common-protos = callPackage ../development/python-modules/googleapis-common-protos { };
 
@@ -4639,6 +4645,8 @@ self: super: with self; {
   };
 
   imutils = callPackage ../development/python-modules/imutils { };
+
+  in-n-out = callPackage ../development/python-modules/in-n-out { };
 
   in-place = callPackage ../development/python-modules/in-place { };
 
@@ -6026,8 +6034,6 @@ self: super: with self; {
   modestmaps = callPackage ../development/python-modules/modestmaps { };
 
   mohawk = callPackage ../development/python-modules/mohawk { };
-
-  moku = callPackage ../development/python-modules/moku { };
 
   monai = callPackage ../development/python-modules/monai { };
 
@@ -8604,6 +8610,8 @@ self: super: with self; {
 
   pypiserver = callPackage ../development/python-modules/pypiserver { };
 
+  pypitoken = callPackage ../development/python-modules/pypitoken { };
+
   pyplaato  = callPackage ../development/python-modules/pyplaato { };
 
   pyplatec = callPackage ../development/python-modules/pyplatec { };
@@ -8698,8 +8706,6 @@ self: super: with self; {
   pyramid_chameleon = callPackage ../development/python-modules/pyramid_chameleon { };
 
   pyramid_exclog = callPackage ../development/python-modules/pyramid_exclog { };
-
-  pyramid_hawkauth = callPackage ../development/python-modules/pyramid_hawkauth { };
 
   pyramid_jinja2 = callPackage ../development/python-modules/pyramid_jinja2 { };
 
@@ -10068,6 +10074,8 @@ self: super: with self; {
   retry_decorator = callPackage ../development/python-modules/retry_decorator { };
 
   retrying = callPackage ../development/python-modules/retrying { };
+
+  returns = callPackage ../development/python-modules/returns { };
 
   retworkx = callPackage ../development/python-modules/retworkx { };
 
