@@ -494,6 +494,8 @@ with pkgs;
 
   dinghy = with python3Packages; toPythonApplication dinghy;
 
+  djhtml = python3Packages.callPackage ../development/tools/djhtml { };
+
   deadcode = callPackage ../development/tools/deadcode { };
 
   deadnix = callPackage ../development/tools/deadnix { };
@@ -2827,6 +2829,8 @@ with pkgs;
     });
     wrapGAppsHook4 = wrapGAppsHook.override { gtk3 = gtk4; };
    };
+
+  authelia = callPackage ../servers/authelia { };
 
   autoflake = with python3.pkgs; toPythonApplication autoflake;
 
@@ -5570,6 +5574,8 @@ with pkgs;
     zig = zig_0_9;
   };
 
+  river-luatile = callPackage ../applications/misc/river-luatile{ };
+
   rmapi = callPackage ../applications/misc/remarkable/rmapi { };
 
   rmate-sh = callPackage ../tools/misc/rmate-sh { };
@@ -6701,10 +6707,6 @@ with pkgs;
 
   diffutils = callPackage ../tools/text/diffutils { };
 
-  dir2opus = callPackage ../tools/audio/dir2opus {
-    inherit (python2Packages) mutagen python wrapPython;
-  };
-
   dsp = callPackage ../tools/audio/dsp { };
 
   dirdiff = callPackage ../tools/text/dirdiff {
@@ -7297,43 +7299,6 @@ with pkgs;
   fastd = callPackage ../tools/networking/fastd { };
 
   fatsort = callPackage ../tools/filesystems/fatsort { };
-
-  fcitx = callPackage ../tools/inputmethods/fcitx {
-    plugins = [];
-  };
-
-  fcitx-engines = recurseIntoAttrs {
-
-    anthy = callPackage ../tools/inputmethods/fcitx-engines/fcitx-anthy { };
-
-    chewing = callPackage ../tools/inputmethods/fcitx-engines/fcitx-chewing { };
-
-    hangul = callPackage ../tools/inputmethods/fcitx-engines/fcitx-hangul { };
-
-    unikey = callPackage ../tools/inputmethods/fcitx-engines/fcitx-unikey { };
-
-    rime = callPackage ../tools/inputmethods/fcitx-engines/fcitx-rime { };
-
-    m17n = callPackage ../tools/inputmethods/fcitx-engines/fcitx-m17n { };
-
-    mozc = callPackage ../tools/inputmethods/fcitx-engines/fcitx-mozc {
-      python = python2;
-      inherit (python2Packages) gyp;
-      protobuf = pkgs.protobuf3_8.overrideDerivation (_: { stdenv = clangStdenv; });
-    };
-
-    table-extra = callPackage ../tools/inputmethods/fcitx-engines/fcitx-table-extra { };
-
-    table-other = callPackage ../tools/inputmethods/fcitx-engines/fcitx-table-other { };
-
-    cloudpinyin = callPackage ../tools/inputmethods/fcitx-engines/fcitx-cloudpinyin { };
-
-    libpinyin = libsForQt5.callPackage ../tools/inputmethods/fcitx-engines/fcitx-libpinyin { };
-
-    skk = callPackage ../tools/inputmethods/fcitx-engines/fcitx-skk { };
-  };
-
-  fcitx-configtool = callPackage ../tools/inputmethods/fcitx/fcitx-configtool.nix { };
 
   chewing-editor = libsForQt5.callPackage ../applications/misc/chewing-editor { };
 
@@ -10569,7 +10534,7 @@ with pkgs;
 
   ola = callPackage ../applications/misc/ola { };
 
-  olive-editor = libsForQt5.callPackage ../applications/video/olive-editor {
+  olive-editor = qt6Packages.callPackage ../applications/video/olive-editor {
     inherit (darwin.apple_sdk.frameworks) CoreFoundation;
   };
 
@@ -11778,7 +11743,9 @@ with pkgs;
 
   rmtrash = callPackage ../tools/misc/rmtrash { };
 
-  roc-toolkit = callPackage ../development/libraries/audio/roc-toolkit { };
+  roc-toolkit = callPackage ../development/libraries/audio/roc-toolkit {
+    scons = sconsPackages.scons_4_1_0;
+  };
 
   rockbox-utility = libsForQt5.callPackage ../tools/misc/rockbox-utility { };
 
@@ -12108,7 +12075,7 @@ with pkgs;
 
   sigil = libsForQt5.callPackage ../applications/editors/sigil { };
 
-  signalbackup-tools = darwin.apple_sdk_11_0.callPackage ../applications/networking/instant-messengers/signalbackup-tools { };
+  signalbackup-tools = callPackage ../applications/networking/instant-messengers/signalbackup-tools { };
 
   signald = callPackage ../applications/networking/instant-messengers/signald { };
 
@@ -19910,6 +19877,18 @@ with pkgs;
     ffmpegVariant = "full";
   };
 
+  ffmpeg_6 = callPackage ../development/libraries/ffmpeg/6.nix {
+     inherit (darwin.apple_sdk.frameworks)
+      Cocoa CoreServices CoreAudio CoreMedia AVFoundation MediaToolbox
+      VideoDecodeAcceleration VideoToolbox;
+  };
+  ffmpeg_6-headless = ffmpeg_6.override {
+    ffmpegVariant = "headless";
+  };
+  ffmpeg_6-full = ffmpeg_6.override {
+    ffmpegVariant = "full";
+  };
+
   # Aliases
   # Please make sure this is updated to the latest version on the next major
   # update to ffmpeg
@@ -23173,6 +23152,7 @@ with pkgs;
         bison cups dconf harfbuzz libGL perl gtk3 python3
         darwin buildPackages;
       inherit (__splicedPackages.gst_all_1) gstreamer gst-plugins-base;
+      inherit config;
       stdenv = if stdenv.isDarwin then darwin.apple_sdk_11_0.stdenv else stdenv;
     });
 
@@ -23647,6 +23627,8 @@ with pkgs;
   sokol = callPackage ../development/libraries/sokol { };
 
   sonic = callPackage ../development/libraries/sonic { };
+
+  sonivox = callPackage ../development/libraries/sonivox { };
 
   sope = callPackage ../development/libraries/sope { };
 
@@ -28792,6 +28774,8 @@ with pkgs;
 
   inherit (gnome) baobab;
 
+  badwolf = callPackage ../applications/networking/browsers/badwolf { };
+
   backintime-common = callPackage ../applications/networking/sync/backintime/common.nix { };
 
   backintime-qt = libsForQt5.callPackage ../applications/networking/sync/backintime/qt.nix { };
@@ -28912,7 +28896,9 @@ with pkgs;
 
   bombadillo = callPackage ../applications/networking/browsers/bombadillo { };
 
-  bombono = callPackage ../applications/video/bombono { };
+  bombono = callPackage ../applications/video/bombono {
+    scons = sconsPackages.scons_4_1_0;
+  };
 
   bonzomatic = callPackage ../applications/editors/bonzomatic { };
 
@@ -29794,9 +29780,9 @@ with pkgs;
 
   ganttproject-bin = callPackage ../applications/misc/ganttproject-bin { };
 
-  gaucheBootstrap = callPackage ../development/interpreters/gauche/boot.nix { };
+  gaucheBootstrap = darwin.apple_sdk_11_0.callPackage ../development/interpreters/gauche/boot.nix { };
 
-  gauche = callPackage ../development/interpreters/gauche { };
+  gauche = darwin.apple_sdk_11_0.callPackage ../development/interpreters/gauche { };
 
   gazelle-origin = python3Packages.callPackage ../tools/misc/gazelle-origin { };
 
@@ -30049,10 +30035,14 @@ with pkgs;
   firefoxPackages = recurseIntoAttrs (callPackage ../applications/networking/browsers/firefox/packages.nix {});
 
   firefox-unwrapped = firefoxPackages.firefox;
+  firefox-beta-unwrapped = firefoxPackages.firefox-beta;
+  firefox-devedition-unwrapped = firefoxPackages.firefox-devedition;
   firefox-esr-102-unwrapped = firefoxPackages.firefox-esr-102;
   firefox-esr-unwrapped = firefoxPackages.firefox-esr-102;
 
   firefox = wrapFirefox firefox-unwrapped { };
+  firefox-beta = wrapFirefox firefox-beta-unwrapped { };
+  firefox-devedition = wrapFirefox firefox-devedition-unwrapped { };
 
   firefox-esr = firefox-esr-102;
   firefox-esr-102 = wrapFirefox firefox-esr-102-unwrapped { };
@@ -30131,9 +30121,7 @@ with pkgs;
 
   foxtrotgps = callPackage ../applications/misc/foxtrotgps { };
 
-  fractal = callPackage ../applications/networking/instant-messengers/fractal {
-    openssl = openssl_1_1;
-  };
+  fractal = callPackage ../applications/networking/instant-messengers/fractal { };
 
   fractal-next = callPackage ../applications/networking/instant-messengers/fractal-next {
     inherit (gst_all_1) gstreamer gst-plugins-base gst-plugins-bad;
@@ -32167,6 +32155,8 @@ with pkgs;
 
   pluto = callPackage ../applications/networking/cluster/pluto { };
 
+  pnglatex = with python3Packages; toPythonApplication pnglatex;
+
   polybar = callPackage ../applications/misc/polybar { };
 
   polybarFull = callPackage ../applications/misc/polybar {
@@ -33470,8 +33460,8 @@ with pkgs;
   snapper = callPackage ../tools/misc/snapper { };
   snapper-gui = callPackage ../applications/misc/snapper-gui { };
 
-  snd = callPackage ../applications/audio/snd {
-    inherit (darwin.apple_sdk.frameworks) CoreServices CoreMIDI;
+  snd = darwin.apple_sdk_11_0.callPackage ../applications/audio/snd {
+    inherit (darwin.apple_sdk_11_0.frameworks) CoreServices CoreMIDI;
   };
 
   shntool = callPackage ../applications/audio/shntool { };
@@ -33482,10 +33472,7 @@ with pkgs;
 
   socialscan = with python3.pkgs; toPythonApplication socialscan;
 
-  sonic-lineup = libsForQt5.callPackage ../applications/audio/sonic-lineup {
-    bzip2 = bzip2_1_1;
-    stdenv = gcc10StdenvCompat;
-  };
+  sonic-lineup = libsForQt5.callPackage ../applications/audio/sonic-lineup { };
 
   sonic-visualiser = libsForQt5.callPackage ../applications/audio/sonic-visualiser { };
 
@@ -35539,7 +35526,9 @@ with pkgs;
 
   dwarf-therapist = dwarf-fortress-packages.dwarf-therapist;
 
-  dxx-rebirth = callPackage ../games/dxx-rebirth { };
+  dxx-rebirth = callPackage ../games/dxx-rebirth {
+    scons = sconsPackages.scons_4_1_0;
+  };
 
   inherit (callPackages ../games/dxx-rebirth/assets.nix { })
     descent1-assets
@@ -39662,4 +39651,6 @@ with pkgs;
   udict = callPackage ../applications/misc/udict { };
 
   duden = callPackage ../applications/misc/duden { };
+
+  zf = callPackage ../tools/misc/zf { };
 }
