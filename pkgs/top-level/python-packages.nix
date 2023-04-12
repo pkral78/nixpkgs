@@ -4802,8 +4802,6 @@ self: super: with self; {
 
   into-dbus-python = callPackage ../development/python-modules/into-dbus-python { };
 
-  intreehooks = callPackage ../development/python-modules/intreehooks { };
-
   invisible-watermark = callPackage ../development/python-modules/invisible-watermark { };
 
   invocations = callPackage ../development/python-modules/invocations { };
@@ -5880,6 +5878,8 @@ self: super: with self; {
 
   mat2 = callPackage ../development/python-modules/mat2 { };
 
+  material-color-utilities = callPackage ../development/python-modules/material-color-utilities { };
+
   matchpy = callPackage ../development/python-modules/matchpy { };
 
   mathlibtools = callPackage ../development/python-modules/mathlibtools { };
@@ -6619,6 +6619,8 @@ self: super: with self; {
 
   notedown = callPackage ../development/python-modules/notedown { };
 
+  notifications-android-tv = callPackage ../development/python-modules/notifications-android-tv { };
+
   notifications-python-client = callPackage ../development/python-modules/notifications-python-client { };
 
   notify-events = callPackage ../development/python-modules/notify-events { };
@@ -6811,7 +6813,9 @@ self: super: with self; {
 
   openai-triton = callPackage ../development/python-modules/openai-triton { llvmPackages = pkgs.llvmPackages_rocm; };
 
-  openai-whisper = callPackage ../development/python-modules/openai-whisper { };
+  openai-whisper = callPackage ../development/python-modules/openai-whisper {
+    cudaSupport = pkgs.config.cudaSupport or false;
+  };
 
   openant = callPackage ../development/python-modules/openant { };
 
@@ -11960,6 +11964,8 @@ self: super: with self; {
   transmissionrpc = callPackage ../development/python-modules/transmissionrpc { };
 
   trectools = callPackage ../development/python-modules/trectools { };
+
+  tree-sitter = callPackage ../development/python-modules/tree-sitter { };
 
   treelog = callPackage ../development/python-modules/treelog { };
 
