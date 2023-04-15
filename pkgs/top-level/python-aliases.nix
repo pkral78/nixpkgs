@@ -48,6 +48,12 @@ mapAliases ({
   blockdiagcontrib-cisco = throw "blockdiagcontrib-cisco is not compatible with blockdiag 2.0.0 and has been removed."; # added 2020-11-29
   bsblan = python-bsblan; # added 2022-11-04
   btchip = btchip-python; # added 2023-03-03
+  buildbot = throw "use pkgs.buildbot instead"; # added 2022-04-07
+  buildbot-ui = throw "use pkgs.buildbot-ui instead"; # added 2022-04-07
+  buildbot-full = throw "use pkgs.buildbot-full instead"; # added 2022-04-07
+  buildbot-plugins = throw "use pkgs.buildbot-plugins instead"; # added 2022-04-07
+  buildbot-worker = throw "use pkgs.buildbot-worker instead"; # added 2022-04-07
+  buildbot-pkg = throw "buildbot-pkg has been removed, it's only internally used in buildbot"; # added 2022-04-07
   bt_proximity = bt-proximity; # added 2021-07-02
   BTrees = btrees; # added 2023-02-19
   carrot = throw "carrot has been removed, as its development was discontinued in 2012"; # added 2022-01-18
@@ -231,6 +237,7 @@ mapAliases ({
   python-subunit = subunit; # added 2021-09-10
   pytest_xdist = pytest-xdist; # added 2021-01-04
   python_simple_hipchat = python-simple-hipchat; # added 2021-07-21
+  pytoml = throw "pytoml has been removed because it is unmaintained and is superseded by toml"; # Added 2023-04-11
   pytorch = torch; # added 2022-09-30
   pytorch-bin = torch-bin; # added 2022-09-30
   pytorchWithCuda = torchWithCuda; # added 2022-09-30
