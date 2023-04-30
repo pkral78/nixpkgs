@@ -4859,7 +4859,7 @@
     name = "Eric Evenchick";
   };
   evenbrenden = {
-    email = "evenbrenden@gmail.com";
+    email = "packages@anythingexternal.com";
     github = "evenbrenden";
     githubId = 2512008;
     name = "Even Brenden";
@@ -11044,6 +11044,16 @@
     githubId = 34162313;
     name = "Jason Wing";
   };
+  netfox = {
+    name = "netfox";
+    email = "say-hi@netfox.rip";
+    matrix = "@netfox:catgirl.cloud";
+    github = "0xnetfox";
+    githubId = 97521402;
+    keys = [{
+      fingerprint = "E8E9 43D7 EB83 DB77 E41C  D87F 9C77 CB70 F2E6 3EF7";
+    }];
+  };
   netixx = {
     email = "dev.espinetfrancois@gmail.com";
     github = "netixx";
@@ -14840,10 +14850,12 @@
     name = "Stijn DW";
   };
   StillerHarpo = {
-    email = "florianengel39@gmail.com";
+    email = "engelflorian@posteo.de";
     github = "StillerHarpo";
     githubId = 25526706;
     name = "Florian Engel";
+    keys = [{ fingerprint = "4E2D9B26940E0DABF376B7AF76762421D45837DE"; }];
+    matrix = "@qe7ftcyrpg:matrix.org";
   };
   stites = {
     email = "sam@stites.io";
@@ -15264,6 +15276,12 @@
     github = "telotortium";
     githubId = 1755789;
     name = "Robert Irelan";
+  };
+  tennox = {
+    email = "tennox+nix@txlab.io";
+    github = "tennox";
+    githubId = 2084639;
+    name = "Manu";
   };
   teozkr = {
     email = "teo@nullable.se";
