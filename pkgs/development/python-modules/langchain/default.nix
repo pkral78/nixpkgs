@@ -16,8 +16,12 @@
 , tenacity
 , bash
   # optional dependencies
+, anthropic
+, cohere
 , openai
+, nlpcloud
 , huggingface-hub
+, manifest-ml
 , torch
 , transformers
 , qdrant-client
@@ -47,6 +51,10 @@
 , atlassian-python-api
 , duckduckgo-search
 , lark
+, jq
+, protobuf
+, steamship
+, pdfminer-six
   # test dependencies
 , pytest-vcr
 , pytest-asyncio
@@ -61,7 +69,7 @@
 
 buildPythonPackage rec {
   pname = "langchain";
-  version = "0.0.158";
+  version = "0.0.168";
   format = "pyproject";
 
   disabled = pythonOlder "3.8";
@@ -70,7 +78,7 @@ buildPythonPackage rec {
     owner = "hwchase17";
     repo = "langchain";
     rev = "refs/tags/v${version}";
-    hash = "sha256-R8l7Y33CiTL4px5A7rB6PHMnSjvINZBrgANwUMFkls8=";
+    hash = "sha256-2L5yFkXr6dioEP1QAMXWX6x+IRbGUIW3cxLLxJJjkMI=";
   };
 
   postPatch = ''
@@ -105,12 +113,12 @@ buildPythonPackage rec {
 
   passthru.optional-dependencies = {
     llms = [
-      # anthropic
-      # cohere
+      anthropic
+      cohere
       openai
-      # nlpcloud
+      nlpcloud
       huggingface-hub
-      # manifest-ml
+      manifest-ml
       torch
       transformers
     ];
@@ -121,7 +129,7 @@ buildPythonPackage rec {
       openai
     ];
     cohere = [
-      # cohere
+      cohere
     ];
     embeddings = [
       sentence-transformers
@@ -133,13 +141,13 @@ buildPythonPackage rec {
       azure-core
     ];
     all = [
-      # anthropic
-      # cohere
+      anthropic
+      cohere
       openai
-      # nlpcloud
+      nlpcloud
       huggingface-hub
       # jina
-      # manifest-ml
+      manifest-ml
       elasticsearch
       opensearch-py
       # google-search-results
@@ -184,6 +192,12 @@ buildPythonPackage rec {
       pexpect
       # pyvespa
       # O365
+      jq
+      # docarray
+      protobuf
+      # hnswlib
+      steamship
+      pdfminer-six
     ];
   };
 
@@ -198,10 +212,10 @@ buildPythonPackage rec {
     responses
   ];
 
-  preCheck = ''
+  pytestFlagsArray = [
     # integration_tests have many network, db access and require `OPENAI_API_KEY`, etc.
-    rm -r tests/integration_tests
-  '';
+    "tests/unit_tests"
+  ];
 
   disabledTests = [
     # these tests have db access
