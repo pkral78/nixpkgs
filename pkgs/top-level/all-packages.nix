@@ -587,6 +587,8 @@ with pkgs;
 
   expressvpn = callPackage ../applications/networking/expressvpn { };
 
+  faq = callPackage ../development/tools/faq { };
+
   figma-agent = callPackage ../applications/graphics/figma-agent { };
 
   figma-linux = callPackage ../applications/graphics/figma-linux { };
@@ -937,7 +939,9 @@ with pkgs;
 
   pacproxy = callPackage ../tools/networking/pacproxy { };
 
-  pacup = python3Packages.callPackage ../tools/package-management/pacup { };
+  pacup = callPackage ../tools/package-management/pacup { };
+
+  patcher9x = callPackage ../development/tools/patcher9x { };
 
   perseus-cli = callPackage ../development/tools/perseus-cli {
     inherit (darwin.apple_sdk.frameworks) CoreServices;
@@ -1599,6 +1603,8 @@ with pkgs;
 
   dwarfs = callPackage ../tools/filesystems/dwarfs { };
 
+  dysk = callPackage ../tools/filesystems/dysk { };
+
   etlegacy = callPackage ../games/etlegacy { lua = lua5_4; };
 
   fscan = callPackage ../tools/security/fscan { };
@@ -1813,7 +1819,7 @@ with pkgs;
 
   systeroid = callPackage ../tools/system/systeroid { };
 
-  tailwindcss-bin = callPackage ../development/tools/tailwindcss { };
+  tailwindcss = callPackage ../development/tools/tailwindcss { };
 
   tauon = callPackage ../applications/audio/tauon { };
 
@@ -2663,9 +2669,7 @@ with pkgs;
 
   felix-fm = callPackage ../applications/file-managers/felix-fm { };
 
-  joshuto = callPackage ../applications/file-managers/joshuto {
-    inherit (darwin.apple_sdk.frameworks) SystemConfiguration Foundation;
-  };
+  joshuto = callPackage ../applications/file-managers/joshuto { };
 
   krusader = libsForQt5.callPackage ../applications/file-managers/krusader { };
 
@@ -2857,6 +2861,8 @@ with pkgs;
   iqueue = callPackage ../development/libraries/iqueue { };
 
   lifecycled = callPackage ../tools/misc/lifecycled { };
+
+  lil-pwny = callPackage ../tools/security/lil-pwny { };
 
   lilo = callPackage ../tools/misc/lilo { };
 
@@ -8135,6 +8141,8 @@ with pkgs;
 
   gitlab-workhorse = callPackage ../applications/version-management/gitlab/gitlab-workhorse { };
 
+  gitlab-elasticsearch-indexer = callPackage ../applications/version-management/gitlab/gitlab-elasticsearch-indexer { };
+
   gitleaks = callPackage ../tools/security/gitleaks { };
 
   gitaly = callPackage ../applications/version-management/gitlab/gitaly {
@@ -8465,14 +8473,14 @@ with pkgs;
 
   grub2 = callPackage ../tools/misc/grub/default.nix {
     # update breaks grub2
-    gnulib = pkgs.gnulib.overrideAttrs (_: rec {
+    gnulib = pkgs.gnulib.overrideAttrs {
       version = "20200223";
       src = fetchgit {
         url = "https://git.savannah.gnu.org/r/gnulib.git";
         rev = "292fd5d6ff5ecce81ec3c648f353732a9ece83c0";
         sha256 = "0hkg3nql8nsll0vrqk4ifda0v4kpi67xz42r8daqsql6c4rciqnw";
       };
-    });
+    };
   };
 
   grub2_efi = grub2.override {
@@ -9101,6 +9109,8 @@ with pkgs;
 
   jekyll = callPackage ../applications/misc/jekyll { };
 
+  jello = with python3Packages; toPythonApplication jello;
+
   jen = callPackage ../tools/text/jen { };
 
   jet = callPackage ../development/tools/jet { };
@@ -9461,8 +9471,6 @@ with pkgs;
   liquidsoap = callPackage ../tools/audio/liquidsoap/full.nix {
     ffmpeg = ffmpeg-full;
   };
-
-  lfs = callPackage ../tools/filesystems/lfs { };
 
   linuxwave = callPackage ../tools/audio/linuxwave { };
 
@@ -12028,8 +12036,6 @@ with pkgs;
 
   rare-regex = callPackage ../tools/text/rare-regex { };
 
-  rarian = callPackage ../development/libraries/rarian { };
-
   ratman = callPackage ../tools/networking/ratman { };
 
   ratools = callPackage ../tools/networking/ratools { };
@@ -12233,6 +12239,8 @@ with pkgs;
   rnr = callPackage ../tools/text/rnr { };
 
   rnv = callPackage ../tools/text/xml/rnv { };
+
+  roam-research = callPackage ../applications/office/roam-research { };
 
   rosie = callPackage ../tools/text/rosie { };
 
@@ -12621,6 +12629,8 @@ with pkgs;
 
   signumone-ks = callPackage ../applications/misc/signumone-ks { };
 
+  sigtop = callPackage ../tools/backup/sigtop { };
+
   silc_client = callPackage ../applications/networking/instant-messengers/silc-client { };
 
   silc_server = callPackage ../servers/silc-server { };
@@ -12684,6 +12694,8 @@ with pkgs;
   sleuthkit = callPackage ../tools/system/sleuthkit { };
 
   slides = callPackage ../applications/misc/slides { };
+
+  slippy = callPackage ../applications/misc/slippy { };
 
   slirp4netns = callPackage ../tools/networking/slirp4netns { };
 
@@ -14082,8 +14094,8 @@ with pkgs;
 
   tre = callPackage ../development/libraries/tre { };
 
-  tremor-rs = callPackage ../tools/misc/tremor-rs {
-    inherit (darwin.apple_sdk.frameworks) Security;
+  tremor-rs = darwin.apple_sdk_11_0.callPackage ../tools/misc/tremor-rs {
+    inherit (darwin.apple_sdk_11_0.frameworks) Security;
   };
 
   tremor-language-server = callPackage ../tools/misc/tremor-rs/ls.nix { };
@@ -14296,14 +14308,14 @@ with pkgs;
 
   wget2 = callPackage ../tools/networking/wget2 {
     # update breaks grub2
-    gnulib = pkgs.gnulib.overrideAttrs (_: rec {
+    gnulib = pkgs.gnulib.overrideAttrs {
       version = "20210208";
       src = fetchgit {
         url = "https://git.savannah.gnu.org/r/gnulib.git";
         rev = "0b38e1d69f03d3977d7ae7926c1efeb461a8a971";
         sha256 = "06bj9y8wcfh35h653yk8j044k7h5g82d2j3z3ib69rg0gy1xagzp";
       };
-    });
+    };
   };
 
   wgpu-utils = callPackage ../tools/graphics/wgpu-utils {
@@ -15300,9 +15312,9 @@ with pkgs;
   clangMultiStdenv = overrideCC stdenv buildPackages.clang_multi;
   multiStdenv = if stdenv.cc.isClang then clangMultiStdenv else gccMultiStdenv;
 
-  gcc_debug = lowPrio (wrapCC (gcc.cc.overrideAttrs (_: {
+  gcc_debug = lowPrio (wrapCC (gcc.cc.overrideAttrs {
     dontStrip = true;
-  })));
+  }));
 
   gccCrossLibcStdenv = overrideCC stdenv buildPackages.gccCrossStageStatic;
 
@@ -16342,7 +16354,7 @@ with pkgs;
 
   ocaml-crunch = ocamlPackages.crunch.bin;
 
-  inherit (callPackage ../development/tools/ocaml/ocamlformat { })
+  inherit (ocamlPackages)
     ocamlformat # latest version
     ocamlformat_0_19_0 ocamlformat_0_20_0 ocamlformat_0_20_1 ocamlformat_0_21_0
     ocamlformat_0_22_4 ocamlformat_0_23_0 ocamlformat_0_24_1 ocamlformat_0_25_1;
@@ -17971,6 +17983,8 @@ with pkgs;
   }));
 
   ansible-doctor = callPackage ../tools/admin/ansible/doctor.nix { };
+
+  dbus-test-runner = callPackage ../development/tools/dbus-test-runner { };
 
   phpunit = callPackage ../development/tools/misc/phpunit { };
 
@@ -20995,7 +21009,7 @@ with pkgs;
     inherit (darwin.apple_sdk.frameworks) Security;
   };
 
-  libgit2_1_3_0 = libgit2.overrideAttrs (_: rec {
+  libgit2_1_3_0 = libgit2.overrideAttrs rec {
     version = "1.3.0";
     src = pkgs.fetchFromGitHub {
       owner = "libgit2";
@@ -21004,9 +21018,9 @@ with pkgs;
       sha256 = "sha256-7atNkOBzX+nU1gtFQEaE+EF1L+eex+Ajhq2ocoJY920=";
     };
     patches = [];
-  });
+  };
 
-  libgit2_1_5 = libgit2.overrideAttrs (_: rec {
+  libgit2_1_5 = libgit2.overrideAttrs rec {
     version = "1.5.1";
     src = pkgs.fetchFromGitHub {
       owner = "libgit2";
@@ -21014,7 +21028,7 @@ with pkgs;
       rev = "v${version}";
       hash = "sha256-KzBMwpqn6wUFhgB3KDclBS0BvZSVcasM5AG/y+L91xM=";
     };
-  });
+  };
 
   libgit2-glib = callPackage ../development/libraries/libgit2-glib { };
 
@@ -21301,7 +21315,7 @@ with pkgs;
   gtkimageview = callPackage ../development/libraries/gtkimageview { };
 
   glib = callPackage ../development/libraries/glib (let
-    glib-untested = glib.overrideAttrs (_: { doCheck = false; });
+    glib-untested = glib.overrideAttrs { doCheck = false; };
   in {
     # break dependency cycles
     # these things are only used for tests, they don't get into the closure
@@ -22508,6 +22522,14 @@ with pkgs;
   liboping = callPackage ../development/libraries/liboping { };
 
   libplist = callPackage ../development/libraries/libplist { };
+
+  libqtdbusmock = libsForQt5.callPackage ../development/libraries/libqtdbusmock {
+    inherit (lomiri) cmake-extras;
+  };
+
+  libqtdbustest = libsForQt5.callPackage ../development/libraries/libqtdbustest {
+    inherit (lomiri) cmake-extras;
+  };
 
   libre = callPackage ../development/libraries/libre { };
 
@@ -24243,7 +24265,7 @@ with pkgs;
 
   rocksdb_lite = rocksdb.override { enableLite = true; };
 
-  rocksdb_6_23 = rocksdb.overrideAttrs (_: rec {
+  rocksdb_6_23 = rocksdb.overrideAttrs rec {
     pname = "rocksdb";
     version = "6.23.3";
     src = fetchFromGitHub {
@@ -24252,7 +24274,7 @@ with pkgs;
       rev = "v${version}";
      sha256 = "sha256-SsDqhjdCdtIGNlsMj5kfiuS3zSGwcxi4KV71d95h7yk=";
    };
-  });
+  };
 
   rotate-backups = callPackage ../tools/backup/rotate-backups { };
 
@@ -25497,11 +25519,11 @@ with pkgs;
 
   sqitchMysql = (callPackage ../development/tools/misc/sqitch {
     mysqlSupport = true;
-  }).overrideAttrs (_: { pname = "sqitch-mysql"; });
+  }).overrideAttrs { pname = "sqitch-mysql"; };
 
   sqitchPg = (callPackage ../development/tools/misc/sqitch {
     postgresqlSupport = true;
-  }).overrideAttrs (_: { pname = "sqitch-pg"; });
+  }).overrideAttrs { pname = "sqitch-pg"; };
 
   ### DEVELOPMENT / R MODULES
 
@@ -26738,7 +26760,10 @@ with pkgs;
 
   smcroute = callPackage ../servers/smcroute { };
 
-  snipe-it = callPackage ../servers/web-apps/snipe-it { };
+  snipe-it = callPackage ../servers/web-apps/snipe-it {
+    php = php81;
+    phpPackages = php81Packages;
+  };
 
   sogo = callPackage ../servers/web-apps/sogo { };
 
@@ -27475,13 +27500,13 @@ with pkgs;
   inherit (callPackages ../os-specific/linux/kernel-headers { inherit (pkgsBuildBuild) elf-header; })
     linuxHeaders makeLinuxHeaders;
 
-  linuxHeaders_5_19 = linuxHeaders.overrideAttrs (_: rec {
+  linuxHeaders_5_19 = linuxHeaders.overrideAttrs rec {
     version = "5.19.16";
     src = fetchurl {
       url = "mirror://kernel/linux/kernel/v5.x/linux-${version}.tar.xz";
       sha256 = "13g0c6ljxk3sd0ja39ndih5vrzp2ssj78qxaf8nswn8hgrkazsx1";
     };
-  });
+  };
 
   klibc = callPackage ../os-specific/linux/klibc { };
 
@@ -28065,6 +28090,8 @@ with pkgs;
   scanmem = callPackage ../tools/misc/scanmem { };
 
   schedtool = callPackage ../os-specific/linux/schedtool { };
+
+  sddm-chili-theme = libsForQt5.callPackage ../data/themes/chili-sddm { };
 
   sdparm = callPackage ../os-specific/linux/sdparm { };
 
@@ -32414,10 +32441,10 @@ with pkgs;
     # telegram-desktop has random crashes when jemalloc is built with gcc.
     # Apparently, it triggers some bug due to usage of gcc's builtin
     # functions like __builtin_ffsl by jemalloc when it's built with gcc.
-    jemalloc = (jemalloc.override { stdenv = clangStdenv; }).overrideAttrs(_: {
+    jemalloc = (jemalloc.override { stdenv = clangStdenv; }).overrideAttrs {
       # no idea how to fix the tests :(
       doCheck = false;
-    });
+    };
   };
 
   kotatogram-desktop-with-webkit = callPackage ../applications/networking/instant-messengers/telegram/kotatogram-desktop/with-webkit.nix { };
@@ -34192,7 +34219,7 @@ with pkgs;
 
   pwdsafety = callPackage ../tools/security/pwdsafety { };
 
-  pyrosimple = python3Packages.callPackage ../applications/networking/p2p/pyrosimple { };
+  pyrosimple = callPackage ../applications/networking/p2p/pyrosimple { };
 
   qbittorrent = libsForQt5.callPackage ../applications/networking/p2p/qbittorrent { };
   qbittorrent-nox = qbittorrent.override {
@@ -35423,12 +35450,12 @@ with pkgs;
         darwin = true;
       };
     };
-  }).overrideAttrs (_: rec {
+  }).overrideAttrs {
     pname = "vim-darwin";
     meta = {
       platforms = lib.platforms.darwin;
     };
-  });
+  };
 
   vimacs = callPackage ../applications/editors/vim/vimacs.nix { };
 
@@ -35643,6 +35670,8 @@ with pkgs;
   wafw00f = callPackage ../tools/security/wafw00f { };
 
   whispers = with python3Packages; toPythonApplication whispers;
+
+  whisper-ctranslate2 = callPackage ../tools/audio/whisper-ctranslate2 { };
 
   waon = callPackage ../applications/audio/waon { };
 
@@ -36217,9 +36246,7 @@ with pkgs;
 
   zim = callPackage ../applications/office/zim { };
 
-  zine = callPackage ../applications/misc/zine {
-    inherit (darwin.apple_sdk.frameworks) CoreServices Security;
-  };
+  zine = callPackage ../applications/misc/zine { };
 
   zita-ajbridge = callPackage ../applications/audio/zita-ajbridge { };
 
@@ -36361,7 +36388,7 @@ with pkgs;
     boost = boost175;
     inherit (darwin) autoSignDarwinBinariesHook;
   };
-  elementsd-simplicity = elementsd.overrideAttrs (_: rec {
+  elementsd-simplicity = elementsd.overrideAttrs {
     version = "unstable-2023-04-18";
     src = fetchFromGitHub {
       owner = "ElementsProject";
@@ -36369,7 +36396,7 @@ with pkgs;
       rev = "ea318a45094ab3d31dd017d7781a6f28f1ffaa33"; # simplicity branch latest
       sha256 = "ooe+If3HWaJWpr2ux7DpiCTqB9Hv+aXjquEjplDjvhM=";
     };
-  });
+  };
 
   ergo = callPackage ../applications/blockchains/ergo { };
 
@@ -36477,7 +36504,7 @@ with pkgs;
     inherit (darwin.apple_sdk.frameworks) Security;
   };
 
-  taro = callPackage ../applications/blockchains/taro { };
+  taproot-assets = callPackage ../applications/blockchains/taproot-assets { };
 
   inherit (callPackages ../applications/blockchains/teos { })
     teos
@@ -36601,6 +36628,8 @@ with pkgs;
   blockattack = callPackage ../games/blockattack { } ;
 
   colobot = callPackage ../games/colobot { };
+
+  corsix-th = callPackage ../games/corsix-th { };
 
   enigma = callPackage ../games/enigma { };
 
@@ -37954,6 +37983,8 @@ with pkgs;
 
   gnustep = recurseIntoAttrs (callPackage ../desktops/gnustep { });
 
+  lomiri = recurseIntoAttrs (callPackage ../desktops/lomiri { });
+
   lumina = recurseIntoAttrs (callPackage ../desktops/lumina { });
 
   ### DESKTOPS/LXDE
@@ -38799,7 +38830,7 @@ with pkgs;
   ifstat-legacy = callPackage ../tools/networking/ifstat-legacy { };
 
   isabelle = callPackage ../applications/science/logic/isabelle {
-    polyml = polyml.overrideAttrs (_: {
+    polyml = polyml.overrideAttrs {
       pname = "polyml-for-isabelle";
       version = "2022";
       configureFlags = [ "--enable-intinf-as-int" "--with-gmp" "--disable-shared" ];
@@ -38810,7 +38841,7 @@ with pkgs;
         rev = "bafe319bc3a65bf63bd98a4721a6f4dd9e0eabd6";
         sha256 = "1ygs09zzq8icq1gc8qf4sb24lxx7sbcyd5hw3vw67a3ryaki0qw2";
       };
-    });
+    };
 
     java = openjdk17;
   };
@@ -38982,6 +39013,8 @@ with pkgs;
   geda = callPackage ../applications/science/electronics/geda {
     guile = guile_2_0;
   };
+
+  gedit = callPackage ../applications/editors/gedit { };
 
   gerbv = callPackage ../applications/science/electronics/gerbv {
     cairo = cairo.override { x11Support = true; };
@@ -40044,6 +40077,8 @@ with pkgs;
 
   resp-app = libsForQt5.callPackage ../applications/misc/resp-app { };
 
+  responder = callPackage ../tools/security/responder { };
+
   resumed = callPackage ../applications/misc/resumed { };
 
   robin-map = callPackage ../development/libraries/robin-map { };
@@ -40913,13 +40948,13 @@ with pkgs;
 
   phonetisaurus = callPackage ../development/libraries/phonetisaurus {
     # https://github.com/AdolfVonKleist/Phonetisaurus/issues/70
-    openfst = openfst.overrideAttrs (_: rec {
+    openfst = openfst.overrideAttrs rec {
       version = "1.7.9";
       src = fetchurl {
         url = "http://www.openfst.org/twiki/pub/FST/FstDownload/openfst-${version}.tar.gz";
         sha256 = "1pmx1yhn2gknj0an0zwqmzgwjaycapi896244np50a8y3nrsw6ck";
       };
-    });
+    };
   };
 
   duti = callPackage ../os-specific/darwin/duti {
