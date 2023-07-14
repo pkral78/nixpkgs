@@ -2561,6 +2561,12 @@
       }
     ];
   };
+  CaitlinDavitt = {
+    email = "CaitlinDavitt@gmail.com";
+    github = "CaitlinDavitt";
+    githubId = 48105979;
+    name = "Caitlin Davitt";
+  };
   calavera = {
     email = "david.calavera@gmail.com";
     github = "calavera";
@@ -2845,6 +2851,13 @@
     githubId = 6608071;
     name = "Charles Huyghues-Despointes";
   };
+  chayleaf = {
+    email = "chayleaf-nix@pavluk.org";
+    github = "chayleaf";
+    githubId = 9590981;
+    matrix = "@chayleaf:matrix.pavluk.org";
+    name = "Anna Pavlyuk";
+  };
   chekoopa = {
     email = "chekoopa@mail.ru";
     github = "chekoopa";
@@ -2895,6 +2908,12 @@
     github = "chivay";
     githubId = 14790226;
     name = "Hubert Jasudowicz";
+  };
+  c-h-johnson = {
+    name = "Charles Johnson";
+    email = "charles@charlesjohnson.name";
+    github = "c-h-johnson";
+    githubId = 138403247;
   };
   chkno = {
     email = "scottworley@scottworley.com";
@@ -6060,6 +6079,12 @@
     github = "gnxlxnxx";
     githubId = 25820499;
     name = "Roman Kretschmer";
+  };
+  goatchurchprime = {
+    email = "julian@goatchurch.org.uk";
+    github = "goatchurchprime";
+    githubId = 677254;
+    name = "Julian Todd";
   };
   gobidev = {
     email = "adrian.groh@t-online.de";
@@ -12038,6 +12063,12 @@
     githubId = 2946283;
     name = "Brian Cohen";
   };
+  nova-madeline = {
+    matrix = "@nova:tchncs.de";
+    github = "nova-r";
+    githubId = 126072875;
+    name = "nova madeline";
+  };
   novenary = {
     email = "streetwalkermc@gmail.com";
     github = "9ary";
@@ -12375,6 +12406,12 @@
     github = "orbitz";
     githubId = 75299;
     name = "Malcolm Matalka";
+  };
+  orichter = {
+    email = "richter-oliver@gmx.net";
+    github = "RichterOliver";
+    githubId = 135209509;
+    name = "Oliver Richter";
   };
   orivej = {
     email = "orivej@gmx.fr";
@@ -16362,6 +16399,12 @@
     github = "thielema";
     githubId = 898989;
   };
+  thillux = {
+    name = "Markus Theil";
+    email = "theil.markus@gmail.com";
+    github = "thillux";
+    githubId = 2171995;
+  };
   thilobillerbeck = {
     name = "Thilo Billerbeck";
     email = "thilo.billerbeck@officerent.de";
@@ -17249,7 +17292,7 @@
     githubId = 7953163;
     name = "Vika Shleina";
     keys = [{
-      fingerprint = "B3C0 DA1A C18B 82E8 CA8B  B1D1 4F62 CD07 CE64 796A";
+      fingerprint = "5814 50EB 6E17 E715 7C63  E7F1 9879 8C3C 4D68 8D6D";
     }];
   };
   vincentbernat = {

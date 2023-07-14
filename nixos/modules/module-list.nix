@@ -160,6 +160,7 @@
   ./programs/darling.nix
   ./programs/dconf.nix
   ./programs/digitalbitbox/default.nix
+  ./programs/direnv.nix
   ./programs/dmrconfig.nix
   ./programs/droidcam.nix
   ./programs/environment.nix
@@ -1107,6 +1108,7 @@
   ./services/security/clamav.nix
   ./services/security/endlessh-go.nix
   ./services/security/endlessh.nix
+  ./services/security/esdm.nix
   ./services/security/fail2ban.nix
   ./services/security/fprintd.nix
   ./services/security/haka.nix
