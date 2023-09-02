@@ -2732,9 +2732,12 @@
   };
   CardboardTurkey = {
     name = "Kiran Ostrolenk";
-    email = "kostrolenk@gmail.com";
+    email = "kiran@ostrolenk.co.uk";
     github = "CardboardTurkey";
     githubId = 34030186;
+    keys = [{
+      fingerprint = "8BC7 74E4 A2EC 7507 3B61  A647 0BBB 1C8B 1C36 39EE";
+    }];
   };
   carlosdagos = {
     email = "m@cdagostino.io";
@@ -5814,6 +5817,12 @@
     githubId = 7551358;
     name = "Frede Emil";
   };
+  frederictobiasc = {
+    email = "dev@ntr.li";
+    github = "frederictobiasc";
+    githubId = 26125115;
+    name = "Frédéric Christ";
+  };
   Freed-Wu = {
     email = "wuzhenyu@ustc.edu";
     github = "Freed-Wu";
@@ -6317,6 +6326,12 @@
     github = "globin";
     githubId = 1447245;
     name = "Robin Gloster";
+  };
+  gmemstr = {
+    email = "git@gmem.ca";
+    github = "gmemstr";
+    githubId = 1878840;
+    name = "Gabriel Simmer";
   };
   gnxlxnxx = {
     email = "gnxlxnxx@web.de";
@@ -17613,6 +17628,15 @@
     github = "twitchyliquid64";
     githubId = 6328589;
   };
+  twz123 = {
+    name = "Tom Wieczorek";
+    email = "tom@bibbu.net";
+    github = "twz123";
+    githubId = 1215104;
+    keys = [{
+      fingerprint = "B1FD 4E2A 84B2 2379 F4BF  2EF5 FE33 A228 2371 E831";
+    }];
+  };
   tylerjl = {
     email = "tyler+nixpkgs@langlois.to";
     github = "tylerjl";
@@ -17982,6 +18006,12 @@
     keys = [{
       fingerprint = "5814 50EB 6E17 E715 7C63  E7F1 9879 8C3C 4D68 8D6D";
     }];
+  };
+  viktornordling = {
+    email = "antique_paler_0i@icloud.com";
+    github = "viktornordling";
+    githubId = 90482;
+    name = "Viktor Nordling";
   };
   viluon = {
     email = "nix@viluon.me";
@@ -18974,6 +19004,12 @@
     github = "umazalakain";
     githubId = 1319905;
     name = "Uma Zalakain";
+  };
+  zaldnoay = {
+    email = "zunway@outlook.com";
+    github = "zaldnoay";
+    githubId = 5986078;
+    name = "Zunway Liang";
   };
   zanculmarktum = {
     name = "Azure Zanculmarktum";

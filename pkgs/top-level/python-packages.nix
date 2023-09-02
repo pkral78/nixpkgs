@@ -580,6 +580,8 @@ self: super: with self; {
 
   apipkg = callPackage ../development/python-modules/apipkg { };
 
+  apischema = callPackage ../development/python-modules/apischema { };
+
   apispec = callPackage ../development/python-modules/apispec { };
 
   apispec-webframeworks = callPackage ../development/python-modules/apispec-webframeworks { };
@@ -1213,6 +1215,8 @@ self: super: with self; {
 
   paddle2onnx = callPackage ../development/python-modules/paddle2onnx { };
 
+  paddleocr = callPackage ../development/python-modules/paddleocr { };
+
   paddlepaddle = callPackage ../development/python-modules/paddlepaddle { };
 
   pulumi = callPackage ../development/python-modules/pulumi { inherit (pkgs) pulumi; };
@@ -1465,6 +1469,8 @@ self: super: with self; {
   blockdiag = callPackage ../development/python-modules/blockdiag { };
 
   block-io = callPackage ../development/python-modules/block-io { };
+
+  blockfrost-python = callPackage ../development/python-modules/blockfrost-python { };
 
   blocksat-cli = callPackage ../development/python-modules/blocksat-cli { };
 
@@ -2236,6 +2242,8 @@ self: super: with self; {
   cornice = callPackage ../development/python-modules/cornice { };
 
   corsair-scan = callPackage ../development/python-modules/corsair-scan { };
+
+  cose = callPackage ../development/python-modules/cose { };
 
   cot = callPackage ../development/python-modules/cot { };
 
@@ -7976,6 +7984,8 @@ self: super: with self; {
 
   pkgutil-resolve-name = callPackage ../development/python-modules/pkgutil-resolve-name { };
 
+  pkg-about = callPackage ../development/python-modules/pkg-about { };
+
   micloud = callPackage ../development/python-modules/micloud { };
 
   mqtt2influxdb = callPackage ../development/python-modules/mqtt2influxdb { };
@@ -8183,6 +8193,8 @@ self: super: with self; {
   pyheck = callPackage ../development/python-modules/pyheck { };
 
   pyheos = callPackage ../development/python-modules/pyheos { };
+
+  pyhepmc = callPackage ../development/python-modules/pyhepmc { };
 
   pyhiveapi = callPackage ../development/python-modules/pyhiveapi { };
 
@@ -8535,6 +8547,8 @@ self: super: with self; {
 
   process-tests = callPackage ../development/python-modules/process-tests { };
 
+  procmon-parser = callPackage ../development/python-modules/procmon-parser { };
+
   proglog = callPackage ../development/python-modules/proglog { };
 
   progressbar2 = callPackage ../development/python-modules/progressbar2 { };
@@ -8886,6 +8900,8 @@ self: super: with self; {
 
   py-cpuinfo = callPackage ../development/python-modules/py-cpuinfo { };
 
+  pycardano = callPackage ../development/python-modules/pycardano { };
+
   pycrc = callPackage ../development/python-modules/pycrc { };
 
   pycritty = callPackage ../development/python-modules/pycritty { };
@@ -8964,6 +8980,8 @@ self: super: with self; {
 
   pydigiham = callPackage ../development/python-modules/pydigiham { };
 
+  pydiscourse = callPackage ../development/python-modules/pydiscourse { };
+
   pydispatcher = callPackage ../development/python-modules/pydispatcher { };
 
   pydmd = callPackage ../development/python-modules/pydmd { };
@@ -8979,6 +8997,8 @@ self: super: with self; {
   pydot = callPackage ../development/python-modules/pydot {
     inherit (pkgs) graphviz;
   };
+
+  pydrawise = callPackage ../development/python-modules/pydrawise { };
 
   pydrive2 = callPackage ../development/python-modules/pydrive2 { };
 
