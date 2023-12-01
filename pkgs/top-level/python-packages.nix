@@ -228,7 +228,11 @@ self: super: with self; {
 
   aiohttp-basicauth = callPackage ../development/python-modules/aiohttp-basicauth { };
 
+  aiohttp-client-cache = callPackage ../development/python-modules/aiohttp-client-cache { };
+
   aiohttp-cors = callPackage ../development/python-modules/aiohttp-cors { };
+
+  aiohttp-fast-url-dispatcher = callPackage ../development/python-modules/aiohttp-fast-url-dispatcher { };
 
   aiohttp-jinja2 = callPackage ../development/python-modules/aiohttp-jinja2 { };
 
@@ -3416,6 +3420,8 @@ self: super: with self; {
 
   dynd = callPackage ../development/python-modules/dynd { };
 
+  e3-core = callPackage ../development/python-modules/e3-core { };
+
   eagle100 = callPackage ../development/python-modules/eagle100 { };
 
   easydict = callPackage ../development/python-modules/easydict { };
@@ -4366,6 +4372,8 @@ self: super: with self; {
   gehomesdk = callPackage ../development/python-modules/gehomesdk { };
 
   gekitchen = callPackage ../development/python-modules/gekitchen { };
+
+  gekko = callPackage ../development/python-modules/gekko { };
 
   gemfileparser = callPackage ../development/python-modules/gemfileparser { };
 
@@ -6106,6 +6114,8 @@ self: super: with self; {
 
   ldaptor = callPackage ../development/python-modules/ldaptor { };
 
+  ldfparser = callPackage ../development/python-modules/ldfparser { };
+
   leather = callPackage ../development/python-modules/leather { };
 
   leb128 = callPackage ../development/python-modules/leb128 { };
@@ -6833,6 +6843,8 @@ self: super: with self; {
   mhcflurry = callPackage ../development/python-modules/mhcflurry { };
 
   mhcgnomes = callPackage ../development/python-modules/mhcgnomes { };
+
+  miauth = callPackage ../development/python-modules/miauth { };
 
   micawber = callPackage ../development/python-modules/micawber { };
 
@@ -8149,6 +8161,8 @@ self: super: with self; {
 
   nine = callPackage ../development/python-modules/nine { };
 
+  ninebot-ble = callPackage ../development/python-modules/ninebot-ble { };
+
   ninja = callPackage ../development/python-modules/ninja { inherit (pkgs) ninja; };
 
   nipy = callPackage ../development/python-modules/nipy { };
@@ -8854,8 +8868,6 @@ self: super: with self; {
   paypal-checkout-serversdk = callPackage ../development/python-modules/paypal-checkout-serversdk { };
 
   paypalhttp = callPackage ../development/python-modules/paypalhttp { };
-
-  paypalrestsdk = callPackage ../development/python-modules/paypalrestsdk { };
 
   pbkdf2 = callPackage ../development/python-modules/pbkdf2 { };
 
@@ -13417,6 +13429,8 @@ self: super: with self; {
 
   sqlmap = callPackage ../development/python-modules/sqlmap { };
 
+  sqlmodel = callPackage ../development/python-modules/sqlmodel { };
+
   sqlobject = callPackage ../development/python-modules/sqlobject { };
 
   sqlparse = callPackage ../development/python-modules/sqlparse { };
@@ -14127,10 +14141,6 @@ self: super: with self; {
   toposort = callPackage ../development/python-modules/toposort { };
 
   torch = callPackage ../development/python-modules/torch {
-    magma =
-      if pkgs.config.cudaSupport
-      then pkgs.magma-cuda-static
-      else pkgs.magma;
     inherit (pkgs.darwin.apple_sdk.frameworks) Accelerate CoreServices;
     inherit (pkgs.darwin) libobjc;
   };
@@ -14140,7 +14150,6 @@ self: super: with self; {
   };
 
   torchWithCuda = self.torch.override {
-    magma = pkgs.magma-cuda-static;
     openai-triton = self.openai-triton-cuda;
     cudaSupport = true;
     rocmSupport = false;
@@ -14151,7 +14160,6 @@ self: super: with self; {
   };
 
   torchWithRocm = self.torch.override {
-    magma = pkgs.magma-hip;
     openai-triton = self.openai-triton-no-cuda;
     rocmSupport = true;
     cudaSupport = false;
@@ -15178,6 +15186,8 @@ self: super: with self; {
   types-tabulate = callPackage ../development/python-modules/types-tabulate { };
 
   types-toml = callPackage ../development/python-modules/types-toml { };
+
+  types-tqdm = callPackage ../development/python-modules/types-tqdm { };
 
   types-typed-ast = callPackage ../development/python-modules/types-typed-ast { };
 
