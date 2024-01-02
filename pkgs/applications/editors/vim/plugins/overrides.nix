@@ -57,6 +57,8 @@
 , xxd
 , zathura
 , zsh
+, # codeium-nvim dependencies
+  codeium
 , # command-t dependencies
   getconf
 , ruby
@@ -311,6 +313,19 @@
     pname = "coc-nginx";
     inherit (nodePackages."@yaegassy/coc-nginx") version meta;
     src = "${nodePackages."@yaegassy/coc-nginx"}/lib/node_modules/@yaegassy/coc-nginx";
+  };
+
+  codeium-nvim = super.codeium-nvim.overrideAttrs {
+    dependencies = with self; [ nvim-cmp plenary-nvim ];
+    buildPhase = ''
+      cat << EOF > lua/codeium/installation_defaults.lua
+      return {
+        tools = {
+          language_server = "${codeium}/bin/codeium_language_server"
+        };
+      };
+      EOF
+    '';
   };
 
   command-t = super.command-t.overrideAttrs {
@@ -1052,12 +1067,12 @@
 
   sniprun =
     let
-      version = "1.3.9";
+      version = "1.3.10";
       src = fetchFromGitHub {
         owner = "michaelb";
         repo = "sniprun";
         rev = "refs/tags/v${version}";
-        hash = "sha256-g2zPGAJIjMDWn8FCsuRPZyYHDk+ZHCd04lGlYHvb4OI=";
+        hash = "sha256-7tDREZ8ZXYySHrXVOh+ANT23CknJQvZJ8WtU5r0pOOQ=";
       };
       sniprun-bin = rustPlatform.buildRustPackage {
         pname = "sniprun-bin";
@@ -1067,7 +1082,7 @@
           darwin.apple_sdk.frameworks.Security
         ];
 
-        cargoHash = "sha256-h/NhDFp+Yiyx37Tlfu0W9rMnd+ZmQp5gt+qhY3PB7DE=";
+        cargoHash = "sha256-n/HW+q4Xrme/ssS9Th5uFEUsDgkxRxKt2wSR8k08uHY=";
 
         nativeBuildInputs = [ makeWrapper ];
 
