@@ -9825,6 +9825,20 @@ with self; {
     };
   };
 
+  FileFcntlLock = buildPerlPackage {
+    pname = "File-FcntlLock";
+    version = "0.22";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/J/JT/JTT/File-FcntlLock-0.22.tar.gz";
+      hash = "sha256-mpq7Lv/5Orc3QaEo0/cA5SUnNUbBXQTnxRxwSrCdvN8=";
+    };
+    meta = {
+      description = "File locking with fcntl(2)";
+      license = with lib.licenses; [ artistic1 ];
+      maintainers = with maintainers; [ ajs124 das_j ];
+    };
+  };
+
   FileGrep = buildPerlPackage {
     pname = "File-Grep";
     version = "0.02";
@@ -21778,6 +21792,9 @@ with self; {
       description = "GNU C library compatible strftime for loggers and servers";
       homepage = "https://github.com/kazeburo/POSIX-strftime-Compiler";
       license = with lib.licenses; [ artistic1 gpl1Plus ];
+      broken = stdenv.hostPlatform.isMusl; # Broken for Musl at 2023-01-14, reports:
+               # Nixpkgs: https://github.com/NixOS/nixpkgs/issues/210749
+               # Upstream: https://github.com/kazeburo/POSIX-strftime-Compiler/issues/8
     };
   };
 
