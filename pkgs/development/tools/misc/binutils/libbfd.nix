@@ -1,5 +1,7 @@
-{ lib, stdenv
-, binutils-unwrapped-all-targets
+{
+  lib,
+  stdenv,
+  binutils-unwrapped-all-targets,
 }:
 
 stdenv.mkDerivation {
@@ -19,7 +21,7 @@ stdenv.mkDerivation {
   };
 
   meta = with lib; {
-    description = "A library for manipulating containers of machine code";
+    description = "Library for manipulating containers of machine code";
     longDescription = ''
       BFD is a library which provides a single interface to read and write
       object files, executables, archive files, and core files in any format.

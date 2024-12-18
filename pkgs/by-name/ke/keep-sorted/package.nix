@@ -1,29 +1,33 @@
-{ lib
-, buildGoModule
-, fetchFromGitHub
+{
+  lib,
+  buildGo123Module,
+  fetchFromGitHub,
+  nix-update-script,
 }:
 
-buildGoModule rec {
+buildGo123Module rec {
   pname = "keep-sorted";
-  version = "0.2.0";
+  version = "0.5.1";
 
   src = fetchFromGitHub {
     owner = "google";
     repo = "keep-sorted";
     rev = "v${version}";
-    hash = "sha256-bCV0XcwgyFTORl/RF1BS7vsM8DmU0Wox3OIEuZBrwSs=";
+    hash = "sha256-xvSEREEOiwft3fPN+xtdMCh+z3PknjJ962Nb+pw715U=";
   };
 
-  vendorHash = "sha256-yaeqfMAJbQdrqZ0uco6Y5T8vnfjlBJY4IQuGzZg3Ubw=";
+  vendorHash = "sha256-HTE9vfjRmi5GpMue7lUfd0jmssPgSOljbfPbya4uGsc=";
 
   CGO_ENABLED = "0";
 
-  ldfags = [ "-s" "-w" ];
+  ldflags = [ "-s" ];
 
-  checkFlags = [
-    # Test tries to find files using git
-    "-skip=^TestGoldens"
-  ];
+  preCheck = ''
+    # Test tries to find files using git in init func.
+    rm goldens/*_test.go
+  '';
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     changelog = "https://github.com/google/keep-sorted/releases/tag/v${version}";

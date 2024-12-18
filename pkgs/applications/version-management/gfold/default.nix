@@ -1,18 +1,14 @@
-{ fetchFromGitHub
-, gitMinimal
-, gfold
-, lib
-, libiconv
-, makeWrapper
-, rustPlatform
-, Security
-, stdenv
-, testers
+{
+  fetchFromGitHub,
+  gfold,
+  lib,
+  rustPlatform,
+  testers,
 }:
 
 let
   pname = "gfold";
-  version = "4.4.1";
+  version = "4.5.1";
 in
 rustPlatform.buildRustPackage {
   inherit pname version;
@@ -21,12 +17,10 @@ rustPlatform.buildRustPackage {
     owner = "nickgerace";
     repo = pname;
     rev = version;
-    sha256 = "sha256-KKuWPitm7oD2mXPSu2rbOyzwJ9JJ23LBQIIkkPHm1w4=";
+    hash = "sha256-lIEYz5ngARzpJ4I1iN2bGd4eha1BiSmREJG6Cy2Lqrs=";
   };
 
-  cargoHash = "sha256-wDUOYK9e0i600UnJ0w0FPI2GhTa/QTq/2+ICiDWrmEU=";
-
-  buildInputs = lib.optionals stdenv.isDarwin [ libiconv Security ];
+  cargoHash = "sha256-9/Ro5aYKJCJ+5wvv6PmfWMrhYfc3a3d0DAhGDwMrvq4=";
 
   passthru.tests.version = testers.testVersion {
     package = gfold;
@@ -35,11 +29,10 @@ rustPlatform.buildRustPackage {
   };
 
   meta = with lib; {
-    description =
-      "CLI tool to help keep track of your Git repositories, written in Rust";
+    description = "CLI tool to help keep track of your Git repositories, written in Rust";
     homepage = "https://github.com/nickgerace/gfold";
     license = licenses.asl20;
-    maintainers = [ maintainers.shanesveller ];
+    maintainers = [ maintainers.sigmanificient ];
     platforms = platforms.unix;
     mainProgram = "gfold";
   };

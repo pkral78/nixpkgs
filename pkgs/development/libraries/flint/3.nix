@@ -1,19 +1,25 @@
-{ lib
-, stdenv
-, fetchurl
-, gmp
-, mpfr
-, ntl
-, autoconf
-, automake
-, gettext
-, libtool
-, openblas ? null, blas, lapack
-, withBlas ? true
-, withNtl ? true
+{
+  lib,
+  stdenv,
+  fetchpatch,
+  fetchurl,
+  gmp,
+  mpfr,
+  ntl,
+  autoconf,
+  automake,
+  gettext,
+  libtool,
+  openblas ? null,
+  blas,
+  lapack,
+  withBlas ? true,
+  withNtl ? true,
 }:
 
-assert withBlas -> openblas != null && blas.implementation == "openblas" && lapack.implementation == "openblas";
+assert
+  withBlas
+  -> openblas != null && blas.implementation == "openblas" && lapack.implementation == "openblas";
 
 stdenv.mkDerivation rec {
   pname = "flint3";
@@ -24,21 +30,34 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-ezEaAFA6hjiB64F32+uEMi8pOZ89fXLzsaTJuh1XlLQ=";
   };
 
-  propagatedBuildInputs = [
+  patches = [
+    (fetchpatch {
+      url = "https://github.com/flintlib/flint/commit/e7d005c369754243cba32bd782ea2a5fc874fde5.diff";
+      hash = "sha256-IqEtYEpNVXfoTeerh/0ig+eDqUpAlGdBB3uO8ShYh3o=";
+    })
+  ];
+
+  nativeBuildInputs = [
     autoconf
     automake
     gettext
     libtool
   ];
 
-  buildInputs = [
-    gmp
+  propagatedBuildInputs = [
     mpfr
-  ] ++ lib.optionals withBlas [
-    openblas
-  ] ++ lib.optionals withNtl [
-    ntl
   ];
+
+  buildInputs =
+    [
+      gmp
+    ]
+    ++ lib.optionals withBlas [
+      openblas
+    ]
+    ++ lib.optionals withNtl [
+      ntl
+    ];
 
   # We're not using autoreconfHook because flint's bootstrap
   # script calls autoreconf, among other things.
@@ -47,14 +66,17 @@ stdenv.mkDerivation rec {
     ./bootstrap.sh
   '';
 
-  configureFlags = [
-    "--with-gmp=${gmp}"
-    "--with-mpfr=${mpfr}"
-  ] ++ lib.optionals withBlas [
-    "--with-blas=${openblas}"
-  ] ++ lib.optionals withNtl [
-    "--with-ntl=${ntl}"
-  ];
+  configureFlags =
+    [
+      "--with-gmp=${gmp}"
+      "--with-mpfr=${mpfr}"
+    ]
+    ++ lib.optionals withBlas [
+      "--with-blas=${openblas}"
+    ]
+    ++ lib.optionals withNtl [
+      "--with-ntl=${ntl}"
+    ];
 
   enableParallelBuilding = true;
 

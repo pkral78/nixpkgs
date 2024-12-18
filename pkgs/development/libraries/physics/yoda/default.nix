@@ -1,35 +1,43 @@
-{ lib
-, stdenv
-, fetchurl
-, python
-, root
-, makeWrapper
-, zlib
-, withRootSupport ? false
+{
+  lib,
+  stdenv,
+  fetchFromGitLab,
+  autoreconfHook,
+  python,
+  root,
+  makeWrapper,
+  zlib,
+  withRootSupport ? false,
 }:
 
 stdenv.mkDerivation rec {
   pname = "yoda";
-  version = "1.9.9";
+  version = "2.0.2";
 
-  src = fetchurl {
-    url = "https://www.hepforge.org/archive/yoda/YODA-${version}.tar.bz2";
-    hash = "sha256-68rVU2mhztzuOi3gWUB8hRZSukRJURP1wJ2MLlf1Fqo=";
+  src = fetchFromGitLab {
+    owner = "hepcedar";
+    repo = pname;
+    rev = "yoda-${version}";
+    hash = "sha256-sHvwgLH22fvdlh4oLjr4fzZ2WtBJMAlvr4Vxi9Xdf84=";
   };
 
   nativeBuildInputs = with python.pkgs; [
+    autoreconfHook
     cython
     makeWrapper
   ];
 
-  buildInputs = [
-    python
-  ] ++ (with python.pkgs; [
-    numpy
-    matplotlib
-  ]) ++ lib.optionals withRootSupport [
-    root
-  ];
+  buildInputs =
+    [
+      python
+    ]
+    ++ (with python.pkgs; [
+      numpy
+      matplotlib
+    ])
+    ++ lib.optionals withRootSupport [
+      root
+    ];
 
   propagatedBuildInputs = [
     zlib

@@ -1,23 +1,27 @@
-{ lib
-, stdenv
-, fetchFromGitLab
-, autoreconfHook
-, libarchive
-, pkg-config
+{
+  lib,
+  stdenv,
+  fetchFromGitLab,
+  autoreconfHook,
+  libarchive,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "unrar-free";
-  version = "0.1.3";
+  version = "0.3.1";
 
   src = fetchFromGitLab {
     owner = "bgermann";
     repo = "unrar-free";
     rev = finalAttrs.version;
-    hash = "sha256-pNcbbHFcEzXKGKUg9nLM3NuUCgZFmFjFa4dXmUuuLYo";
+    hash = "sha256-Dg+KGZcqbE1nBPaemZlWQPaUQQJmaSe0nyDQRXJzwuE=";
   };
 
-  nativeBuildInputs = [ autoreconfHook pkg-config ];
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
 
   buildInputs = [ libarchive ];
 
@@ -34,9 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
     '';
     homepage = "https://gitlab.com/bgermann/unrar-free";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "unrar";
+    mainProgram = "unrar-free";
     maintainers = with lib.maintainers; [ thiagokokada ];
     platforms = lib.platforms.unix;
-    broken = stdenv.isDarwin;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

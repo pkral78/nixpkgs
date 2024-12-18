@@ -3,11 +3,11 @@
 
 stdenv.mkDerivation rec {
   pname = "fwts";
-  version = "23.11.00";
+  version = "24.09.00";
 
   src = fetchzip {
     url = "https://fwts.ubuntu.com/release/${pname}-V${version}.tar.gz";
-    sha256 = "sha256-3cusxMFIYGKJ+ocQPc77bzHkyQhikLo1szSgE59aK9s=";
+    sha256 = "sha256-ZJSlx8O38e7bJYTgZacayslr28TLHHJsISXq9Uzsnyc=";
     stripRoot = false;
   };
 
@@ -32,7 +32,7 @@ stdenv.mkDerivation rec {
     homepage = "https://wiki.ubuntu.com/FirmwareTestSuite";
     description = "Firmware Test Suite";
     platforms = platforms.linux;
-    license = licenses.gpl2;
+    license = licenses.gpl2Plus;
     maintainers = with maintainers; [ tadfisher ];
   };
 }

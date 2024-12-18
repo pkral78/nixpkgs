@@ -15,23 +15,24 @@
 , libadwaita
 , dmidecode
 , util-linux
+, nix-update-script
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "resources";
-  version = "1.3.0";
+  version = "1.7.1";
 
   src = fetchFromGitHub {
     owner = "nokyan";
     repo = "resources";
     rev = "refs/tags/v${finalAttrs.version}";
-    hash = "sha256-57GsxLxnaQ9o3Dux2fTNWUmhOMs6waYvtV6260CM5fo=";
+    hash = "sha256-SHawaH09+mDovFiznZ+ZkUgUbv5tQGcXBgUGrdetOcA=";
   };
 
   cargoDeps = rustPlatform.fetchCargoTarball {
     inherit (finalAttrs) src;
     name = "resources-${finalAttrs.version}";
-    hash = "sha256-bHzijXjvbmYltNHevhddz5TCYKg2OMRn+Icb77F18XU=";
+    hash = "sha256-tUD+gx9nQiGWKKRPcR7OHbPvU2j1dQjYck7FF9vYqSQ=";
   };
 
   nativeBuildInputs = [
@@ -65,13 +66,17 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "profile" "default")
   ];
 
+  passthru = {
+    updateScript = nix-update-script { };
+  };
+
   meta = {
-    changelog = "https://github.com/nokyan/resources/releases/tag/${finalAttrs.version}";
+    changelog = "https://github.com/nokyan/resources/releases/tag/v${finalAttrs.version}";
     description = "Monitor your system resources and processes";
     homepage = "https://github.com/nokyan/resources";
     license = lib.licenses.gpl3Only;
     mainProgram = "resources";
-    maintainers = with lib.maintainers; [ lukas-heiligenbrunner ewuuwe ];
+    maintainers = with lib.maintainers; [ lukas-heiligenbrunner ewuuwe ] ++ lib.teams.gnome-circle.members;
     platforms = lib.platforms.linux;
   };
 })

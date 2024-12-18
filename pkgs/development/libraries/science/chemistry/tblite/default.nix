@@ -1,17 +1,20 @@
-{ stdenv
-, lib
-, fetchFromGitHub
-, fetchpatch
-, cmake
-, gfortran
-, blas
-, lapack
-, mctc-lib
-, mstore
-, toml-f
-, multicharge
-, dftd4
-, simple-dftd3
+{
+  stdenv,
+  lib,
+  fetchFromGitHub,
+  fetchpatch,
+  gfortran,
+  meson,
+  ninja,
+  pkg-config,
+  blas,
+  lapack,
+  mctc-lib,
+  mstore,
+  toml-f,
+  multicharge,
+  dftd4,
+  simple-dftd3,
 }:
 
 assert !blas.isILP64 && !lapack.isILP64;
@@ -35,13 +38,12 @@ stdenv.mkDerivation rec {
     })
   ];
 
-  # Fix the Pkg-Config files for doubled store paths
-  postPatch = ''
-    substituteInPlace config/template.pc \
-      --replace "\''${prefix}/" ""
-  '';
-
-  nativeBuildInputs = [ cmake gfortran ];
+  nativeBuildInputs = [
+    gfortran
+    meson
+    ninja
+    pkg-config
+  ];
 
   buildInputs = [
     blas
@@ -54,10 +56,9 @@ stdenv.mkDerivation rec {
     simple-dftd3
   ];
 
-  outputs = [ "out" "dev" ];
-
-  cmakeFlags = [
-    "-DBUILD_SHARED_LIBS=${if stdenv.hostPlatform.isStatic then "OFF" else "ON"}"
+  outputs = [
+    "out"
+    "dev"
   ];
 
   doCheck = true;
@@ -67,7 +68,11 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     description = "Light-weight tight-binding framework";
-    license = with licenses; [ gpl3Plus lgpl3Plus ];
+    mainProgram = "tblite";
+    license = with licenses; [
+      gpl3Plus
+      lgpl3Plus
+    ];
     homepage = "https://github.com/tblite/tblite";
     platforms = platforms.linux;
     maintainers = [ maintainers.sheepforce ];

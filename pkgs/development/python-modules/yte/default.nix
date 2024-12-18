@@ -1,17 +1,19 @@
-{ lib
-, buildPythonPackage
-, dpath
-, fetchFromGitHub
-, plac
-, poetry-core
-, pytestCheckHook
-, pythonOlder
-, pyyaml
+{
+  lib,
+  buildPythonPackage,
+  dpath,
+  fetchFromGitHub,
+  numpy,
+  plac,
+  poetry-core,
+  pytestCheckHook,
+  pythonOlder,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "yte";
-  version = "1.5.4";
+  version = "1.5.5";
   pyproject = true;
 
   disabled = pythonOlder "3.7";
@@ -20,30 +22,25 @@ buildPythonPackage rec {
     owner = "koesterlab";
     repo = "yte";
     rev = "refs/tags/v${version}";
-    hash = "sha256-Rm3EKxRZCdYErkyWK9+fF2W7C+v5/MXD/LkehmB6UNQ=";
+    hash = "sha256-vHrYWdyWBqonCBWg1X+lTVlOHS30/yYqZ9sVK3/2n5o=";
   };
 
-  nativeBuildInputs = [
-    poetry-core
-  ];
+  build-system = [ poetry-core ];
 
-  propagatedBuildInputs = [
+  dependencies = [
     dpath
     plac
     pyyaml
   ];
 
   nativeCheckInputs = [
+    numpy
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [
-    "yte"
-  ];
+  pythonImportsCheck = [ "yte" ];
 
-  pytestFlagsArray = [
-    "tests.py"
-  ];
+  pytestFlagsArray = [ "tests.py" ];
 
   preCheck = ''
     # The CLI test need yte on the PATH
@@ -54,7 +51,8 @@ buildPythonPackage rec {
     description = "YAML template engine with Python expressions";
     homepage = "https://github.com/koesterlab/yte";
     changelog = "https://github.com/yte-template-engine/yte/blob/v${version}/CHANGELOG.md";
-    license = with licenses; [ mit ];
+    license = licenses.mit;
     maintainers = with maintainers; [ fab ];
+    mainProgram = "yte";
   };
 }

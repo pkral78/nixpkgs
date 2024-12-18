@@ -1,21 +1,22 @@
-{ lib
-, stdenv
-, fetchFromGitHub
-, fetchpatch
-, cmake
-, pkg-config
-, boost
-, curl
-, geos
-, libspatialite
-, luajit
-, prime-server
-, protobuf
-, python3
-, sqlite
-, zeromq
-, zlib
-, testers
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  fetchpatch,
+  cmake,
+  pkg-config,
+  boost,
+  curl,
+  geos,
+  libspatialite,
+  luajit,
+  prime-server,
+  protobuf,
+  python3,
+  sqlite,
+  zeromq,
+  zlib,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -96,6 +97,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://valhalla.readthedocs.io/";
     license = licenses.mit;
     maintainers = [ maintainers.Thra11 ];
+    pkgConfigModules = [ "libvalhalla" ];
     platforms = platforms.linux;
   };
 })

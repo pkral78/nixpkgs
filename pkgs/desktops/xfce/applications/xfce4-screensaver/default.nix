@@ -1,21 +1,22 @@
-{ mkXfceDerivation
-, gobject-introspection
-, dbus-glib
-, garcon
-, glib
-, gtk3
-, libX11
-, libXScrnSaver
-, libXrandr
-, libwnck
-, libxfce4ui
-, libxfce4util
-, libxklavier
-, pam
-, python3
-, systemd
-, xfconf
-, lib
+{
+  mkXfceDerivation,
+  gobject-introspection,
+  dbus-glib,
+  garcon,
+  glib,
+  gtk3,
+  libX11,
+  libXScrnSaver,
+  libXrandr,
+  libwnck,
+  libxfce4ui,
+  libxfce4util,
+  libxklavier,
+  pam,
+  python3,
+  systemd,
+  xfconf,
+  lib,
 }:
 
 let
@@ -25,9 +26,9 @@ in
 mkXfceDerivation {
   category = "apps";
   pname = "xfce4-screensaver";
-  version = "4.18.2";
+  version = "4.18.3";
 
-  sha256 = "sha256-j5K5i+hl/miyHste73akZL62K6YTxXmN8mmFK9BCecs=";
+  sha256 = "sha256-hOhWJoiKoeRgkhXaR8rnDpcJpStMD4BBdll4nwSA+EQ=";
 
   nativeBuildInputs = [
     gobject-introspection

@@ -1,19 +1,20 @@
-{ bctoolbox
-, belcard
-, belle-sip
-, belr
-, cmake
-, fetchFromGitLab
-, lib
-, liblinphone
-, mediastreamer
-, mediastreamer-openh264
-, minizip-ng
-, mkDerivation
-, qtgraphicaleffects
-, qtmultimedia
-, qtquickcontrols2
-, qttools
+{
+  bctoolbox,
+  belcard,
+  belle-sip,
+  belr,
+  cmake,
+  fetchFromGitLab,
+  lib,
+  liblinphone,
+  mediastreamer,
+  mediastreamer-openh264,
+  minizip-ng,
+  mkDerivation,
+  qtgraphicaleffects,
+  qtmultimedia,
+  qtquickcontrols2,
+  qttools,
 }:
 
 # How to update Linphone? (The Qt desktop app)
@@ -134,6 +135,7 @@ mkDerivation rec {
   meta = with lib; {
     homepage = "https://www.linphone.org/";
     description = "Open source SIP phone for voice/video calls and instant messaging";
+    mainProgram = "linphone";
     license = licenses.gpl3Plus;
     platforms = platforms.linux;
     maintainers = with maintainers; [ jluttine ];

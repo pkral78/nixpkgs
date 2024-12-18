@@ -1,27 +1,38 @@
-{ pkgs
-, lib
-, stdenv
-, fetchFromGitHub
-, erlang
-, makeWrapper
-, coreutils
-, curl
-, bash
-, debugInfo ? false
-} @ inputs:
+{
+  pkgs,
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  erlang,
+  makeWrapper,
+  coreutils,
+  curl,
+  bash,
+  debugInfo ? false,
+}@inputs:
 
-{ baseName ? "elixir"
-, version
-, erlang ? inputs.erlang
-, minimumOTPVersion
-, sha256 ? null
-, rev ? "v${version}"
-, src ? fetchFromGitHub { inherit rev sha256; owner = "elixir-lang"; repo = "elixir"; }
-, escriptPath ? "lib/elixir/generate_app.escript"
-} @ args:
+{
+  baseName ? "elixir",
+  version,
+  erlang ? inputs.erlang,
+  minimumOTPVersion,
+  sha256 ? null,
+  rev ? "v${version}",
+  src ? fetchFromGitHub {
+    inherit rev sha256;
+    owner = "elixir-lang";
+    repo = "elixir";
+  },
+  escriptPath ? "lib/elixir/generate_app.escript",
+}@args:
 
 let
-  inherit (lib) getVersion versionAtLeast optional concatStringsSep;
+  inherit (lib)
+    getVersion
+    versionAtLeast
+    optional
+    concatStringsSep
+    ;
 
 in
 assert versionAtLeast (getVersion erlang) minimumOTPVersion;
@@ -39,8 +50,7 @@ stdenv.mkDerivation ({
 
   ERLC_OPTS =
     let
-      erlc_opts = [ "deterministic" ]
-        ++ optional debugInfo "debug_info";
+      erlc_opts = [ "deterministic" ] ++ optional debugInfo "debug_info";
     in
     "[${concatStringsSep "," erlc_opts}]";
 
@@ -59,7 +69,14 @@ stdenv.mkDerivation ({
       b=$(basename $f)
       if [ "$b" = mix ]; then continue; fi
       wrapProgram $f \
-        --prefix PATH ":" "${lib.makeBinPath [ erlang coreutils curl bash ]}"
+        --prefix PATH ":" "${
+          lib.makeBinPath [
+            erlang
+            coreutils
+            curl
+            bash
+          ]
+        }"
     done
 
     substituteInPlace $out/bin/mix \
@@ -69,7 +86,7 @@ stdenv.mkDerivation ({
   pos = builtins.unsafeGetAttrPos "sha256" args;
   meta = with lib; {
     homepage = "https://elixir-lang.org/";
-    description = "A functional, meta-programming aware language built on top of the Erlang VM";
+    description = "Functional, meta-programming aware language built on top of the Erlang VM";
 
     longDescription = ''
       Elixir is a functional, meta-programming aware language built on

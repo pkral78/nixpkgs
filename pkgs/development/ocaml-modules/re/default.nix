@@ -1,19 +1,27 @@
-{ lib, fetchurl, buildDunePackage, ocaml, ounit, seq }:
+{
+  lib,
+  fetchurl,
+  buildDunePackage,
+  ocaml,
+  ounit,
+  seq,
+}:
 
-let version_sha = if lib.versionAtLeast ocaml.version "4.08"
-  then
-    {
-      version = "1.11.0";
-      sha256 = "sha256-AfwkR4DA9r5yrnlrH7dQ82feGGJP110H7nl4LtbfjU8=";
-    }
-  else
-    {
-      version = "1.9.0";
-      sha256 = "1gas4ky49zgxph3870nffzkr6y41kkpqp4nj38pz1gh49zcf12aj";
-    };
+let
+  version_sha =
+    if lib.versionAtLeast ocaml.version "4.08" then
+      {
+        version = "1.11.0";
+        sha256 = "sha256-AfwkR4DA9r5yrnlrH7dQ82feGGJP110H7nl4LtbfjU8=";
+      }
+    else
+      {
+        version = "1.9.0";
+        sha256 = "1gas4ky49zgxph3870nffzkr6y41kkpqp4nj38pz1gh49zcf12aj";
+      };
 in
 
-buildDunePackage (rec {
+buildDunePackage rec {
   pname = "re";
   version = version_sha.version;
 
@@ -34,6 +42,4 @@ buildDunePackage (rec {
     license = lib.licenses.lgpl2;
     maintainers = with lib.maintainers; [ vbgl ];
   };
-} // lib.optionalAttrs (!lib.versionAtLeast ocaml.version "4.08") {
-  duneVersion = "1";
-})
+}

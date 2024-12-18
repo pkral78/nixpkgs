@@ -1,31 +1,32 @@
-{ lib
-, stdenv
-, openblas
-, blas
-, lapack
-, icu
-, cmake
-, pkg-config
-, fetchFromGitHub
-, python3
-, Accelerate
-, _experimental-update-script-combinators
-, common-updater-scripts
-, ripgrep
-, unstableGitUpdater
-, writeShellScript
+{
+  lib,
+  stdenv,
+  openblas,
+  blas,
+  lapack,
+  icu,
+  cmake,
+  pkg-config,
+  fetchFromGitHub,
+  python3,
+  Accelerate,
+  _experimental-update-script-combinators,
+  common-updater-scripts,
+  ripgrep,
+  unstableGitUpdater,
+  writeShellScript,
 }:
 
 assert blas.implementation == "openblas" && lapack.implementation == "openblas";
 stdenv.mkDerivation (finalAttrs: {
   pname = "kaldi";
-  version = "unstable-2023-11-13";
+  version = "0-unstable-2024-10-04";
 
   src = fetchFromGitHub {
     owner = "kaldi-asr";
     repo = "kaldi";
-    rev = "21ae411fd46282726d893e53c05fef5baea64fef";
-    sha256 = "sha256-oPP5znyWI9mYHpwLqHu5aiz5DOIZLcTbgaLiBjFiwrg=";
+    rev = "4a8b7f673275597fef8a15b160124bd0985b59bd";
+    sha256 = "sha256-CY40zkVP0ZTjOBjnmVyFdqaHdAxuGGH82GzudoA5MyM=";
   };
 
   cmakeFlags = [
@@ -36,12 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
     "-DFETCHCONTENT_SOURCE_DIR_OPENFST:PATH=${finalAttrs.passthru.sources.openfst}"
   ];
 
-  buildInputs = [
-    openblas
-    icu
-  ] ++ lib.optionals stdenv.isDarwin [
-    Accelerate
-  ];
+  buildInputs =
+    [
+      openblas
+      icu
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      Accelerate
+    ];
 
   nativeBuildInputs = [
     cmake
@@ -77,7 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
 
     updateScript =
       let
-        updateSource = unstableGitUpdater {};
+        updateSource = unstableGitUpdater { };
         updateOpenfst = writeShellScript "update-openfst" ''
           hash=$(${ripgrep}/bin/rg --multiline --pcre2 --only-matching 'FetchContent_Declare\(\s*openfst[^)]*GIT_TAG\s*([0-9a-f]{40})' --replace '$1' "${finalAttrs.src}/cmake/third_party/openfst.cmake")
           ${common-updater-scripts}/bin/update-source-version kaldi.sources.openfst "$hash" --source-key=out "--version-key=rev"

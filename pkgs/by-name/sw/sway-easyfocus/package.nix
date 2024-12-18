@@ -1,15 +1,16 @@
-{ lib
-, rustPlatform
-, fetchFromGitHub
-, pkg-config
-, wrapGAppsHook
-, atk
-, cairo
-, gdk-pixbuf
-, glib
-, gtk3
-, pango
-, gtk-layer-shell
+{
+  lib,
+  rustPlatform,
+  fetchFromGitHub,
+  pkg-config,
+  wrapGAppsHook3,
+  atk,
+  cairo,
+  gdk-pixbuf,
+  glib,
+  gtk3,
+  pango,
+  gtk-layer-shell,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -27,7 +28,7 @@ rustPlatform.buildRustPackage rec {
 
   nativeBuildInputs = [
     pkg-config
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
   buildInputs = [
@@ -41,10 +42,10 @@ rustPlatform.buildRustPackage rec {
   ];
 
   meta = {
-    description = "A tool to help efficiently focus windows in Sway, inspired by i3-easyfocus";
+    description = "Tool to help efficiently focus windows in Sway, inspired by i3-easyfocus";
     homepage = "https://github.com/edzdez/sway-easyfocus";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ eclairevoyant ];
+    maintainers = with lib.maintainers; [ ];
     mainProgram = "sway-easyfocus";
   };
 }

@@ -1,12 +1,11 @@
-{ lib, stdenv, fetchurl, zlib, readline, ncurses
+{ lib, stdenv, fetchurl, unzip, zlib, readline, ncurses
+, updateAutotoolsGnuConfigScriptsHook
 
 # for tests
-, python3Packages, sqldiff, sqlite-analyzer, tracker
+, python3Packages, sqldiff, sqlite-analyzer, tinysparql
 
 # uses readline & ncurses for a better interactive experience if set to true
 , interactive ? false
-# TODO: can be removed since 3.36 since it is the default now.
-, enableDeserialize ? false
 
 , gitUpdater
 }:
@@ -17,18 +16,23 @@ in
 
 stdenv.mkDerivation rec {
   pname = "sqlite${lib.optionalString interactive "-interactive"}";
-  version = "3.44.2";
+  version = "3.46.1";
 
   # nixpkgs-update: no auto update
   # NB! Make sure to update ./tools.nix src (in the same directory).
   src = fetchurl {
-    url = "https://sqlite.org/2023/sqlite-autoconf-${archiveVersion version}.tar.gz";
-    hash = "sha256-HGcZoUi8Qc8PK7vjkm184/XKCdh48SRvzCB2exdbtAc=";
+    url = "https://sqlite.org/2024/sqlite-autoconf-${archiveVersion version}.tar.gz";
+    hash = "sha256-Z9P+bSaObq3crjcn/OWPzI6cU4ab3Qegxh443fKWUHE=";
+  };
+  docsrc = fetchurl {
+    url = "https://sqlite.org/2024/sqlite-doc-${archiveVersion version}.zip";
+    hash = "sha256-6WkTH5PKefvGTVdyShA1c1iBVVpSYA2+acaeq3LJ/NE=";
   };
 
-  outputs = [ "bin" "dev" "out" ];
-  separateDebugInfo = stdenv.isLinux;
+  outputs = [ "bin" "dev" "man" "doc" "out" ];
+  separateDebugInfo = stdenv.hostPlatform.isLinux;
 
+  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook unzip ];
   buildInputs = [ zlib ] ++ lib.optionals interactive [ readline ncurses ];
 
   # required for aarch64 but applied for all arches for simplicity
@@ -54,9 +58,6 @@ stdenv.mkDerivation rec {
     "-DSQLITE_SECURE_DELETE"
     "-DSQLITE_MAX_VARIABLE_NUMBER=250000"
     "-DSQLITE_MAX_EXPR_DEPTH=10000"
-  ] ++ lib.optionals enableDeserialize [
-    # Can be removed in v3.36+, as this will become the default
-    "-DSQLITE_ENABLE_DESERIALIZE"
   ]);
 
   # Test for features which may not be available at compile time
@@ -75,7 +76,7 @@ stdenv.mkDerivation rec {
     fi
 
     # Necessary for FTS5 on Linux
-    export NIX_LDFLAGS="$NIX_LDFLAGS -lm"
+    export NIX_CFLAGS_LINK="$NIX_CFLAGS_LINK -lm"
 
     echo ""
     echo "NIX_CFLAGS_COMPILE = $NIX_CFLAGS_COMPILE"
@@ -85,6 +86,10 @@ stdenv.mkDerivation rec {
   postInstall = ''
     # Do not contaminate dependent libtool-based projects with sqlite dependencies.
     sed -i $out/lib/libsqlite3.la -e "s/dependency_libs=.*/dependency_libs='''/"
+
+    mkdir -p $doc/share/doc
+    unzip $docsrc
+    mv sqlite-doc-${archiveVersion version} $doc/share/doc/sqlite
   '';
 
   doCheck = false; # fails to link against tcl
@@ -92,7 +97,7 @@ stdenv.mkDerivation rec {
   passthru = {
     tests = {
       inherit (python3Packages) sqlalchemy;
-      inherit sqldiff sqlite-analyzer tracker;
+      inherit sqldiff sqlite-analyzer tinysparql;
     };
 
     updateScript = gitUpdater {
@@ -105,12 +110,12 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     changelog = "https://www.sqlite.org/releaselog/${lib.replaceStrings [ "." ] [ "_" ] version}.html";
-    description = "A self-contained, serverless, zero-configuration, transactional SQL database engine";
+    description = "Self-contained, serverless, zero-configuration, transactional SQL database engine";
     downloadPage = "https://sqlite.org/download.html";
     homepage = "https://www.sqlite.org/";
     license = licenses.publicDomain;
     mainProgram = "sqlite3";
-    maintainers = with maintainers; [ eelco np ];
+    maintainers = with maintainers; [ np ];
     platforms = platforms.unix ++ platforms.windows;
     pkgConfigModules = [ "sqlite3" ];
   };

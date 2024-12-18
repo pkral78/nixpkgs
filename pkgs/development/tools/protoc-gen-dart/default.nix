@@ -1,6 +1,7 @@
-{ lib
-, fetchFromGitHub
-, buildDartApplication
+{
+  lib,
+  fetchFromGitHub,
+  buildDartApplication,
 }:
 
 buildDartApplication rec {
@@ -17,8 +18,11 @@ buildDartApplication rec {
 
   pubspecLock = lib.importJSON ./pubspec.lock.json;
 
+  passthru.updateScript = ./update.sh;
+
   meta = with lib; {
     description = "Protobuf plugin for generating Dart code";
+    mainProgram = "protoc-gen-dart";
     homepage = "https://pub.dev/packages/protoc_plugin";
     license = licenses.bsd3;
     maintainers = with maintainers; [ lelgenio ];

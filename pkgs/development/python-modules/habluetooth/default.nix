@@ -1,46 +1,44 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, cython
-, poetry-core
-, setuptools
-, wheel
-, bleak
-, pytestCheckHook
-, bleak-retry-connector
-, bluetooth-adapters
-, bluetooth-auto-recovery
-, bluetooth-data-tools
-, pythonOlder
+{
+  lib,
+  async-interrupt,
+  bleak,
+  bleak-retry-connector,
+  bluetooth-adapters,
+  bluetooth-auto-recovery,
+  bluetooth-data-tools,
+  buildPythonPackage,
+  cython,
+  fetchFromGitHub,
+  poetry-core,
+  pytest-asyncio,
+  pytest-cov-stub,
+  pytestCheckHook,
+  pythonOlder,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "habluetooth";
-  version = "2.0.2";
+  version = "3.6.0";
   pyproject = true;
 
-  disabled = pythonOlder "3.9";
+  disabled = pythonOlder "3.11";
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
     repo = "habluetooth";
     rev = "refs/tags/v${version}";
-    hash = "sha256-3HyFKg+JR48MQrWmOjOQV2qhVHRHLnJHvtvBajXPDMg=";
+    hash = "sha256-ypE/PvJV29+P389wLKZUErqLRvy935dAZYeap7n1z4M=";
   };
 
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace " --cov=habluetooth --cov-report=term-missing:skip-covered" ""
-  '';
-
-  nativeBuildInputs = [
+  build-system = [
     cython
     poetry-core
     setuptools
-    wheel
   ];
 
-  propagatedBuildInputs = [
+  dependencies = [
+    async-interrupt
     bleak
     bleak-retry-connector
     bluetooth-adapters
@@ -49,12 +47,12 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [
-    "habluetooth"
-  ];
+  pythonImportsCheck = [ "habluetooth" ];
 
   meta = with lib; {
     description = "Library for high availability Bluetooth";

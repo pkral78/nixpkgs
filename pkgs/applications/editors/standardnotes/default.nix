@@ -1,5 +1,16 @@
-{ lib, stdenv, fetchurl, dpkg, makeWrapper, electron, libsecret
-, desktop-file-utils , callPackage }:
+{
+  lib,
+  stdenv,
+  fetchurl,
+  dpkg,
+  makeWrapper,
+  electron,
+  libsecret,
+  asar,
+  glib,
+  desktop-file-utils,
+  callPackage,
+}:
 
 let
 
@@ -21,38 +32,57 @@ stdenv.mkDerivation rec {
 
   dontBuild = true;
 
-  nativeBuildInputs = [ makeWrapper dpkg desktop-file-utils ];
+  nativeBuildInputs = [
+    makeWrapper
+    dpkg
+    desktop-file-utils
+    asar
+  ];
 
-  unpackPhase = "dpkg-deb --fsys-tarfile $src | tar -x --no-same-permissions --no-same-owner";
+  installPhase =
+    let
+      libPath = lib.makeLibraryPath [
+        libsecret
+        glib
+        (lib.getLib stdenv.cc.cc)
+      ];
+    in
+    ''
+      runHook preInstall
 
-  installPhase = ''
-    runHook preInstall
+      mkdir -p $out/bin $out/share/standardnotes
+      cp -R usr/share/{applications,icons} $out/share
+      cp -R opt/Standard\ Notes/resources/app.asar $out/share/standardnotes/
+      asar e $out/share/standardnotes/app.asar asar-unpacked
+      find asar-unpacked -name '*.node' -exec patchelf \
+        --add-rpath "${libPath}" \
+        {} \;
+      asar p asar-unpacked $out/share/standardnotes/app.asar
 
-    mkdir -p $out/bin $out/share/standardnotes
-    cp -R usr/share/{applications,icons} $out/share
-    cp -R opt/Standard\ Notes/resources/app.asar $out/share/standardnotes/
+      makeWrapper ${electron}/bin/electron $out/bin/standardnotes \
+        --add-flags $out/share/standardnotes/app.asar
 
-    makeWrapper ${electron}/bin/electron $out/bin/standardnotes \
-      --add-flags $out/share/standardnotes/app.asar \
-      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libsecret stdenv.cc.cc.lib ]}
+      ${desktop-file-utils}/bin/desktop-file-install --dir $out/share/applications \
+        --set-key Exec --set-value standardnotes usr/share/applications/standard-notes.desktop
 
-    ${desktop-file-utils}/bin/desktop-file-install --dir $out/share/applications \
-      --set-key Exec --set-value standardnotes usr/share/applications/standard-notes.desktop
+      runHook postInstall
+    '';
 
-    runHook postInstall
-  '';
-
-  passthru.updateScript = callPackage ./update.nix {};
+  passthru.updateScript = callPackage ./update.nix { };
 
   meta = with lib; {
-    description = "A simple and private notes app";
+    description = "Simple and private notes app";
     longDescription = ''
       Standard Notes is a private notes app that features unmatched simplicity,
       end-to-end encryption, powerful extensions, and open-source applications.
     '';
     homepage = "https://standardnotes.org";
-    license = licenses.agpl3;
-    maintainers = with maintainers; [ mgregoire chuangzhu squalus ];
+    license = licenses.agpl3Only;
+    maintainers = with maintainers; [
+      mgregoire
+      chuangzhu
+      squalus
+    ];
     sourceProvenance = [ sourceTypes.binaryNativeCode ];
     platforms = builtins.attrNames srcjson.deb;
     mainProgram = "standardnotes";

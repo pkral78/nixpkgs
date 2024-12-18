@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -7,7 +12,7 @@ let
 in
 {
   options.services.passSecretService = {
-    enable = mkEnableOption (lib.mdDoc "pass secret service");
+    enable = mkEnableOption "pass secret service";
 
     package = mkPackageOption pkgs "pass-secret-service" {
       example = "pass-secret-service.override { python3 = pkgs.python310 }";

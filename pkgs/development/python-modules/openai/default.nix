@@ -1,66 +1,69 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pythonOlder
-, pythonRelaxDepsHook
-, hatchling
-# propagated
-, httpx
-, pydantic
-, typing-extensions
-, anyio
-, distro
-, sniffio
-, tqdm
-# optional
-, numpy
-, pandas
-, pandas-stubs
-# tests
-, pytestCheckHook
-, pytest-asyncio
-, pytest-mock
-, respx
-, dirty-equals
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pythonOlder,
+
+  # build-system
+  hatchling,
+  hatch-fancy-pypi-readme,
+
+  # dependencies
+  anyio,
+  distro,
+  httpx,
+  jiter,
+  pydantic,
+  sniffio,
+  tqdm,
+  typing-extensions,
+
+  numpy,
+  pandas,
+  pandas-stubs,
+
+  # check deps
+  pytestCheckHook,
+  dirty-equals,
+  inline-snapshot,
+  nest-asyncio,
+  pytest-asyncio,
+  pytest-mock,
+  respx,
+
 }:
 
 buildPythonPackage rec {
   pname = "openai";
-  version = "1.6.1";
+  version = "1.57.4";
   pyproject = true;
 
-
-  disabled = pythonOlder "3.7.1";
+  disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "openai";
     repo = "openai-python";
     rev = "refs/tags/v${version}";
-    hash = "sha256-w5jj2XWTAbiu64NerLvDyGe9PybeE/WHkukoWT97SJE=";
+    hash = "sha256-djYvHEIieJPak8EY7c5hhMhTzxm/Prc4RSfrFjzHqI4=";
   };
 
-  nativeBuildInputs = [
+  build-system = [
     hatchling
-    pythonRelaxDepsHook
+    hatch-fancy-pypi-readme
   ];
 
-  pythonRelaxDeps = [
-    # https://github.com/openai/openai-python/issues/921
-    "anyio"
-  ];
-
-  propagatedBuildInputs = [
-    httpx
-    pydantic
+  dependencies = [
     anyio
     distro
+    httpx
+    jiter
+    pydantic
     sniffio
     tqdm
-  ] ++ lib.optionals (pythonOlder "3.8") [
     typing-extensions
   ];
 
-  passthru.optional-dependencies = {
+  optional-dependencies = {
     datalib = [
       numpy
       pandas
@@ -68,27 +71,31 @@ buildPythonPackage rec {
     ];
   };
 
-  pythonImportsCheck = [
-    "openai"
-  ];
+  pythonImportsCheck = [ "openai" ];
 
   nativeCheckInputs = [
     pytestCheckHook
+    dirty-equals
+    inline-snapshot
+    nest-asyncio
     pytest-asyncio
     pytest-mock
     respx
-    dirty-equals
   ];
 
   pytestFlagsArray = [
-    "-W" "ignore::DeprecationWarning"
+    "-W"
+    "ignore::DeprecationWarning"
   ];
 
-  OPENAI_API_KEY = "sk-foo";
+  disabledTests = [
+    # Tests make network requests
+    "test_copy_build_request"
+    "test_basic_attribute_access_works"
+  ];
 
   disabledTestPaths = [
-    # makes network requests
-    "tests/test_client.py"
+    # Test makes network requests
     "tests/api_resources"
   ];
 
@@ -98,5 +105,6 @@ buildPythonPackage rec {
     changelog = "https://github.com/openai/openai-python/releases/tag/v${version}";
     license = licenses.mit;
     maintainers = with maintainers; [ malo ];
+    mainProgram = "openai";
   };
 }
