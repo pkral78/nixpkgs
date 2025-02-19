@@ -1,25 +1,24 @@
-{ callPackage, makeFontsConf, gnome2, buildFHSEnv, tiling_wm ? false }:
+{ callPackage, makeFontsConf, buildFHSEnv, tiling_wm ? false }:
 
 let
   mkStudio = opts: callPackage (import ./common.nix opts) {
     fontsConf = makeFontsConf {
       fontDirectories = [];
     };
-    inherit (gnome2) GConf gnome_vfs;
     inherit buildFHSEnv;
     inherit tiling_wm;
   };
   stableVersion = {
-    version = "2023.1.1.27"; # "Android Studio Hedgehog | 2023.1.1 Patch 1"
-    sha256Hash = "sha256-XF+XyHGk7dPTBHKcx929qdFHu6hRJWFO382mh4SuWDs=";
+    version = "2024.2.2.13"; # "Android Studio Ladybug Feature Drop | 2024.2.2"
+    sha256Hash = "sha256-t/4e1KeVm9rKeo/VdGHbv5ogXrI8whjtgo7YjouZjLU=";
   };
   betaVersion = {
-    version = "2023.2.1.20"; # "Android Studio Iguana | 2023.2.1 Beta 2"
-    sha256Hash = "sha256-cFEPgFAKkFx0d7PC4fTElTQVrBZMQs0RL3wR+hqTh2I=";
+    version = "2024.3.1.10"; # "Android Studio Meerkat | 2024.3.1 Beta 1"
+    sha256Hash = "sha256-UxxofUCJGhQTLMwHGaSdNDqWnjkpRVwm2oqLLp3jR8E=";
   };
   latestVersion = {
-    version = "2023.3.1.3"; # "Android Studio Jellyfish | 2023.3.1 Canary 3"
-    sha256Hash = "sha256-cPCn9dsQ0v1C2bxXzPoxjuucsMtkeO8D6dVt8hcIluQ=";
+    version = "2024.3.2.2"; # "Android Studio Meerkat Feature Drop | 2024.3.2 Canary 2"
+    sha256Hash = "sha256-P0yBlqcuTSmJ4gmSvSCW31ARqDBC3NC8PozQHIXPS8Y=";
   };
 in {
   # Attributes are named by their corresponding release channels

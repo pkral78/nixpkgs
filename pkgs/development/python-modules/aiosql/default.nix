@@ -1,19 +1,20 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pg8000
-, pytest-asyncio
-, pytestCheckHook
-, pythonOlder
-, setuptools
-, setuptools-scm
-, sphinx-rtd-theme
-, sphinxHook
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pg8000,
+  pytest-asyncio,
+  pytestCheckHook,
+  pythonOlder,
+  setuptools,
+  setuptools-scm,
+  sphinx-rtd-theme,
+  sphinxHook,
 }:
 
 buildPythonPackage rec {
   pname = "aiosql";
-  version = "9.1";
+  version = "13.2";
   pyproject = true;
 
   disabled = pythonOlder "3.8";
@@ -26,8 +27,8 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "nackjicholson";
     repo = "aiosql";
-    rev = "refs/tags/${version}";
-    hash = "sha256-xcrNnp3ZfWLbz+/77N3R5x7N2n7nPcw0khqaIeHn0+Y=";
+    tag = version;
+    hash = "sha256-GJeYh3xPKrfm2oPsNTrQXnYW75Bx8PN5/brJFslOcTw=";
   };
 
   sphinxRoot = "docs/source";
@@ -39,9 +40,7 @@ buildPythonPackage rec {
     sphinxHook
   ];
 
-  propagatedBuildInputs = [
-    pg8000
-  ];
+  propagatedBuildInputs = [ pg8000 ];
 
   nativeCheckInputs = [
     pytest-asyncio
