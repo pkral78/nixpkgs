@@ -197,12 +197,12 @@ in rec {
 
   dracula = mkTmuxPlugin rec {
     pluginName = "dracula";
-    version = "3.0.0";
+    version = "3.1.0";
     src = fetchFromGitHub {
       owner = "dracula";
       repo = "tmux";
       rev = "v${version}";
-      hash = "sha256-VY4PyaQRwTc6LWhPJg4inrQf5K8+bp0+eqRhR7+Iexk=";
+      hash = "sha256-WNgCa8F618JQiHDM1YxHj7oR7w+7U6SU89K90RYIUh8=";
     };
     meta = with lib; {
       homepage = "https://draculatheme.com/tmux";
@@ -537,7 +537,8 @@ in rec {
       owner = "tmux-plugins";
       repo = "tmux-resurrect";
       rev = "ca6468e2deef11efadfe3a62832ae67742505432";
-      hash = "sha256-dkiIbTPIn3ampK7LItndOL69cMVfuJyOIQZL4lt58jQ=";
+      hash = "sha256-wl9/5XvFq+AjV8CwYgIZjPOE0/kIuEYBNQqNDidjNFo=";
+      fetchSubmodules = true;
     };
     meta = {
       homepage = "https://github.com/tmux-plugins/tmux-resurrect";

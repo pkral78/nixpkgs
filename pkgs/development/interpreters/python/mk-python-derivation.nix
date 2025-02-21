@@ -100,13 +100,13 @@ let
     "nativeCheckInputs"
     "doCheck"
     "doInstallCheck"
-    "dontWrapPythonPrograms"
-    "catchConflicts"
     "pyproject"
     "format"
     "disabledTestPaths"
     "disabledTests"
+    "pytestFlags"
     "pytestFlagsArray"
+    "unittestFlags"
     "unittestFlagsArray"
     "outputs"
     "stdenv"
@@ -118,8 +118,6 @@ let
 in
 
 {
-  name ? "${attrs.pname}-${attrs.version}",
-
   # Build-time dependencies for the package
   nativeBuildInputs ? [ ],
 
@@ -226,7 +224,7 @@ let
           throwMismatch =
             attrName: drv:
             let
-              myName = "'${namePrefix}${name}'";
+              myName = "'${finalAttrs.name}'";
               theirName = "'${drv.name}'";
               optionalLocation =
                 let
@@ -278,7 +276,9 @@ let
     (cleanAttrs attrs)
     // {
 
-      name = namePrefix + name;
+      name = namePrefix + attrs.name or "${finalAttrs.pname}-${finalAttrs.version}";
+
+      inherit catchConflicts;
 
       nativeBuildInputs =
         [
@@ -287,7 +287,7 @@ let
           ensureNewerSourcesForZipFilesHook # move to wheel installer (pip) or builder (setuptools, flit, ...)?
           pythonRemoveTestsDirHook
         ]
-        ++ optionals (catchConflicts && !isBootstrapPackage && !isSetuptoolsDependency) [
+        ++ optionals (finalAttrs.catchConflicts && !isBootstrapPackage && !isSetuptoolsDependency) [
           #
           # 1. When building a package that is also part of the bootstrap chain, we
           #    must ignore conflicts after installation, because there will be one with
@@ -384,8 +384,10 @@ let
       nativeInstallCheckInputs = nativeCheckInputs;
       installCheckInputs = checkInputs;
 
+      inherit dontWrapPythonPrograms;
+
       postFixup =
-        optionalString (!dontWrapPythonPrograms) ''
+        optionalString (!finalAttrs.dontWrapPythonPrograms) ''
           wrapPythonPrograms
         ''
         + attrs.postFixup or "";
@@ -435,15 +437,19 @@ let
     }
     // optionalAttrs (attrs.doCheck or true) (
       optionalAttrs (disabledTestPaths != [ ]) {
-        disabledTestPaths = escapeShellArgs disabledTestPaths;
+        disabledTestPaths = disabledTestPaths;
       }
       // optionalAttrs (attrs ? disabledTests) {
-        # `escapeShellArgs` should be used as well as `disabledTestPaths`,
-        # but some packages rely on existing raw strings.
         disabledTests = attrs.disabledTests;
+      }
+      // optionalAttrs (attrs ? pytestFlags) {
+          pytestFlags = attrs.pytestFlags;
       }
       // optionalAttrs (attrs ? pytestFlagsArray) {
         pytestFlagsArray = attrs.pytestFlagsArray;
+      }
+      // optionalAttrs (attrs ? unittestFlags) {
+          unittestFlags = attrs.unittestFlags;
       }
       // optionalAttrs (attrs ? unittestFlagsArray) {
         unittestFlagsArray = attrs.unittestFlagsArray;
