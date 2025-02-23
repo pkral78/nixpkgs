@@ -1,28 +1,29 @@
-{ lib
-, stdenv
-, cairo
-, cmake
-, fetchzip
-, freetype
-, libffi
-, libgit2
-, libpng
-, libuuid
-, makeBinaryWrapper
-, openssl
-, pixman
-, SDL2
+{
+  lib,
+  stdenv,
+  cairo,
+  cmake,
+  fetchzip,
+  freetype,
+  libffi,
+  libgit2,
+  libpng,
+  libuuid,
+  makeBinaryWrapper,
+  openssl,
+  pixman,
+  SDL2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pharo";
-  version = "10.0.9-de76067";
+  version = "10.3.1-6cdb1e5";
 
   src = fetchzip {
     # It is necessary to download from there instead of from the repository because that archive
     # also contains artifacts necessary for the bootstrapping.
     url = "https://files.pharo.org/vm/pharo-spur64-headless/Linux-x86_64/source/PharoVM-${finalAttrs.version}-Linux-x86_64-c-src.zip";
-    hash = "sha256-INeQGYCxBu7DvFmlDRXO0K2nhxcd9K9Xwp55iNdlvhk=";
+    hash = "sha256-Oskbo0ZMh2Wr8uY9BjA54AhFVDEuzs4AN8cpO02gdfY=";
   };
 
   strictDeps = true;
@@ -54,33 +55,42 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBUILD_BUNDLE=OFF"
   ];
 
-  installPhase =
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-Wno-incompatible-pointer-types"
+  ];
+
+  installPhase = ''
+    runHook preInstall
+
+    cmake --build . --target=install
+    mkdir -p "$out/lib"
+    mkdir "$out/bin"
+    cp build/vm/*.so* "$out/lib/"
+    cp build/vm/pharo "$out/bin/pharo"
+
+    runHook postInstall
+  '';
+
+  preFixup =
     let
-      library_path = lib.strings.makeLibraryPath [
-        "$out"
-        cairo
-        freetype
-        libgit2
-        SDL2
-      ];
+      libPath = lib.makeLibraryPath (
+        finalAttrs.buildInputs
+        ++ [
+          stdenv.cc.cc
+          "$out"
+        ]
+      );
     in
     ''
-      runHook preInstall
-
-      cmake --build . --target=install
-      mkdir -p "$out/lib"
-      mkdir "$out/bin"
-      cp build/vm/*.so* "$out/lib/"
-      cp build/vm/pharo "$out/bin/pharo"
       patchelf --allowed-rpath-prefixes "$NIX_STORE" --shrink-rpath "$out/bin/pharo"
-      wrapProgram "$out/bin/pharo" --set LD_LIBRARY_PATH "${library_path}"
-
-      runHook postInstall
+      ln -s "${libgit2}/lib/libgit2.so" $out/lib/libgit2.so.1.1
+      wrapProgram "$out/bin/pharo" --argv0 $out/bin/pharo --prefix LD_LIBRARY_PATH ":" "${libPath}"
     '';
 
   meta = {
     description = "Clean and innovative Smalltalk-inspired environment";
     homepage = "https://pharo.org";
+    changelog = "https://github.com/pharo-project/pharo/releases/";
     license = lib.licenses.mit;
     longDescription = ''
       Pharo's goal is to deliver a clean, innovative, free open-source
