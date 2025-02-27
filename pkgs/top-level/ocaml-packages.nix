@@ -984,9 +984,7 @@ let
     lambda-term = callPackage ../development/ocaml-modules/lambda-term { };
 
     lambdapi = callPackage ../development/ocaml-modules/lambdapi {
-      why3 = pkgs.why3.override { ocamlPackages = self;
-        version = "1.7.2"; coqPackages = pkgs.coqPackages_8_18;
-      };
+      why3 = pkgs.why3.override { ocamlPackages = self; };
     };
 
     lambdasoup = callPackage ../development/ocaml-modules/lambdasoup { };
@@ -2013,6 +2011,8 @@ let
     ### W ###
 
     wasm = callPackage ../development/ocaml-modules/wasm { };
+
+    wasm_of_ocaml-compiler = callPackage ../development/tools/ocaml/js_of_ocaml/compiler-wasm.nix { };
 
     wayland = callPackage ../development/ocaml-modules/wayland { };
 
