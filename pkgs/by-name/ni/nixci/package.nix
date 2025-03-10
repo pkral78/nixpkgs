@@ -23,7 +23,8 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-0VvZFclqwAcKN95eusQ3lgV0pp1NRUDcVXpVUC0P4QI=";
   };
 
-  cargoHash = "sha256-trmWeYJNev7jYJtGp9XR/emmQiiI94NM0cPFrAuD7m0=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-iRsmB+ak6pWFtAdXEmGSc9dGdIuSbgLp3UT3SdOUOGQ=";
 
   nativeBuildInputs = [
     pkg-config
@@ -62,7 +63,6 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/srid/nixci";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [
-      srid
       shivaraj-bh
       rsrohitsingh682
     ];

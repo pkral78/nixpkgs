@@ -8,16 +8,17 @@
 }:
 rustPlatform.buildRustPackage rec {
   pname = "television";
-  version = "0.10.2";
+  version = "0.10.7";
 
   src = fetchFromGitHub {
     owner = "alexpasmantier";
     repo = "television";
     tag = version;
-    hash = "sha256-VOoRl//Z0AiRv96SqopjUYePPUa9KRbEpLYzJ6k1b8Q=";
+    hash = "sha256-M3n644064cmg7PHmJqQpPZHl4SjshERh2gkKCWvOzcw=";
   };
 
-  cargoHash = "sha256-ULq3nGz39ACFVtHfCvPsl7Ihc2PPv5lTM2K9xpQm48s=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-TtLPH6k1oXAJRgbUXTvcOMOWmYCOCuhM+82yLBkwPXo=";
 
   passthru = {
     tests.version = testers.testVersion {
