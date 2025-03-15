@@ -5,19 +5,20 @@
   fetchFromGitHub,
   python3,
   xcbuild,
+  nix-update-script,
 }:
 buildNpmPackage rec {
   pname = "firebase-tools";
-  version = "13.29.3";
+  version = "13.34.0";
 
   src = fetchFromGitHub {
     owner = "firebase";
     repo = "firebase-tools";
     tag = "v${version}";
-    hash = "sha256-ZY4hbo84qdvBGOpGWKKWR3bHHTP2+Poa1od7FCy9uSE=";
+    hash = "sha256-2Zyg7D0/JYQ/PSYsoOIa/aSjGibySP+XZNWpT+dct8k=";
   };
 
-  npmDepsHash = "sha256-UqrTyK5IOK4N6z1UfApqzGCHj0H1/FujWdgJPrQoNxQ=";
+  npmDepsHash = "sha256-3JaafJIfqhS7c8krdXwARufuVV/PG4emvbVv8H3gy8Q=";
 
   postPatch = ''
     ln -s npm-shrinkwrap.json package-lock.json
@@ -34,6 +35,8 @@ buildNpmPackage rec {
   env = {
     PUPPETEER_SKIP_DOWNLOAD = true;
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     changelog = "https://github.com/firebase/firebase-tools/blob/v${version}/CHANGELOG.md";

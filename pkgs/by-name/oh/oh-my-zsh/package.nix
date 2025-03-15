@@ -19,14 +19,14 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "2025-01-30";
+  version = "2025-02-19";
   pname = "oh-my-zsh";
 
   src = fetchFromGitHub {
     owner = "ohmyzsh";
     repo = "ohmyzsh";
-    rev = "1c34b0e67d4f1dff36a079f31d7dafe8bcf92f6e";
-    sha256 = "sha256-+y8fN1A+wb24H4s/KJ8VpuauCvwoItoruDwXlIw8ed4=";
+    rev = "6e7ac0544e71c7b777746cb50f70de68c6495b86";
+    sha256 = "sha256-d4w15ja5qe4axOwNyIoXZdVcgUedAIgZQrhINmNNJFw=";
   };
 
   strictDeps = true;
@@ -48,7 +48,7 @@ stdenv.mkDerivation rec {
     chmod -R +w templates
 
     # Change the path to oh-my-zsh dir and disable auto-updating.
-    sed -i -e "s#ZSH=\$HOME/.oh-my-zsh#ZSH=$outdir#" \
+    sed -i -e "s#ZSH=\"\$HOME/.oh-my-zsh\"#ZSH=\"$outdir\"#" \
            -e 's/\# \(DISABLE_AUTO_UPDATE="true"\)/\1/' \
      $template
 

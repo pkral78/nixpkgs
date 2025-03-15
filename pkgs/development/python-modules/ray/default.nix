@@ -66,7 +66,7 @@
 
 let
   pname = "ray";
-  version = "2.41.0";
+  version = "2.43.0";
 in
 buildPythonPackage rec {
   inherit pname version;
@@ -78,23 +78,37 @@ buildPythonPackage rec {
     let
       pyShortVersion = "cp${builtins.replaceStrings [ "." ] [ "" ] python.pythonVersion}";
       platforms = {
+        aarch64-darwin = "macosx_11_0_arm64";
         aarch64-linux = "manylinux2014_aarch64";
+        x86_64-darwin = "macosx_10_15_x86_64";
         x86_64-linux = "manylinux2014_x86_64";
       };
       # hashes retrieved via the following command
       # curl https://pypi.org/pypi/ray/${version}/json | jq -r '.urls[] | "\(.digests.sha256)  \(.filename)"'
       hashes = {
-        aarch64-linux = {
-          cp39 = "782f29c8d743304fb3b67ed825db6caf5e5bd9263d628a6ff67a61bccde9f176";
-          cp310 = "fbb2cf4a86f4705faea6334356faa4dc7f454210e6eb085d63b7f1ae6e9c12e1";
-          cp311 = "68c9cc50af0dfafa78e5047890018cf3115fae8702ab083ac78b59b349989d45";
-          cp312 = "c9712ee4c52b7764b2ec9c693419ffde1313dd79cb186173dae6e25db44993de";
-        };
         x86_64-linux = {
-          cp39 = "fe837e717a642a648f6fa8cc285e3ccc6782d126b8af793a25903fa3ac8d5c22";
-          cp310 = "3932d6db3a8982c5196db08cf56e2ed0bf50b8568508cfe486be8de63ba2d95d";
-          cp311 = "fff5e9cc5a53815d3b586a261e34bd0fef1c324b2cded4c9b8e790e1e3dc3997";
-          cp312 = "3d76acb070fa8bd4ebdb011acdfa22bb89bdbe9b35fb78aec5981db76eac2b60";
+          cp39 = "sha256-Xt89oYBB4LYXDGLghICrBQ8HZjYf8/bhElfMBKtG5ZI=";
+          cp310 = "sha256-GHKYOihahbd2vzEcgJ1Vn4SCkJotOerV8qxpz+OqhUQ=";
+          cp311 = "sha256-eMO9vxgrTQGfqaiqvVXDm/cFu2MK6gZPdo8wX8Ry0es=";
+          cp312 = "sha256-tF9HjSnOXfP8GYYd9k/vntXCXx6D+hACjTP63v3soJU=";
+        };
+        aarch64-linux = {
+          cp39 = "sha256-h+DKyFGJ3FGa8bbvKr1lSATEiMkyyq3WWLkMqqZfja4=";
+          cp310 = "sha256-VzgcVPIA5sAgPV9wrG+IKxPMGoD68zZRh4ejmm1vZdA=";
+          cp311 = "sha256-R27D4fokZN3V8EnA8nWP+d/swh+430Jm8d8BsngMZlM=";
+          cp312 = "sha256-c3cNTIqYlzCYX/K0KSEpJJ4oweKehFiUcMm6GukcqDI=";
+        };
+        x86_64-darwin = {
+          cp39 = "sha256-0OJvnbkaWzND8IWOslYlWzXH6X/Gv5cGX1dErX6Mwpc=";
+          cp310 = "sha256-GGJv/zaEUaN6drM9UqcPBbIKIR6whn2GByHI6Gy2lVo=";
+          cp311 = "sha256-/eioEoDwevmDvDdpyZQdtdsnPOEOkquzNI5BvtAj1zU=";
+          cp312 = "sha256-USH99Ly8sP2jubcRZN1sj8x5ouJYAioqOVfkAQGJE/s=";
+        };
+        aarch64-darwin = {
+          cp39 = "sha256-2M/ewr9hxIaQ9stDJfFnPg0dAN6pJbWbYxGW5n9Cag4=";
+          cp310 = "sha256-t8T97FmhTWspOdkf7m78hLYUpnIsO+Cyf6Nx4/VjJV8=";
+          cp311 = "sha256-6TwyrQy2fx99p2+sQJ2H1c1eo+sDuDaDDp71zIELwsA=";
+          cp312 = "sha256-fyb3ty2gTDxEIiacMbBnq9Fcs4QktwEtgS3fssd0Yuo=";
         };
       };
     in
@@ -107,7 +121,7 @@ buildPythonPackage rec {
       sha256 = hashes.${stdenv.hostPlatform.system}.${pyShortVersion} or { };
     };
 
-  nativeBuildInputs = [
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
   ];
 
@@ -209,7 +223,9 @@ buildPythonPackage rec {
     maintainers = with lib.maintainers; [ billhuang ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = [
+      "aarch64-darwin"
       "aarch64-linux"
+      "x86_64-darwin"
       "x86_64-linux"
     ];
   };
