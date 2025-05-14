@@ -4757,6 +4757,8 @@ self: super: with self; {
 
   falcon = callPackage ../development/python-modules/falcon { };
 
+  falcon-cors = callPackage ../development/python-modules/falcon-cors { };
+
   falconpy = callPackage ../development/python-modules/falconpy { };
 
   faraday-agent-parameters-types =
@@ -6909,6 +6911,8 @@ self: super: with self; {
 
   irctokens = callPackage ../development/python-modules/irctokens { };
 
+  irisclient = callPackage ../development/python-modules/irisclient { };
+
   isal = callPackage ../development/python-modules/isal { };
 
   isbnlib = callPackage ../development/python-modules/isbnlib { };
@@ -8095,6 +8099,8 @@ self: super: with self; {
   lizard = callPackage ../development/python-modules/lizard { };
 
   llama-cloud = callPackage ../development/python-modules/llama-cloud { };
+
+  llama-cloud-services = callPackage ../development/python-modules/llama-cloud-services { };
 
   llama-cpp-python = callPackage ../development/python-modules/llama-cpp-python { };
 
