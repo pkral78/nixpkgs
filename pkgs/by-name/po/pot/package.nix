@@ -25,20 +25,20 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "pot";
-  version = "3.0.6";
+  version = "3.0.7";
 
   src = fetchFromGitHub {
     owner = "pot-app";
     repo = "pot-desktop";
-    rev = finalAttrs.version;
-    hash = "sha256-PUXZT1kiInM/CXUoRko/5qlrRurGpQ4ym5YMTgFwuxE=";
+    tag = finalAttrs.version;
+    hash = "sha256-0Q1hf1AGAZv6jt05tV3F6++lzLpddvjhiykIhV40cPs=";
   };
 
   sourceRoot = "${finalAttrs.src.name}/src-tauri";
 
   postPatch = ''
     substituteInPlace $cargoDepsCopy/libappindicator-sys-*/src/lib.rs \
-      --replace "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
+      --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
   '';
 
   pnpmDeps = pnpm.fetchDeps {
@@ -48,12 +48,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   pnpmRoot = "..";
 
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
-    outputHashes = {
-      # All other crates in the same workspace reuse this hash.
-      "tauri-plugin-autostart-0.0.0" = "sha256-rWk9Qz1XmByqPRIgR+f12743uYvnEGTHno9RrxmT8JE=";
-    };
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    sourceRoot = "${finalAttrs.src.name}/src-tauri";
+    hash = "sha256-dyXINRttgsqCfmgtZNXxr/Rl8Yn0F2AVm8v2Ao+OBsw=";
   };
 
   nativeBuildInputs = [
@@ -87,7 +85,7 @@ stdenv.mkDerivation (finalAttrs: {
             src = fetchFromGitHub {
               owner = "evanw";
               repo = "esbuild";
-              rev = "v${version}";
+              tag = "v${version}";
               hash = "sha256-FpvXWIlt67G8w3pBKZo/mcp57LunxDmRUaCU/Ne89B8=";
             };
           }

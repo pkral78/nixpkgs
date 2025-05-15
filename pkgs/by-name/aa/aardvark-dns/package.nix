@@ -11,7 +11,7 @@ rustPlatform.buildRustPackage rec {
 
   src = fetchFromGitHub {
     owner = "containers";
-    repo = pname;
+    repo = "aardvark-dns";
     rev = "v${version}";
     hash = "sha256-mWaB1E/n/N2Tb5bqrMJX2XfPvZBCG+dxar3kGCHgv0I=";
   };
@@ -26,7 +26,7 @@ rustPlatform.buildRustPackage rec {
     description = "Authoritative dns server for A/AAAA container records";
     homepage = "https://github.com/containers/aardvark-dns";
     license = licenses.asl20;
-    maintainers = with maintainers; [ ] ++ teams.podman.members;
+    teams = [ teams.podman ];
     platforms = platforms.linux;
     mainProgram = "aardvark-dns";
   };

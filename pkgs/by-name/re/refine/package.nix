@@ -23,6 +23,7 @@ let
   libadwaita' = libadwaita.overrideAttrs (oldAttrs: {
     version = "1.6.2-unstable-2025-01-02";
     src = oldAttrs.src.override {
+      tag = null;
       rev = "f5f0e7ce69405846a8f8bdad11cef2e2a7e99010";
       hash = "sha256-n5RbGHtt2g627T/Tg8m3PjYIl9wfYTIcrplq1pdKAXk=";
     };
@@ -34,7 +35,7 @@ in
 
 python3Packages.buildPythonApplication rec {
   pname = "refine";
-  version = "0.4.4";
+  version = "0.5.8";
   pyproject = false; # uses meson
 
   src = fetchFromGitLab {
@@ -42,7 +43,7 @@ python3Packages.buildPythonApplication rec {
     owner = "TheEvilSkeleton";
     repo = "Refine";
     tag = version;
-    hash = "sha256-39fbUJpNON0aALT/pb18/m9hStue4TxkrAsHymEpy5I=";
+    hash = "sha256-56aJQAeLpecoq7lcw2Cgd8XzpO0mXv+lBG+Qv28Ae1I=";
   };
 
   nativeBuildInputs = [

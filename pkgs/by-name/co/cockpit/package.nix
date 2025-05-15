@@ -14,7 +14,9 @@
   git,
   glib,
   glib-networking,
+  gnused,
   gnutls,
+  iproute2,
   json-glib,
   krb5,
   libssh,
@@ -30,20 +32,22 @@
   pkg-config,
   polkit,
   python3Packages,
+  sscg,
   systemd,
   udev,
   xmlto,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "cockpit";
-  version = "331";
+  version = "338";
 
   src = fetchFromGitHub {
     owner = "cockpit-project";
     repo = "cockpit";
     tag = finalAttrs.version;
-    hash = "sha256-G0L1ZcvjUCSNkDvYoyConymZ4bsEye03t5K15EyI008=";
+    hash = "sha256-ZNvMLzkDh1SuyHuChWM0YykSYu152JHvjrKVm+u0Upw=";
     fetchSubmodules = true;
   };
 
@@ -63,6 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.setuptools
     systemd
     xmlto
+    which
   ];
 
   buildInputs = [
@@ -93,6 +98,9 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/common/cockpitconf.c \
       --replace-fail 'const char *cockpit_config_dirs[] = { PACKAGE_SYSCONF_DIR' 'const char *cockpit_config_dirs[] = { "/etc"'
 
+    substituteInPlace src/**/*.c \
+      --replace '"/bin/sh"' "\"$(which sh)\""
+
     # instruct users with problems to create a nixpkgs issue instead of nagging upstream directly
     substituteInPlace configure.ac \
       --replace-fail 'devel@lists.cockpit-project.org' 'https://github.com/NixOS/nixpkgs/issues/new?assignees=&labels=0.kind%3A+bug&template=bug_report.md&title=cockpit%25'
@@ -122,7 +130,9 @@ stdenv.mkDerivation (finalAttrs: {
       # some files substituteInPlace report as missing and it's safe to ignore them
       substituteInPlace "$(realpath "$f")" \
         --replace-quiet '"/usr/bin/' '"' \
-        --replace-quiet '"/bin/' '"' || true
+        --replace-quiet '"/bin/' '"' \
+        --replace-quiet ' /bin/' ' ' \
+        || true
     done
 
     substituteInPlace src/common/Makefile-common.am \
@@ -158,13 +168,27 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${
         lib.makeBinPath [
           coreutils
+          sscg
           openssl
         ]
       } \
       --run 'cd $(mktemp -d)'
 
-    wrapProgram $out/bin/cockpit-bridge \
-      --prefix PYTHONPATH : $out/${python3Packages.python.sitePackages}
+    for binary in $out/bin/cockpit-bridge $out/libexec/cockpit-askpass; do
+      chmod +x $binary
+      wrapProgram $binary \
+        --prefix PYTHONPATH : $out/${python3Packages.python.sitePackages}
+    done
+
+    patchShebangs $out/share/cockpit/issue/update-issue
+    wrapProgram $out/share/cockpit/issue/update-issue \
+      --prefix PATH : ${
+        lib.makeBinPath [
+          iproute2
+          gnused
+        ]
+      }
+
 
     substituteInPlace $out/${python3Packages.python.sitePackages}/cockpit/_vendor/systemd_ctypes/libsystemd.py \
       --replace-warn libsystemd.so.0 ${systemd}/lib/libsystemd.so.0

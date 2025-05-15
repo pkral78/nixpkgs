@@ -35,13 +35,13 @@
 
 let
   pname = "psycopg";
-  version = "3.2.4";
+  version = "3.2.8";
 
   src = fetchFromGitHub {
     owner = "psycopg";
     repo = "psycopg";
     tag = version;
-    hash = "sha256-gicntSAEK5VO67M2gAGR6wSwKQwgnbHxVUoPpaAbaDk=";
+    hash = "sha256-fSryNbWqIO5+oyU9uP7zO6TJzrtFPwrtaU0toxBysao=";
   };
 
   patches = [
@@ -73,8 +73,7 @@ let
 
     nativeBuildInputs = [
       cython
-      # needed to find pg_config with strictDeps
-      libpq
+      libpq.pg_config
       setuptools
       tomli
     ];
@@ -121,10 +120,13 @@ buildPythonPackage rec {
 
   disabled = pythonOlder "3.7";
 
-  outputs = [
-    "out"
-    "doc"
-  ];
+  outputs =
+    [
+      "out"
+    ]
+    ++ lib.optionals (stdenv.hostPlatform == stdenv.buildPlatform) [
+      "doc"
+    ];
 
   sphinxRoot = "../docs";
 
@@ -141,13 +143,18 @@ buildPythonPackage rec {
     cd psycopg
   '';
 
-  nativeBuildInputs = [
-    furo
-    setuptools
-    shapely
-    sphinx-autodoc-typehints
-    sphinxHook
-  ];
+  nativeBuildInputs =
+    [
+      furo
+      setuptools
+      shapely
+    ]
+    # building the docs fails with the following error when cross compiling
+    #  AttributeError: module 'psycopg_c.pq' has no attribute '__impl__'
+    ++ lib.optionals (stdenv.hostPlatform == stdenv.buildPlatform) [
+      sphinx-autodoc-typehints
+      sphinxHook
+    ];
 
   propagatedBuildInputs = [
     psycopg-c
@@ -173,7 +180,7 @@ buildPythonPackage rec {
       pytestCheckHook
       postgresql
     ]
-    ++ lib.optional (stdenv.hostPlatform.isLinux) postgresqlTestHook
+    ++ lib.optional stdenv.hostPlatform.isLinux postgresqlTestHook
     ++ optional-dependencies.c
     ++ optional-dependencies.pool;
 
@@ -187,7 +194,7 @@ buildPythonPackage rec {
     ''
       cd ..
     ''
-    + lib.optionalString (stdenv.hostPlatform.isLinux) ''
+    + lib.optionalString stdenv.hostPlatform.isLinux ''
       export PSYCOPG_TEST_DSN="host=/build/run/postgresql user=$PGUSER"
     '';
 
@@ -195,6 +202,8 @@ buildPythonPackage rec {
     # don't depend on mypy for tests
     "test_version"
     "test_package_version"
+    # expects timeout, but we have no route in the sandbox
+    "test_connect_error_multi_hosts_each_message_preserved"
   ];
 
   disabledTestPaths = [
@@ -213,13 +222,10 @@ buildPythonPackage rec {
     "-o cache_dir=.cache"
     "-m"
     "'not refcount and not timing and not flakey'"
-    # pytest.PytestRemovedIn9Warning: Marks applied to fixtures have no effect
-    "-W"
-    "ignore::pytest.PytestRemovedIn9Warning"
   ];
 
   postCheck = ''
-    cd ${pname}
+    cd psycopg
   '';
 
   passthru = {

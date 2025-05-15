@@ -8,6 +8,7 @@
   buildPythonPackage,
   click,
   cryptography,
+  email-validator,
   fastapi,
   fastapi-sso,
   fetchFromGitHub,
@@ -16,6 +17,7 @@
   importlib-metadata,
   jinja2,
   jsonschema,
+  mcp,
   openai,
   orjson,
   poetry-core,
@@ -32,12 +34,15 @@
   rq,
   tiktoken,
   tokenizers,
+  uvloop,
   uvicorn,
+  nixosTests,
+  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "litellm";
-  version = "1.59.8";
+  version = "1.69.0";
   pyproject = true;
 
   disabled = pythonOlder "3.8";
@@ -45,20 +50,20 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "BerriAI";
     repo = "litellm";
-    tag = "v${version}";
-    hash = "sha256-2OkREmgs+r+vco1oEVgp5nq7cfwIAlMAh0FL2ceO88Y=";
+    tag = "v${version}-stable";
+    hash = "sha256-W2uql9fKzwAmSgeLTuESguh+dVn+b3JNTeGlCc9NP2A=";
   };
 
   build-system = [ poetry-core ];
 
-  pythonRelaxDeps = [ "httpx" ];
-
   dependencies = [
     aiohttp
     click
+    email-validator
     importlib-metadata
     jinja2
     jsonschema
+    mcp
     openai
     pydantic
     python-dotenv
@@ -80,6 +85,7 @@ buildPythonPackage rec {
       python-multipart
       pyyaml
       rq
+      uvloop
       uvicorn
     ];
     extra_proxy = [
@@ -94,15 +100,28 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "litellm" ];
 
+  # Relax dependency check on openai, may not be needed in the future
+  pythonRelaxDeps = [ "openai" ];
+
   # access network
   doCheck = false;
 
-  meta = with lib; {
+  passthru = {
+    tests = { inherit (nixosTests) litellm; };
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--version-regex"
+        "v([0-9]+\\.[0-9]+\\.[0-9]+)-stable"
+      ];
+    };
+  };
+
+  meta = {
     description = "Use any LLM as a drop in replacement for gpt-3.5-turbo. Use Azure, OpenAI, Cohere, Anthropic, Ollama, VLLM, Sagemaker, HuggingFace, Replicate (100+ LLMs)";
     mainProgram = "litellm";
     homepage = "https://github.com/BerriAI/litellm";
     changelog = "https://github.com/BerriAI/litellm/releases/tag/${src.tag}";
-    license = licenses.mit;
-    maintainers = with maintainers; [ happysalada ];
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ happysalada ];
   };
 }

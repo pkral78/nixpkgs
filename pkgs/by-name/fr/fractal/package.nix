@@ -45,6 +45,12 @@ stdenv.mkDerivation rec {
     hash = "sha256-e3IW8D4aLU6d36ErUHDUDiXF1lN4HCn5OCX6GwaT3iQ=";
   };
 
+  patches = [
+    # Disable debug symbols in release builds
+    # The debug symbols are stripped afterwards anyways, and building with them requires extra memory
+    ./disable-debug.patch
+  ];
+
   # Dirty approach to add patches after cargoSetupPostUnpackHook
   # We should eventually use a cargo vendor patch hook instead
   preConfigure = ''
@@ -106,7 +112,7 @@ stdenv.mkDerivation rec {
     homepage = "https://gitlab.gnome.org/GNOME/fractal";
     changelog = "https://gitlab.gnome.org/World/fractal/-/releases/${version}";
     license = licenses.gpl3Plus;
-    maintainers = teams.gnome.members;
+    teams = [ teams.gnome ];
     platforms = platforms.linux;
     mainProgram = "fractal";
   };

@@ -17,7 +17,7 @@
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "dbeaver-bin";
-  version = "24.3.4";
+  version = "25.0.4";
 
   src =
     let
@@ -30,10 +30,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         aarch64-darwin = "macos-aarch64.dmg";
       };
       hash = selectSystem {
-        x86_64-linux = "sha256-t9yhOgcka7zRSP1QyZvnc3iefKn9gv+pjobFJongb3A=";
-        aarch64-linux = "sha256-JanACJPOgHqhjLt2BzR+H9ZHwA2uPIrmyluVkRBqAhY=";
-        x86_64-darwin = "sha256-6FFMRBj6Z4UhqENclixtcgOrrmcYuabBqeIFGEqRQEA=";
-        aarch64-darwin = "sha256-vBb1w7Y8ADvhpEx/bf4W5llNIlng6kfZEUKB5bzQ8TY=";
+        x86_64-linux = "sha256-ALtJIld7gT4pj+jGRkwMloq6B/ZBOMYZxws9N7xNNZg=";
+        aarch64-linux = "sha256-Ka+jEI6y1BRqV83yDvu1yDzJfpUIxKKD+zehVHcNQ/o=";
+        x86_64-darwin = "sha256-P8f0NlMjh/46RChQy8JIm71msqX023K2QaFEic2Br9M=";
+        aarch64-darwin = "sha256-a9H9M1j6iPcrVcfDxCZHeZj6e55QH3XochXaL2OStlI=";
       };
     in
     fetchurl {
@@ -63,7 +63,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   preInstall = ''
     # most directories are for different architectures, only keep what we need
     shopt -s extglob
-    pushd ${lib.optionalString stdenvNoCC.hostPlatform.isDarwin "Contents/Eclipse/"}plugins/com.sun.jna_5.15.0.v20240915-2000/com/sun/jna/
+    pushd ${lib.optionalString stdenvNoCC.hostPlatform.isDarwin "Contents/Eclipse/"}plugins/com.sun.jna_*/com/sun/jna/
     rm -r !(ptr|internal|linux-x86-64|linux-aarch64|darwin-x86-64|darwin-aarch64)/
     popd
   '';
@@ -89,10 +89,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
           }"
 
         mkdir -p $out/share/icons/hicolor/256x256/apps
-        # for some reason it's missing from the aarch64 build
-        if [ -e $out/opt/dbeaver/dbeaver.png ]; then
-          ln -s $out/opt/dbeaver/dbeaver.png $out/share/icons/hicolor/256x256/apps/dbeaver.png
-        fi
+        ln -s $out/opt/dbeaver/dbeaver.png $out/share/icons/hicolor/256x256/apps/dbeaver.png
 
         mkdir -p $out/share/applications
         ln -s $out/opt/dbeaver/dbeaver-ce.desktop $out/share/applications/dbeaver.desktop

@@ -13,7 +13,7 @@
 
 python3Packages.buildPythonApplication rec {
   pname = "snapcraft";
-  version = "8.7.1";
+  version = "8.8.1";
 
   pyproject = true;
 
@@ -21,7 +21,7 @@ python3Packages.buildPythonApplication rec {
     owner = "canonical";
     repo = "snapcraft";
     tag = version;
-    hash = "sha256-QKnlnFvQjpNYaZ42vcSNGS5HRSz+hHDzxBpE5lRYfWw=";
+    hash = "sha256-gn2roiwNLUFJsuen2qGPvl4DyE6gPUQibS1Cn7cj2L8=";
   };
 
   patches = [
@@ -104,6 +104,7 @@ python3Packages.buildPythonApplication rec {
   build-system = with python3Packages; [ setuptools-scm ];
 
   pythonRelaxDeps = [
+    "click"
     "craft-parts"
     "cryptography"
     "docutils"

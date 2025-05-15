@@ -3,8 +3,8 @@
   stdenvNoCC,
   fetchurl,
   nixosTests,
-  nextcloud29Packages,
   nextcloud30Packages,
+  nextcloud31Packages,
 }:
 
 let
@@ -43,13 +43,7 @@ let
         changelog = "https://nextcloud.com/changelog/#${lib.replaceStrings [ "." ] [ "-" ] version}";
         description = "Sharing solution for files, calendars, contacts and more";
         homepage = "https://nextcloud.com";
-        maintainers = with lib.maintainers; [
-          schneefux
-          bachp
-          globin
-          ma27
-          britter
-        ];
+        teams = [ lib.teams.nextcloud ];
         license = lib.licenses.agpl3Plus;
         platforms = lib.platforms.linux;
         knownVulnerabilities =
@@ -58,16 +52,16 @@ let
     };
 in
 {
-  nextcloud29 = generic {
-    version = "29.0.12";
-    hash = "sha256-wCA1T/Ph0ghzcPcOBY/hcXE2NroPBzpRlK29/zwcr8Y=";
-    packages = nextcloud29Packages;
+  nextcloud30 = generic {
+    version = "30.0.10";
+    hash = "sha256-40ldF8X1yRZFQtk/Y21pasyPOLYL7HDPGtLnnHbZlbo=";
+    packages = nextcloud30Packages;
   };
 
-  nextcloud30 = generic {
-    version = "30.0.6";
-    hash = "sha256-rA4JG+aSCWXcDILxSbYy1rWt563uhKezyM/YR0UKjdw=";
-    packages = nextcloud30Packages;
+  nextcloud31 = generic {
+    version = "31.0.4";
+    hash = "sha256-pHVBVm1casb2Pk9hfifaKVFW2kfaos0i7uNAD9KtElE=";
+    packages = nextcloud31Packages;
   };
 
   # tip: get the sha with:

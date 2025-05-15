@@ -9,16 +9,16 @@
 
 buildGoModule rec {
   pname = "dnscontrol";
-  version = "4.16.0";
+  version = "4.19.0";
 
   src = fetchFromGitHub {
     owner = "StackExchange";
     repo = "dnscontrol";
     tag = "v${version}";
-    hash = "sha256-yFBKDb4XdCw5en/VN5IP8iCTdSRMqATVR8vV3G1gHJQ=";
+    hash = "sha256-wRkUcMBGKPKGgA7ogQpq/aFkysVFDiNSKZ2sJ3Wkm1M=";
   };
 
-  vendorHash = "sha256-4LDH1mJE0SJFvHYT14uCcgzy5CQ61V2gj1SfyHLEQXY=";
+  vendorHash = "sha256-Edf7ka/Qh+InjA4VXrvA0sI9QYr1nRwiLCtubZ/n5Pk=";
 
   nativeBuildInputs = [ installShellFiles ];
 

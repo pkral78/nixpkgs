@@ -116,8 +116,7 @@ let
     };
 
     loongarch64-linux = {
-      BINARY = 64;
-      TARGET = setTarget "LOONGSONGENERIC";
+      TARGET = setTarget "LA64_GENERIC";
       DYNAMIC_ARCH = setDynamicArch false;
       USE_OPENMP = true;
     };
@@ -126,6 +125,14 @@ let
       BINARY = 64;
       TARGET = setTarget "ZARCH_GENERIC";
       DYNAMIC_ARCH = setDynamicArch true;
+      USE_OPENMP = true;
+    };
+
+    x86_64-freebsd = {
+      BINARY = 64;
+      TARGET = setTarget "ATHLON";
+      DYNAMIC_ARCH = setDynamicArch true;
+      NO_AVX512 = !enableAVX512;
       USE_OPENMP = true;
     };
   };

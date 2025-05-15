@@ -10,19 +10,19 @@ let
 in
 {
   options.programs.flashprog = {
-    enable = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Installs flashprog and configures udev rules for programmers
-        used by flashprog.
-      '';
-    };
+    enable = lib.mkEnableOption ''
+      configuring flashprog udev rules and
+      installing flashprog as system package
+    '';
     package = lib.mkPackageOption pkgs "flashprog" { };
   };
 
   config = lib.mkIf cfg.enable {
     services.udev.packages = [ cfg.package ];
     environment.systemPackages = [ cfg.package ];
+    hardware.libjaylink.enable = true;
+    hardware.libftdi.enable = true;
   };
+
+  meta.maintainers = with lib.maintainers; [ felixsinger ];
 }

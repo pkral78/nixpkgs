@@ -44,7 +44,7 @@
 
 buildPythonPackage rec {
   pname = "django";
-  version = "5.1.6";
+  version = "5.1.9";
   pyproject = true;
 
   disabled = pythonOlder "3.10";
@@ -53,7 +53,7 @@ buildPythonPackage rec {
     owner = "django";
     repo = "django";
     rev = "refs/tags/${version}";
-    hash = "sha256-eqyRiMNMmhg08Pga+AGnhGXfUoTMOuIHEPOEEGboIPE=";
+    hash = "sha256-uBP6MoVjPUtNu6KxLjaYmKTN42JIUCTJSuSnQWSxyQU=";
   };
 
   patches =
@@ -63,7 +63,7 @@ buildPythonPackage rec {
       })
       # prevent tests from messing with our pythonpath
       ./django_5_tests_pythonpath.patch
-      # disable test that excpects timezone issues
+      # disable test that expects timezone issues
       ./django_5_disable_failing_tests.patch
 
       # fix filename length limit tests on bcachefs
@@ -82,9 +82,6 @@ buildPythonPackage rec {
     ];
 
   postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail "setuptools>=61.0.0,<69.3.0" setuptools
-
     substituteInPlace tests/utils_tests/test_autoreload.py \
       --replace-fail "/usr/bin/python" "${python.interpreter}"
   '';

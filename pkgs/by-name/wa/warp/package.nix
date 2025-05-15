@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch2,
   appstream-glib,
   cargo,
   desktop-file-utils,
@@ -79,13 +78,11 @@ stdenv.mkDerivation rec {
     description = "Fast and secure file transfer";
     homepage = "https://apps.gnome.org/Warp/";
     license = lib.licenses.gpl3Only;
-    maintainers =
-      with lib.maintainers;
-      [
-        dotlambda
-        foo-dogsquared
-      ]
-      ++ lib.teams.gnome-circle.members;
+    maintainers = with lib.maintainers; [
+      dotlambda
+      foo-dogsquared
+    ];
+    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.all;
     mainProgram = "warp";
     broken = stdenv.hostPlatform.isDarwin;

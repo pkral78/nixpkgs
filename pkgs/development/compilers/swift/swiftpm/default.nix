@@ -445,7 +445,7 @@ stdenv.mkDerivation (
     #  TERM=dumb swift-test -c release
     #'';
 
-    # The following is dervied from Utilities/bootstrap, see install_swiftpm.
+    # The following is derived from Utilities/bootstrap, see install_swiftpm.
     installPhase = ''
       binPath="$(swift-build --show-bin-path -c release)"
 
@@ -480,7 +480,7 @@ stdenv.mkDerivation (
       homepage = "https://github.com/apple/swift-package-manager";
       platforms = with lib.platforms; linux ++ darwin;
       license = lib.licenses.asl20;
-      maintainers = lib.teams.swift.members;
+      teams = [ lib.teams.swift ];
     };
   }
 )

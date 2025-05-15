@@ -195,6 +195,7 @@ in
                 Extra arguments passed to restic backup.
               '';
               example = [
+                "--cleanup-cache"
                 "--exclude-file=/etc/nixos/restic-ignore"
               ];
             };
@@ -352,6 +353,7 @@ in
         filesFromTmpFile = "/run/restic-backups-${name}/includes";
         doBackup = (backup.dynamicFilesFrom != null) || (backup.paths != null && backup.paths != [ ]);
         pruneCmd = lib.optionals (builtins.length backup.pruneOpts > 0) [
+          (resticCmd + " unlock")
           (resticCmd + " forget --prune " + (lib.concatStringsSep " " backup.pruneOpts))
         ];
         checkCmd = lib.optionals backup.runCheck [
@@ -463,8 +465,8 @@ in
         # set same environment variables as the systemd service
         ${lib.pipe config.systemd.services."restic-backups-${name}".environment [
           (lib.filterAttrs (n: v: v != null && n != "PATH"))
-          (lib.mapAttrsToList (n: v: "${n}=${v}"))
-          (lib.concatStringsSep "\n")
+          (lib.mapAttrs (_: v: "${v}"))
+          (lib.toShellVars)
         ]}
         PATH=${config.systemd.services."restic-backups-${name}".environment.PATH}:$PATH
 

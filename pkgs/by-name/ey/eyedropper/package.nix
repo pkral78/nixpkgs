@@ -24,7 +24,7 @@ stdenv.mkDerivation rec {
 
   src = fetchFromGitHub {
     owner = "FineFindus";
-    repo = pname;
+    repo = "eyedropper";
     rev = "v${version}";
     hash = "sha256-FyGj0180Wn8iIDTdDqnNEvFYegwdWCsCq+hmyTTUIo4=";
   };
@@ -64,6 +64,7 @@ stdenv.mkDerivation rec {
     mainProgram = "eyedropper";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ zendo ] ++ lib.teams.gnome-circle.members;
+    maintainers = with lib.maintainers; [ zendo ];
+    teams = [ lib.teams.gnome-circle ];
   };
 }
