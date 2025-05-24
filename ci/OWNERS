@@ -130,7 +130,8 @@ nixos/modules/installer/tools/nix-fallback-paths.nix  @NixOS/nix-team @raitobeza
 /nixos/modules/system/boot/loader/systemd-boot      @JulienMalka
 
 # Limine
-/nixos/modules/system/boot/loader/limine        @lzcunt @phip1611 @programmerlexi
+/nixos/modules/system/boot/loader/limine        @lzcunt @phip1611 @programmerlexi @johnrtitor
+/nixos/tests/limine                             @johnrtitor
 
 # Images and installer media
 /nixos/modules/profiles/installation-device.nix @ElvishJerricco
@@ -211,6 +212,7 @@ nixos/modules/installer/tools/nix-fallback-paths.nix  @NixOS/nix-team @raitobeza
 /pkgs/development/compilers/gcc
 /pkgs/development/compilers/llvm @alyssais @RossComputerGuy @NixOS/llvm
 /pkgs/development/compilers/emscripten @raitobezarius
+/doc/toolchains/llvm.chapter.md @alyssais @RossComputerGuy @NixOS/llvm
 /doc/languages-frameworks/emscripten.section.md @raitobezarius
 
 # Audio
@@ -471,7 +473,7 @@ pkgs/development/interpreters/lfe/      @NixOS/beam
 pkgs/by-name/oc/octodns/ @anthonyroussel
 
 # Teleport
-pkgs/servers/teleport   @arianvp @justinas @sigma @tomberek @freezeboy @techknowlogick @JuliusFreudenberger
+pkgs/by-name/te/teleport*   @arianvp @justinas @sigma @tomberek @freezeboy @techknowlogick @JuliusFreudenberger
 
 # Warp-terminal
 pkgs/by-name/wa/warp-terminal/  @emilytrau @imadnyc @donteatoreo @johnrtitor
