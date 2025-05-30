@@ -843,10 +843,6 @@ with pkgs;
 
   substitute = callPackage ../build-support/substitute/substitute.nix { };
 
-  substituteAll = callPackage ../build-support/substitute/substitute-all.nix { };
-
-  substituteAllFiles = callPackage ../build-support/substitute-files/substitute-all-files.nix { };
-
   replaceDependencies = callPackage ../build-support/replace-dependencies.nix { };
 
   replaceDependency =
@@ -1932,9 +1928,6 @@ with pkgs;
     charles5
     ;
 
-  quaternion-qt5 =
-    libsForQt5.callPackage ../applications/networking/instant-messengers/quaternion
-      { };
   quaternion-qt6 =
     qt6Packages.callPackage ../applications/networking/instant-messengers/quaternion
       { };
@@ -2344,7 +2337,7 @@ with pkgs;
 
   mpd-sima = python3Packages.callPackage ../tools/audio/mpd-sima { };
 
-  nltk-data = callPackage ../tools/text/nltk-data { };
+  nltk-data = lib.recurseIntoAttrs (callPackage ../tools/text/nltk-data { });
 
   seabios-coreboot = seabios.override { ___build-type = "coreboot"; };
   seabios-csm = seabios.override { ___build-type = "csm"; };
@@ -2725,6 +2718,9 @@ with pkgs;
   create-cycle-app = nodePackages.create-cycle-app;
 
   cron = isc-cron;
+
+  # Top-level fix-point used in `cudaPackages`' internals
+  _cuda = import ../development/cuda-modules/_cuda;
 
   cudaPackages_11_0 = callPackage ./cuda-packages.nix { cudaMajorMinorVersion = "11.0"; };
   cudaPackages_11_1 = callPackage ./cuda-packages.nix { cudaMajorMinorVersion = "11.1"; };
@@ -4092,8 +4088,6 @@ with pkgs;
 
   padthv1 = libsForQt5.callPackage ../applications/audio/padthv1 { };
 
-  pageedit = libsForQt5.callPackage ../applications/office/PageEdit { };
-
   pagefind = libsForQt5.callPackage ../applications/misc/pagefind { };
 
   pakcs = callPackage ../development/compilers/pakcs { };
@@ -4454,12 +4448,7 @@ with pkgs;
 
   soundkonverter = libsForQt5.soundkonverter;
 
-  sparrow-unwrapped = callPackage ../applications/blockchains/sparrow {
-    openimajgrabber = callPackage ../applications/blockchains/sparrow/openimajgrabber.nix { };
-    openjdk = jdk23.override { enableJavaFX = true; };
-  };
-
-  sparrow = callPackage ../applications/blockchains/sparrow/fhsenv.nix { };
+  sparrow = callPackage ../applications/blockchains/sparrow { };
 
   steck = callPackage ../servers/pinnwand/steck.nix { };
 
@@ -5148,6 +5137,7 @@ with pkgs;
   gcc12Stdenv = overrideCC gccStdenv buildPackages.gcc12;
   gcc13Stdenv = overrideCC gccStdenv buildPackages.gcc13;
   gcc14Stdenv = overrideCC gccStdenv buildPackages.gcc14;
+  gcc15Stdenv = overrideCC gccStdenv buildPackages.gcc15;
 
   # This is not intended for use in nixpkgs but for providing a faster-running
   # compiler to nixpkgs users by building gcc with reproducibility-breaking
@@ -5252,9 +5242,10 @@ with pkgs;
     gcc12
     gcc13
     gcc14
+    gcc15
     ;
 
-  gcc_latest = gcc14;
+  gcc_latest = gcc15;
 
   libgccjit = gcc.cc.override {
     name = "libgccjit";
@@ -5380,6 +5371,34 @@ with pkgs;
     }
   );
 
+  gnat15 = wrapCC (
+    gcc15.cc.override {
+      name = "gnat";
+      langC = true;
+      langCC = false;
+      langAda = true;
+      profiledCompiler = false;
+      # As per upstream instructions building a cross compiler
+      # should be done with a (native) compiler of the same version.
+      # If we are cross-compiling GNAT, we may as well do the same.
+      gnat-bootstrap =
+        if stdenv.hostPlatform == stdenv.targetPlatform && stdenv.buildPlatform == stdenv.hostPlatform then
+          buildPackages.gnat-bootstrap14
+        else
+          buildPackages.gnat15;
+      stdenv =
+        if
+          stdenv.hostPlatform == stdenv.targetPlatform
+          && stdenv.buildPlatform == stdenv.hostPlatform
+          && stdenv.buildPlatform.isDarwin
+          && stdenv.buildPlatform.isx86_64
+        then
+          overrideCC stdenv gnat-bootstrap14
+        else
+          stdenv;
+    }
+  );
+
   gnat-bootstrap = gnat-bootstrap12;
   gnat-bootstrap11 = wrapCC (
     callPackage ../development/compilers/gnat-bootstrap { majorVersion = "11"; }
@@ -5412,6 +5431,7 @@ with pkgs;
   gnat12Packages = recurseIntoAttrs (callPackage ./ada-packages.nix { gnat = buildPackages.gnat12; });
   gnat13Packages = recurseIntoAttrs (callPackage ./ada-packages.nix { gnat = buildPackages.gnat13; });
   gnat14Packages = recurseIntoAttrs (callPackage ./ada-packages.nix { gnat = buildPackages.gnat14; });
+  gnat15Packages = recurseIntoAttrs (callPackage ./ada-packages.nix { gnat = buildPackages.gnat15; });
   gnatPackages = gnat13Packages;
 
   inherit (gnatPackages)
@@ -5466,6 +5486,21 @@ with pkgs;
 
   gccgo14 = wrapCC (
     gcc14.cc.override {
+      name = "gccgo";
+      langCC = true; # required for go.
+      langC = true;
+      langGo = true;
+      langJit = true;
+      profiledCompiler = false;
+    }
+    // {
+      # not supported on darwin: https://github.com/golang/go/issues/463
+      meta.broken = stdenv.hostPlatform.isDarwin;
+    }
+  );
+
+  gccgo15 = wrapCC (
+    gcc15.cc.override {
       name = "gccgo";
       langCC = true; # required for go.
       langC = true;
@@ -6593,10 +6628,12 @@ with pkgs;
 
   # https://py-free-threading.github.io
   python313FreeThreading = python313.override {
+    self = python313FreeThreading;
     pythonAttr = "python313FreeThreading";
     enableGIL = false;
   };
   python314FreeThreading = python314.override {
+    self = python314FreeThreading;
     pythonAttr = "python313FreeThreading";
     enableGIL = false;
   };
@@ -9203,9 +9240,7 @@ with pkgs;
     };
   };
 
-  opencsg = callPackage ../development/libraries/opencsg {
-    inherit (qt5) qmake;
-  };
+  opencsg = callPackage ../development/libraries/opencsg { };
 
   opencv4 = callPackage ../development/libraries/opencv/4.x.nix {
     pythonPackages = python3Packages;
@@ -14425,9 +14460,7 @@ with pkgs;
     vscode-generic = ../applications/editors/vscode/generic.nix;
   };
 
-  openvscode-server = callPackage ../servers/openvscode-server {
-    nodejs = nodejs_20;
-  };
+  openvscode-server = callPackage ../servers/openvscode-server { };
 
   code-server = callPackage ../servers/code-server {
     nodejs = nodejs_20;
@@ -14663,8 +14696,6 @@ with pkgs;
   };
 
   zotero_7 = pkgs.zotero;
-
-  zsteg = callPackage ../tools/security/zsteg { };
 
   zynaddsubfx = callPackage ../applications/audio/zynaddsubfx {
     guiModule = "zest";
@@ -16116,8 +16147,6 @@ with pkgs;
 
   ### MISC
 
-  android-file-transfer = libsForQt5.callPackage ../tools/filesystems/android-file-transfer { };
-
   antimicrox = libsForQt5.callPackage ../tools/misc/antimicrox { };
 
   autotiling = python3Packages.callPackage ../misc/autotiling { };
@@ -16428,7 +16457,7 @@ with pkgs;
   nixosOptionsDoc = attrs: (import ../../nixos/lib/make-options-doc) ({ inherit pkgs lib; } // attrs);
 
   nix-eval-jobs = callPackage ../tools/package-management/nix-eval-jobs {
-    nix = nixVersions.nix_2_28;
+    nix = nixVersions.nix_2_29;
   };
 
   nix-delegate = haskell.lib.compose.justStaticExecutables haskellPackages.nix-delegate;
