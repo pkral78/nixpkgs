@@ -180,6 +180,7 @@
   ./programs/cdemu.nix
   ./programs/cfs-zen-tweaks.nix
   ./programs/chromium.nix
+  ./programs/chrysalis.nix
   ./programs/clash-verge.nix
   ./programs/cnping.nix
   ./programs/command-not-found/command-not-found.nix
@@ -261,6 +262,7 @@
   ./programs/nano.nix
   ./programs/nautilus-open-any-terminal.nix
   ./programs/nbd.nix
+  ./programs/nekoray.nix
   ./programs/neovim.nix
   ./programs/nethoscope.nix
   ./programs/nexttrace.nix
@@ -316,7 +318,6 @@
   ./programs/systemtap.nix
   ./programs/tcpdump.nix
   ./programs/television.nix
-  ./programs/thefuck.nix
   ./programs/thunar.nix
   ./programs/thunderbird.nix
   ./programs/tmux.nix
@@ -589,6 +590,7 @@
   ./services/development/zammad.nix
   ./services/display-managers/cosmic-greeter.nix
   ./services/display-managers/default.nix
+  ./services/display-managers/gdm.nix
   ./services/display-managers/greetd.nix
   ./services/display-managers/ly.nix
   ./services/display-managers/sddm.nix
@@ -645,6 +647,7 @@
   ./services/hardware/kanata.nix
   ./services/hardware/keyd.nix
   ./services/hardware/kmonad.nix
+  ./services/hardware/lact.nix
   ./services/hardware/lcd.nix
   ./services/hardware/libinput.nix
   ./services/hardware/lirc.nix
@@ -1265,6 +1268,7 @@
   ./services/networking/pdnsd.nix
   ./services/networking/peroxide.nix
   ./services/networking/picosnitch.nix
+  ./services/networking/pihole-ftl.nix
   ./services/networking/pixiecore.nix
   ./services/networking/pleroma.nix
   ./services/networking/powerdns.nix
@@ -1487,6 +1491,7 @@
   ./services/ttys/getty.nix
   ./services/ttys/gpm.nix
   ./services/ttys/kmscon.nix
+  ./services/video/broadcast-box.nix
   ./services/video/epgstation/default.nix
   ./services/video/frigate.nix
   ./services/video/go2rtc/default.nix
@@ -1530,11 +1535,13 @@
   ./services/web-apps/documize.nix
   ./services/web-apps/dokuwiki.nix
   ./services/web-apps/dolibarr.nix
+  ./services/web-apps/drupal.nix
   ./services/web-apps/echoip.nix
   ./services/web-apps/eintopf.nix
   ./services/web-apps/engelsystem.nix
   ./services/web-apps/ethercalc.nix
   ./services/web-apps/fider.nix
+  ./services/web-apps/filebrowser.nix
   ./services/web-apps/filesender.nix
   ./services/web-apps/firefly-iii-data-importer.nix
   ./services/web-apps/firefly-iii.nix
@@ -1580,6 +1587,7 @@
   ./services/web-apps/kimai.nix
   ./services/web-apps/komga.nix
   ./services/web-apps/lanraragi.nix
+  ./services/web-apps/lasuite-docs.nix
   ./services/web-apps/lemmy.nix
   ./services/web-apps/limesurvey.nix
   ./services/web-apps/mainsail.nix
@@ -1623,6 +1631,7 @@
   ./services/web-apps/photoprism.nix
   ./services/web-apps/phylactery.nix
   ./services/web-apps/pict-rs.nix
+  ./services/web-apps/pihole-web.nix
   ./services/web-apps/pingvin-share.nix
   ./services/web-apps/pixelfed.nix
   ./services/web-apps/plantuml-server.nix
@@ -1705,7 +1714,6 @@
   ./services/x11/colord.nix
   ./services/x11/desktop-managers/default.nix
   ./services/x11/display-managers/default.nix
-  ./services/x11/display-managers/gdm.nix
   ./services/x11/display-managers/lightdm.nix
   ./services/x11/display-managers/slim.nix
   ./services/x11/display-managers/startx.nix
@@ -1807,6 +1815,7 @@
   ./system/boot/uki.nix
   ./system/boot/unl0kr.nix
   ./system/boot/uvesafb.nix
+  ./system/boot/zram-as-tmp.nix
   ./system/etc/etc-activation.nix
   ./tasks/auto-upgrade.nix
   ./tasks/bcache.nix

@@ -843,10 +843,6 @@ with pkgs;
 
   substitute = callPackage ../build-support/substitute/substitute.nix { };
 
-  substituteAll = callPackage ../build-support/substitute/substitute-all.nix { };
-
-  substituteAllFiles = callPackage ../build-support/substitute-files/substitute-all-files.nix { };
-
   replaceDependencies = callPackage ../build-support/replace-dependencies.nix { };
 
   replaceDependency =
@@ -1808,11 +1804,6 @@ with pkgs;
 
   kavita = callPackage ../servers/web-apps/kavita { };
 
-  livebook = callPackage ../by-name/li/livebook/package.nix {
-    elixir = elixir_1_17;
-    beamPackages = beamPackages.extend (self: super: { elixir = elixir_1_17; });
-  };
-
   pass = callPackage ../tools/security/pass { };
 
   pass-nodmenu = callPackage ../tools/security/pass {
@@ -1895,8 +1886,6 @@ with pkgs;
     libssl = openssl;
   };
 
-  base16-builder = callPackage ../misc/base16-builder { };
-
   babelfish = callPackage ../shells/fish/babelfish.nix { };
 
   bat-extras = recurseIntoAttrs (lib.makeScope newScope (callPackage ../tools/misc/bat-extras { }));
@@ -1932,9 +1921,6 @@ with pkgs;
     charles5
     ;
 
-  quaternion-qt5 =
-    libsForQt5.callPackage ../applications/networking/instant-messengers/quaternion
-      { };
   quaternion-qt6 =
     qt6Packages.callPackage ../applications/networking/instant-messengers/quaternion
       { };
@@ -2344,7 +2330,7 @@ with pkgs;
 
   mpd-sima = python3Packages.callPackage ../tools/audio/mpd-sima { };
 
-  nltk-data = callPackage ../tools/text/nltk-data { };
+  nltk-data = lib.recurseIntoAttrs (callPackage ../tools/text/nltk-data { });
 
   seabios-coreboot = seabios.override { ___build-type = "coreboot"; };
   seabios-csm = seabios.override { ___build-type = "csm"; };
@@ -2725,6 +2711,9 @@ with pkgs;
   create-cycle-app = nodePackages.create-cycle-app;
 
   cron = isc-cron;
+
+  # Top-level fix-point used in `cudaPackages`' internals
+  _cuda = import ../development/cuda-modules/_cuda;
 
   cudaPackages_11_0 = callPackage ./cuda-packages.nix { cudaMajorMinorVersion = "11.0"; };
   cudaPackages_11_1 = callPackage ./cuda-packages.nix { cudaMajorMinorVersion = "11.1"; };
@@ -3298,9 +3287,7 @@ with pkgs;
 
   heimdall-gui = heimdall.override { enableGUI = true; };
 
-  headscale = callPackage ../servers/headscale {
-    buildGoModule = buildGo123Module;
-  };
+  headscale = callPackage ../servers/headscale { };
 
   highlight = callPackage ../tools/text/highlight {
     lua = lua5;
@@ -3494,21 +3481,6 @@ with pkgs;
 
   ksmoothdock = libsForQt5.callPackage ../applications/misc/ksmoothdock { };
 
-  ligo =
-    let
-      ocaml_p = ocaml-ng.ocamlPackages_4_14.overrideScope (
-        self: super: {
-          zarith = super.zarith.override { version = "1.13"; };
-        }
-      );
-    in
-    callPackage ../development/compilers/ligo {
-      coq = coq_8_13.override {
-        customOCamlPackages = ocaml_p;
-      };
-      ocamlPackages = ocaml_p;
-    };
-
   leocad = callPackage ../applications/graphics/leocad { };
 
   libcoap = callPackage ../applications/networking/libcoap {
@@ -3524,8 +3496,6 @@ with pkgs;
     ffmpeg = ffmpeg_6-full;
     ocamlPackages = ocaml-ng.ocamlPackages_4_14;
   };
-
-  llm = with python3Packages; toPythonApplication llm;
 
   loganalyzer = libsForQt5.callPackage ../development/tools/loganalyzer { };
 
@@ -3664,7 +3634,7 @@ with pkgs;
 
   libhandy = callPackage ../development/libraries/libhandy { };
 
-  # Needed for apps that still depend on the unstable verison of the library (not libhandy-1)
+  # Needed for apps that still depend on the unstable version of the library (not libhandy-1)
   libhandy_0 = callPackage ../development/libraries/libhandy/0.x.nix { };
 
   libint = callPackage ../development/libraries/libint { };
@@ -4092,8 +4062,6 @@ with pkgs;
 
   padthv1 = libsForQt5.callPackage ../applications/audio/padthv1 { };
 
-  pageedit = libsForQt5.callPackage ../applications/office/PageEdit { };
-
   pagefind = libsForQt5.callPackage ../applications/misc/pagefind { };
 
   pakcs = callPackage ../development/compilers/pakcs { };
@@ -4454,12 +4422,7 @@ with pkgs;
 
   soundkonverter = libsForQt5.soundkonverter;
 
-  sparrow-unwrapped = callPackage ../applications/blockchains/sparrow {
-    openimajgrabber = callPackage ../applications/blockchains/sparrow/openimajgrabber.nix { };
-    openjdk = jdk23.override { enableJavaFX = true; };
-  };
-
-  sparrow = callPackage ../applications/blockchains/sparrow/fhsenv.nix { };
+  sparrow = callPackage ../applications/blockchains/sparrow { };
 
   steck = callPackage ../servers/pinnwand/steck.nix { };
 
@@ -4598,10 +4561,6 @@ with pkgs;
   trace-cmd = callPackage ../os-specific/linux/trace-cmd { };
 
   kernelshark = qt6Packages.callPackage ../os-specific/linux/trace-cmd/kernelshark.nix { };
-
-  tracee = callPackage ../tools/security/tracee {
-    clang = clang_14;
-  };
 
   translatelocally-models = recurseIntoAttrs (callPackages ../misc/translatelocally-models { });
 
@@ -4866,7 +4825,7 @@ with pkgs;
 
   zbar = libsForQt5.callPackage ../tools/graphics/zbar { };
 
-  # Nvidia support does not require any propietary libraries, so CI can build it.
+  # Nvidia support does not require any proprietary libraries, so CI can build it.
   # Note that when enabling this unconditionally, non-nvidia users will always have an empty "GPU" section.
   zenith-nvidia = zenith.override {
     nvidiaSupport = true;
@@ -5148,6 +5107,7 @@ with pkgs;
   gcc12Stdenv = overrideCC gccStdenv buildPackages.gcc12;
   gcc13Stdenv = overrideCC gccStdenv buildPackages.gcc13;
   gcc14Stdenv = overrideCC gccStdenv buildPackages.gcc14;
+  gcc15Stdenv = overrideCC gccStdenv buildPackages.gcc15;
 
   # This is not intended for use in nixpkgs but for providing a faster-running
   # compiler to nixpkgs users by building gcc with reproducibility-breaking
@@ -5252,9 +5212,10 @@ with pkgs;
     gcc12
     gcc13
     gcc14
+    gcc15
     ;
 
-  gcc_latest = gcc14;
+  gcc_latest = gcc15;
 
   libgccjit = gcc.cc.override {
     name = "libgccjit";
@@ -5380,6 +5341,34 @@ with pkgs;
     }
   );
 
+  gnat15 = wrapCC (
+    gcc15.cc.override {
+      name = "gnat";
+      langC = true;
+      langCC = false;
+      langAda = true;
+      profiledCompiler = false;
+      # As per upstream instructions building a cross compiler
+      # should be done with a (native) compiler of the same version.
+      # If we are cross-compiling GNAT, we may as well do the same.
+      gnat-bootstrap =
+        if stdenv.hostPlatform == stdenv.targetPlatform && stdenv.buildPlatform == stdenv.hostPlatform then
+          buildPackages.gnat-bootstrap14
+        else
+          buildPackages.gnat15;
+      stdenv =
+        if
+          stdenv.hostPlatform == stdenv.targetPlatform
+          && stdenv.buildPlatform == stdenv.hostPlatform
+          && stdenv.buildPlatform.isDarwin
+          && stdenv.buildPlatform.isx86_64
+        then
+          overrideCC stdenv gnat-bootstrap14
+        else
+          stdenv;
+    }
+  );
+
   gnat-bootstrap = gnat-bootstrap12;
   gnat-bootstrap11 = wrapCC (
     callPackage ../development/compilers/gnat-bootstrap { majorVersion = "11"; }
@@ -5412,6 +5401,7 @@ with pkgs;
   gnat12Packages = recurseIntoAttrs (callPackage ./ada-packages.nix { gnat = buildPackages.gnat12; });
   gnat13Packages = recurseIntoAttrs (callPackage ./ada-packages.nix { gnat = buildPackages.gnat13; });
   gnat14Packages = recurseIntoAttrs (callPackage ./ada-packages.nix { gnat = buildPackages.gnat14; });
+  gnat15Packages = recurseIntoAttrs (callPackage ./ada-packages.nix { gnat = buildPackages.gnat15; });
   gnatPackages = gnat13Packages;
 
   inherit (gnatPackages)
@@ -5466,6 +5456,21 @@ with pkgs;
 
   gccgo14 = wrapCC (
     gcc14.cc.override {
+      name = "gccgo";
+      langCC = true; # required for go.
+      langC = true;
+      langGo = true;
+      langJit = true;
+      profiledCompiler = false;
+    }
+    // {
+      # not supported on darwin: https://github.com/golang/go/issues/463
+      meta.broken = stdenv.hostPlatform.isDarwin;
+    }
+  );
+
+  gccgo15 = wrapCC (
+    gcc15.cc.override {
       name = "gccgo";
       langCC = true; # required for go.
       langC = true;
@@ -6593,10 +6598,12 @@ with pkgs;
 
   # https://py-free-threading.github.io
   python313FreeThreading = python313.override {
+    self = python313FreeThreading;
     pythonAttr = "python313FreeThreading";
     enableGIL = false;
   };
   python314FreeThreading = python314.override {
+    self = python314FreeThreading;
     pythonAttr = "python313FreeThreading";
     enableGIL = false;
   };
@@ -7022,7 +7029,7 @@ with pkgs;
   # host platform.
   #
   # Because this is the *next* stages choice, it's a bit non-modular to put
-  # here. In theory, bootstraping is supposed to not be a chain but at tree,
+  # here. In theory, bootstrapping is supposed to not be a chain but at tree,
   # where each stage supports many "successor" stages, like multiple possible
   # futures. We don't have a better alternative, but with this downside in
   # mind, please be judicious when using this attribute. E.g. for building
@@ -7895,6 +7902,7 @@ with pkgs;
     cp: with cp; [
       # FIXME unbreak certbot-dns-cloudflare
       certbot-dns-google
+      certbot-dns-inwx
       certbot-dns-ovh
       certbot-dns-rfc2136
       certbot-dns-route53
@@ -8103,8 +8111,6 @@ with pkgs;
   gecode_6 = qt5.callPackage ../development/libraries/gecode { };
   gecode = gecode_6;
 
-  geph = recurseIntoAttrs (callPackages ../applications/networking/geph { pnpm = pnpm_8; });
-
   gegl = callPackage ../development/libraries/gegl {
     openexr = openexr_2;
   };
@@ -8176,7 +8182,7 @@ with pkgs;
     stdenv = stdenvNoLibc;
   };
 
-  # These are used when buiding compiler-rt / libgcc, prior to building libc.
+  # These are used when building compiler-rt / libgcc, prior to building libc.
   preLibcCrossHeaders =
     let
       inherit (stdenv.targetPlatform) libc;
@@ -9203,9 +9209,7 @@ with pkgs;
     };
   };
 
-  opencsg = callPackage ../development/libraries/opencsg {
-    inherit (qt5) qmake;
-  };
+  opencsg = callPackage ../development/libraries/opencsg { };
 
   opencv4 = callPackage ../development/libraries/opencv/4.x.nix {
     pythonPackages = python3Packages;
@@ -9277,7 +9281,6 @@ with pkgs;
   };
 
   pcre = callPackage ../development/libraries/pcre { };
-  pcre16 = res.pcre.override { variant = "pcre16"; };
   # pcre32 seems unused
   pcre-cpp = res.pcre.override { variant = "cpp"; };
 
@@ -9455,8 +9458,6 @@ with pkgs;
     }
   );
 
-  qv2ray = libsForQt5.callPackage ../applications/networking/qv2ray { };
-
   readline = readline82;
 
   readline70 = callPackage ../development/libraries/readline/7.0.nix { };
@@ -9503,6 +9504,17 @@ with pkgs;
   rhino = callPackage ../development/libraries/java/rhino {
     javac = jdk8;
     jvm = jre8;
+  };
+
+  rocksdb_9_10 = rocksdb.overrideAttrs rec {
+    pname = "rocksdb";
+    version = "9.10.0";
+    src = fetchFromGitHub {
+      owner = "facebook";
+      repo = pname;
+      rev = "v${version}";
+      hash = "sha256-G+DlQwEUyd7JOCjS1Hg1cKWmA/qAiK8UpUIKcP+riGQ=";
+    };
   };
 
   rocksdb_8_11 = rocksdb.overrideAttrs rec {
@@ -10534,7 +10546,7 @@ with pkgs;
 
   nginxModules = recurseIntoAttrs (callPackage ../servers/http/nginx/modules.nix { });
 
-  # We should move to dynmaic modules and create a nginxFull package with all modules
+  # We should move to dynamic modules and create a nginxFull package with all modules
   nginxShibboleth = nginxStable.override {
     modules = [
       nginxModules.rtmp
@@ -10845,10 +10857,6 @@ with pkgs;
   qcal = callPackage ../tools/networking/qcal/default.nix { };
 
   rake = callPackage ../development/tools/build-managers/rake { };
-
-  restic = callPackage ../tools/backup/restic { };
-
-  restic-rest-server = callPackage ../tools/backup/restic/rest-server.nix { };
 
   rethinkdb = callPackage ../servers/nosql/rethinkdb {
     stdenv = clangStdenv;
@@ -11896,8 +11904,6 @@ with pkgs;
 
   activitywatch = callPackage ../applications/office/activitywatch/wrapper.nix { };
 
-  adobe-reader = pkgsi686Linux.callPackage ../applications/misc/adobe-reader { };
-
   anilibria-winmaclinux = libsForQt5.callPackage ../applications/video/anilibria-winmaclinux { };
 
   masterpdfeditor4 = libsForQt5.callPackage ../applications/misc/masterpdfeditor4 { };
@@ -12749,6 +12755,7 @@ with pkgs;
   inherit (callPackages ../development/libraries/wlroots { })
     wlroots_0_17
     wlroots_0_18
+    wlroots_0_19
     ;
 
   sway-contrib = recurseIntoAttrs (callPackages ../applications/misc/sway-contrib { });
@@ -12974,7 +12981,7 @@ with pkgs;
     k3s_1_32
     k3s_1_33
     ;
-  k3s = k3s_1_32;
+  k3s = k3s_1_33;
 
   kapow = libsForQt5.callPackage ../applications/misc/kapow { };
 
@@ -13506,9 +13513,7 @@ with pkgs;
 
   mythtv = libsForQt5.callPackage ../applications/video/mythtv { };
 
-  ncdu = callPackage ../tools/misc/ncdu { };
-
-  ncdu_1 = callPackage ../tools/misc/ncdu/1.nix { };
+  ncdu_1 = callPackage ../by-name/nc/ncdu/1.nix { };
 
   notepadqq = libsForQt5.callPackage ../applications/editors/notepadqq { };
 
@@ -13579,8 +13584,6 @@ with pkgs;
   opentx = libsForQt5.callPackage ../applications/misc/opentx { };
 
   organicmaps = qt6Packages.callPackage ../applications/misc/organicmaps { };
-
-  vivaldi = callPackage ../applications/networking/browsers/vivaldi { };
 
   openrazer-daemon = python3Packages.toPythonApplication python3Packages.openrazer-daemon;
 
@@ -13655,8 +13658,6 @@ with pkgs;
 
   plexamp = callPackage ../applications/audio/plexamp { };
 
-  plex-media-player = libsForQt5.callPackage ../applications/video/plex-media-player { };
-
   plex-mpv-shim = python3Packages.callPackage ../applications/video/plex-mpv-shim { };
 
   plover = recurseIntoAttrs (libsForQt5.callPackage ../applications/misc/plover { });
@@ -13673,7 +13674,7 @@ with pkgs;
     jdk = jdk17;
   };
 
-  # perhaps there are better apps for this task? It's how I had configured my preivous system.
+  # perhaps there are better apps for this task? It's how I had configured my previous system.
   # And I don't want to rewrite all rules
   profanity = callPackage ../applications/networking/instant-messengers/profanity (
     {
@@ -14229,7 +14230,7 @@ with pkgs;
   traverso = libsForQt5.callPackage ../applications/audio/traverso { };
 
   tinywl = callPackage ../applications/window-managers/tinywl {
-    wlroots = wlroots_0_18;
+    wlroots = wlroots_0_19;
   };
 
   trojita = libsForQt5.callPackage ../applications/networking/mailreaders/trojita { };
@@ -14425,9 +14426,7 @@ with pkgs;
     vscode-generic = ../applications/editors/vscode/generic.nix;
   };
 
-  openvscode-server = callPackage ../servers/openvscode-server {
-    nodejs = nodejs_20;
-  };
+  openvscode-server = callPackage ../servers/openvscode-server { };
 
   code-server = callPackage ../servers/code-server {
     nodejs = nodejs_20;
@@ -14663,8 +14662,6 @@ with pkgs;
   };
 
   zotero_7 = pkgs.zotero;
-
-  zsteg = callPackage ../tools/security/zsteg { };
 
   zynaddsubfx = callPackage ../applications/audio/zynaddsubfx {
     guiModule = "zest";
@@ -15596,14 +15593,14 @@ with pkgs;
     ;
 
   trimmomatic = callPackage ../applications/science/biology/trimmomatic {
-    jdk = pkgs.jdk11_headless;
+    jdk = pkgs.jdk21_headless;
     # Reduce closure size
     jre = pkgs.jre_minimal.override {
       modules = [
         "java.base"
         "java.logging"
       ];
-      jdk = pkgs.jdk11_headless;
+      jdk = pkgs.jdk21_headless;
     };
   };
 
@@ -15871,6 +15868,7 @@ with pkgs;
     polyml = polyml.overrideAttrs {
       pname = "polyml-for-isabelle";
       version = "2025";
+      __intentionallyOverridingVersion = true; # avoid a warning, no src override
       configureFlags = [
         "--enable-intinf-as-int"
         "--with-gmp"
@@ -16115,8 +16113,6 @@ with pkgs;
   apmplanner2 = libsForQt5.callPackage ../applications/science/robotics/apmplanner2 { };
 
   ### MISC
-
-  android-file-transfer = libsForQt5.callPackage ../tools/filesystems/android-file-transfer { };
 
   antimicrox = libsForQt5.callPackage ../tools/misc/antimicrox { };
 
@@ -16428,7 +16424,7 @@ with pkgs;
   nixosOptionsDoc = attrs: (import ../../nixos/lib/make-options-doc) ({ inherit pkgs lib; } // attrs);
 
   nix-eval-jobs = callPackage ../tools/package-management/nix-eval-jobs {
-    nix = nixVersions.nix_2_28;
+    nix = nixVersions.nix_2_29;
   };
 
   nix-delegate = haskell.lib.compose.justStaticExecutables haskellPackages.nix-delegate;
@@ -16905,8 +16901,6 @@ with pkgs;
   duden = python3Packages.toPythonApplication python3Packages.duden;
 
   yaziPlugins = recurseIntoAttrs (callPackage ../by-name/ya/yazi/plugins { });
-
-  animdl = python3Packages.callPackage ../applications/video/animdl { };
 
   dillo = callPackage ../by-name/di/dillo/package.nix {
     fltk = fltk13;
