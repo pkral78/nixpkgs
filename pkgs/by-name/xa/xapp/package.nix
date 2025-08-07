@@ -24,7 +24,7 @@
 
 stdenv.mkDerivation rec {
   pname = "xapp";
-  version = "2.8.9";
+  version = "2.8.11";
 
   outputs = [
     "out"
@@ -33,9 +33,9 @@ stdenv.mkDerivation rec {
 
   src = fetchFromGitHub {
     owner = "linuxmint";
-    repo = pname;
+    repo = "xapp";
     rev = version;
-    hash = "sha256-ub5OwtB+LR86gt17342cmgvoWJu2kYzkWhl9V1QVCzQ=";
+    hash = "sha256-dmMjGWjq0s4MkobeqssbG5G3+gHRqA6lmu95uJX3RJY=";
   };
 
   # Recommended by upstream, which enables the build of xapp-debug.
