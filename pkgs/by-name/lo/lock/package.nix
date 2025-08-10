@@ -19,13 +19,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lock";
-  version = "1.6.1";
+  version = "1.7.0";
 
   src = fetchFromGitHub {
     owner = "konstantintutsch";
     repo = "Lock";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-2AHnzJ5lwm/CXOTBumTxllIzFo88EAENwQFny7TjrUk=";
+    hash = "sha256-RuxlMPboNODfSQXeGQWCpeNDI3HQNjx+ILsKAEttL6A=";
   };
 
   strictDeps = true;
