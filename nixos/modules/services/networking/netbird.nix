@@ -295,8 +295,7 @@ in
                     name = "${cfg.package.name}-wrapper-${client.name}";
                     meta.mainProgram = mkBin "netbird";
                     nativeBuildInputs = with pkgs; [ makeWrapper ];
-                    phases = [ "installPhase" ];
-                    installPhase = concatStringsSep "\n" [
+                    buildCommand = concatStringsSep "\n" [
                       ''
                         mkdir -p "$out/bin"
                         makeWrapper ${lib.getExe cfg.package} "$out/bin/${mkBin "netbird"}" \
@@ -310,8 +309,9 @@ in
                         mkdir -p "$out/share/applications"
                         substitute ${cfg.ui.package}/share/applications/netbird.desktop \
                             "$out/share/applications/${mkBin "netbird"}.desktop" \
-                          --replace-fail 'Name=NetBird' "Name=NetBird @ ${client.service.name}" \
-                          --replace-fail '${lib.getExe cfg.ui.package}' "$out/bin/${mkBin "netbird-ui"}"
+                          --replace-fail 'Name=Netbird' "Name=NetBird @ ${client.service.name}" \
+                          --replace-fail '${lib.getExe cfg.ui.package}' "$out/bin/${mkBin "netbird-ui"}" \
+                          --replace-fail 'Icon=netbird' "Icon=${cfg.ui.package}/share/pixmaps/netbird.png"
                       '')
                     ];
                   };

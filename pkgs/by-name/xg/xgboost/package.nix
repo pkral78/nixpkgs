@@ -48,14 +48,14 @@ effectiveStdenv.mkDerivation rec {
   #   in \
   #   rWrapper.override{ packages = [ xgb ]; }"
   pname = lib.optionalString rLibrary "r-" + pnameBase;
-  version = "3.0.3";
+  version = "3.0.5";
 
   src = fetchFromGitHub {
     owner = "dmlc";
     repo = pnameBase;
     tag = "v${version}";
     fetchSubmodules = true;
-    hash = "sha256-UXYefQMb1xwwH5Jv8FT4rVbXP7xo+8Ya9wFhgMkm/rI=";
+    hash = "sha256-khaD9gvKfUyWhkrIZXzGzKw/nfgeTcp9akCi5X3IORo=";
   };
 
   nativeBuildInputs = [
@@ -194,12 +194,10 @@ effectiveStdenv.mkDerivation rec {
   meta = with lib; {
     description = "Scalable, Portable and Distributed Gradient Boosting (GBDT, GBRT or GBM) Library";
     homepage = "https://github.com/dmlc/xgboost";
-    broken = cudaSupport && cudaPackages.cudaOlder "11.4";
     license = licenses.asl20;
     mainProgram = "xgboost";
     platforms = platforms.unix;
     maintainers = with maintainers; [
-      abbradar
       nviets
     ];
   };

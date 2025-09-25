@@ -6,23 +6,14 @@
   nix-update-script,
   writableTmpDirAsHomeHook,
 }:
-
-let
-  models-dev-node-modules-hash = {
-    "aarch64-darwin" = "sha256-VkqxZF2LkNBoIkbQGz98O+y7LgLqQ+FofV2WyMOOUEs=";
-    "aarch64-linux" = "sha256-P7Dik1bXWdipzs4orPff53bDwEXYFHSC05RV789mrTI=";
-    "x86_64-darwin" = "sha256-/VdwzrV+srDrexvXHLKtN2Od24XlXVDWu6pEk1zLtjM=";
-    "x86_64-linux" = "sha256-hMiCOMskK9kwGKaixsvodUVsOuuageiUAwxp/AvzR44=";
-  };
-in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "models-dev";
-  version = "0-unstable-2025-08-07";
+  version = "0-unstable-2025-09-19";
   src = fetchFromGitHub {
     owner = "sst";
     repo = "models.dev";
-    rev = "f7d8b3932adea23b2cb4d0be615e7dff7870b8bc";
-    hash = "sha256-4bzXnZhILxtVMKtj54gXXtuTvh6KY9bLNCLnB1INy/E=";
+    rev = "bb40a42fb7178e1e563598924cfa36c43fcffb80";
+    hash = "sha256-0NBBOzsICb27SZ6Uj7apknCTcqPrhG9UUpBkiMiN6Jo=";
   };
 
   node_modules = stdenvNoCC.mkDerivation {
@@ -49,7 +40,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
        bun install \
          --force \
          --frozen-lockfile \
-         --no-progress
+         --no-progress \
+         --production
 
       runHook postBuild
     '';
@@ -66,7 +58,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # Required else we get errors that our fixed-output derivation references store paths
     dontFixup = true;
 
-    outputHash = models-dev-node-modules-hash.${stdenvNoCC.hostPlatform.system};
+    outputHash =
+      {
+        x86_64-linux = "sha256-Uajwvce9EO1UwmpkGrViOrxlm2R/VnnMK8WAiOiQOhY=";
+        aarch64-linux = "sha256-brjdEEYBJ1R5pIkIHyOOmVieTJ0yUJEgxs7MtbzcKXo=";
+        x86_64-darwin = "sha256-aGUWZwySmo0ojOBF/PioZ2wp4NRwYyoaJuytzeGYjck=";
+        aarch64-darwin = "sha256-IM88XPfttZouN2DEtnWJmbdRxBs8wN7AZ1T28INJlBY=";
+      }
+      .${stdenvNoCC.hostPlatform.system};
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };

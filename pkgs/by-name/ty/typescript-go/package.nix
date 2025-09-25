@@ -1,23 +1,26 @@
 {
   lib,
-  buildGoModule,
+  buildGo125Module,
   fetchFromGitHub,
   nix-update-script,
 }:
 
+let
+  buildGoModule = buildGo125Module;
+in
 buildGoModule {
   pname = "typescript-go";
-  version = "0-unstable-2025-08-01";
+  version = "0-unstable-2025-09-17";
 
   src = fetchFromGitHub {
     owner = "microsoft";
     repo = "typescript-go";
-    rev = "644bde28939733580cbef96adaa7253f9faa54ac";
-    hash = "sha256-5oU3tTZ8jvc85jzgh14ICLlz0VgQ7v2ofeMADRMW5O4=";
+    rev = "1ca5a2d97b0c2b93cfc32137c8922185b4f41df0";
+    hash = "sha256-g1Wc2jAlpO7voqIFvNkEF900ZZIb/nwNFL1+4ZUGU9U=";
     fetchSubmodules = false;
   };
 
-  vendorHash = "sha256-nOro2EARm/4LZ0BfX10nuhCAlPi6T91EpXGP0F9Rm04=";
+  vendorHash = "sha256-k1fKa93zxMnORDPWnZrMahNHG0sCa3JOJl+d4T8PyIM=";
 
   ldflags = [
     "-s"

@@ -24,11 +24,11 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "keycloak";
-  version = "26.3.1";
+  version = "26.3.4";
 
   src = fetchzip {
     url = "https://github.com/keycloak/keycloak/releases/download/${finalAttrs.version}/keycloak-${finalAttrs.version}.zip";
-    hash = "sha256-M3YbS/aK9y4N2kZrm1wNT1ZaWAaUwaRn9QQ8fMdOV5g=";
+    hash = "sha256-K+7ZUBN3iYGMteP/ycu4M5rJPdIavN144BgOwktdu3g=";
   };
 
   nativeBuildInputs = [

@@ -9,13 +9,13 @@
 
 buildGoModule rec {
   pname = "openlinkhub";
-  version = "0.6.0";
+  version = "0.6.4";
 
   src = fetchFromGitHub {
     owner = "jurkovic-nikola";
     repo = "OpenLinkHub";
     tag = version;
-    hash = "sha256-pCMdljBgqxfI9mVperzjAiuq5UUsqmmR+xvuywudv9o=";
+    hash = "sha256-xwUkTWK4K6OQoopj7GmuptauCav6xCZLv8ITeCQKv4M=";
   };
 
   proxyVendor = true;
