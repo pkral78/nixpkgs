@@ -745,8 +745,6 @@ self: super: with self; {
 
   ansitable = callPackage ../development/python-modules/ansitable { };
 
-  ansiwrap = callPackage ../development/python-modules/ansiwrap { };
-
   anthemav = callPackage ../development/python-modules/anthemav { };
 
   anthropic = callPackage ../development/python-modules/anthropic { };
@@ -7002,6 +7000,8 @@ self: super: with self; {
 
   ilua = callPackage ../development/python-modules/ilua { };
 
+  image = callPackage ../development/python-modules/image { };
+
   image-diff = callPackage ../development/python-modules/image-diff { };
 
   image-go-nord = callPackage ../development/python-modules/image-go-nord { };
@@ -12447,8 +12447,6 @@ self: super: with self; {
 
   py-ecc = callPackage ../development/python-modules/py-ecc { };
 
-  py-eth-sig-utils = callPackage ../development/python-modules/py-eth-sig-utils { };
-
   py-evm = callPackage ../development/python-modules/py-evm { };
 
   py-expression-eval = callPackage ../development/python-modules/py-expression-eval { };
@@ -15065,6 +15063,8 @@ self: super: with self; {
   python-pae = callPackage ../development/python-modules/python-pae { };
 
   python-pam = callPackage ../development/python-modules/python-pam { inherit (pkgs) pam; };
+
+  python-path = callPackage ../development/python-modules/python-path { };
 
   python-periphery = callPackage ../development/python-modules/python-periphery { };
 
@@ -18777,6 +18777,8 @@ self: super: with self; {
 
   trio-asyncio = callPackage ../development/python-modules/trio-asyncio { };
 
+  trio-typing = callPackage ../development/python-modules/trio-typing { };
+
   trio-websocket = callPackage ../development/python-modules/trio-websocket { };
 
   triton = callPackage ../development/python-modules/triton { llvm = pkgs.triton-llvm; };
@@ -18832,6 +18834,8 @@ self: super: with self; {
   tsplib95 = callPackage ../development/python-modules/tsplib95 { };
 
   tt-flash = callPackage ../development/python-modules/tt-flash { };
+
+  tt-smi = callPackage ../development/python-modules/tt-smi { };
 
   tt-tools-common = callPackage ../development/python-modules/tt-tools-common { };
 
