@@ -418,6 +418,8 @@ let
 
         dnssec = callPackage ../development/ocaml-modules/dns/dnssec.nix { };
 
+        dockerfile = callPackage ../development/ocaml-modules/dockerfile { };
+
         dolmen = callPackage ../development/ocaml-modules/dolmen { };
 
         dolmen_loop = callPackage ../development/ocaml-modules/dolmen/loop.nix { };
@@ -1316,7 +1318,9 @@ let
 
         monolith = callPackage ../development/ocaml-modules/monolith { };
 
-        mopsa = callPackage ../development/ocaml-modules/mopsa { };
+        mopsa = callPackage ../development/ocaml-modules/mopsa {
+          inherit (pkgs.llvmPackages_19) clang libclang libllvm;
+        };
 
         morbig = callPackage ../development/ocaml-modules/morbig { };
 
@@ -2225,8 +2229,6 @@ let
 
         hol_light = callPackage ../applications/science/logic/hol_light { };
 
-        ocamlnat = callPackage ../development/ocaml-modules/ocamlnat { };
-
         ### End ###
 
       }
@@ -2314,6 +2316,8 @@ rec {
   ocamlPackages_5_2 = mkOcamlPackages (callPackage ../development/compilers/ocaml/5.2.nix { });
 
   ocamlPackages_5_3 = mkOcamlPackages (callPackage ../development/compilers/ocaml/5.3.nix { });
+
+  ocamlPackages_5_4 = mkOcamlPackages (callPackage ../development/compilers/ocaml/5.4.nix { });
 
   ocamlPackages_latest = ocamlPackages_5_3;
 

@@ -24,15 +24,15 @@
 }:
 
 let
-  version = "2025.6.1335";
+  version = "2025.8.779";
   sources = {
     x86_64-linux = fetchurl {
       url = "https://pkg.cloudflareclient.com/pool/noble/main/c/cloudflare-warp/cloudflare-warp_${version}.0_amd64.deb";
-      hash = "sha256-zb+DrBKUOsNBaUE+2CNtocsDs3bcYpG0nHCnjcnH2Mo=";
+      hash = "sha256-488sXR0CqZAkeXSMawYVXHszK9NXsTCQc5RAd87Hj9k=";
     };
     aarch64-linux = fetchurl {
       url = "https://pkg.cloudflareclient.com/pool/noble/main/c/cloudflare-warp/cloudflare-warp_${version}.0_arm64.deb";
-      hash = "sha256-5DuJKyyr8AUkvuSVrcJYmrc+HAG19wmvrWNN8jrm+wY=";
+      hash = "sha256-rLDGY8kmYU/B0wks20oE1sQ7luaX6teTNfWZ6atJzhU=";
     };
   };
 in

@@ -80,7 +80,7 @@ in
       enable = lib.mkEnableOption "Redmine, a project management web application";
 
       package = lib.mkPackageOption pkgs "redmine" {
-        example = "redmine.override { ruby = pkgs.ruby_3_2; }";
+        example = "redmine.override { ruby = pkgs.ruby_3_4; }";
       };
 
       user = lib.mkOption {
@@ -461,10 +461,12 @@ in
         CapabilityBoundingSet = "";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
+        MountAPIVFS = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateMounts = true;
         PrivateTmp = true;
+        PrivateUsers = true;
         ProcSubset = "pid";
         ProtectClock = true;
         ProtectControlGroups = "strict";
@@ -473,7 +475,7 @@ in
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        ProtectProc = "noaccess";
+        ProtectProc = "invisible";
         ProtectSystem = "strict";
         ReadWritePaths = [
           cfg.stateDir
