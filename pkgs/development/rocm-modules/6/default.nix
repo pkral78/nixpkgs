@@ -8,10 +8,10 @@
   fetchFromGitHub,
   boost179,
   opencv,
-  libjpeg_turbo,
   python3Packages,
   openmpi,
   stdenv,
+  pkgs,
 }:
 
 let
@@ -30,7 +30,6 @@ let
       buildTests = false;
       buildBenchmarks = false;
 
-      rocmPath = self.callPackage ./rocm-path { };
       rocmUpdateScript = self.callPackage ./update.nix { };
 
       ## ROCm ##
@@ -41,26 +40,19 @@ let
           inherit (self) rocm-device-libs;
         }
       );
-      inherit (self.llvm) rocm-merged-llvm clang openmp;
+      inherit (self.llvm) rocm-toolchain clang openmp;
 
       rocm-core = self.callPackage ./rocm-core { stdenv = origStdenv; };
 
       rocm-cmake = self.callPackage ./rocm-cmake { stdenv = origStdenv; };
 
-      rocm-device-libs = self.callPackage ./rocm-device-libs {
-        stdenv = origStdenv;
-        inherit (llvm) rocm-merged-llvm;
-      };
+      rocm-device-libs = self.callPackage ./rocm-device-libs { };
 
       rocm-runtime = self.callPackage ./rocm-runtime {
         stdenv = origStdenv;
-        inherit (llvm) rocm-merged-llvm;
       };
 
-      rocm-comgr = self.callPackage ./rocm-comgr {
-        stdenv = origStdenv;
-        inherit (llvm) rocm-merged-llvm;
-      };
+      rocm-comgr = self.callPackage ./rocm-comgr { };
 
       rocminfo = self.callPackage ./rocminfo { stdenv = origStdenv; };
 
@@ -80,10 +72,7 @@ let
 
       hip-common = self.callPackage ./hip-common { };
 
-      hipcc = self.callPackage ./hipcc {
-        stdenv = origStdenv;
-        inherit (llvm) rocm-merged-llvm;
-      };
+      hipcc = self.callPackage ./hipcc { stdenv = origStdenv; };
 
       # Replaces hip, opencl-runtime, and rocclr
       clr = self.callPackage ./clr { };
@@ -92,10 +81,6 @@ let
 
       hipify = self.callPackage ./hipify {
         stdenv = origStdenv;
-        inherit (llvm)
-          clang
-          rocm-merged-llvm
-          ;
       };
 
       # hsakmt was merged into rocm-runtime
@@ -179,8 +164,7 @@ let
       composable_kernel = self.callPackage ./composable_kernel { };
 
       ck4inductor = pyPackages.callPackage ./composable_kernel/ck4inductor.nix {
-        inherit (self) composable_kernel;
-        inherit (llvm) rocm-merged-llvm;
+        inherit (self) composable_kernel rocm-toolchain;
       };
 
       half = self.callPackage ./half { };
@@ -213,19 +197,6 @@ let
       mivisionx = self.callPackage ./mivisionx {
         stdenv = origStdenv;
         opencv = opencv.override { enablePython = true; };
-        # Unfortunately, rocAL needs a custom libjpeg-turbo until further notice
-        # See: https://github.com/ROCm/MIVisionX/issues/1051
-        libjpeg_turbo = libjpeg_turbo.overrideAttrs {
-          version = "2.0.6.1";
-          src = fetchFromGitHub {
-            owner = "rrawther";
-            repo = "libjpeg-turbo";
-            rev = "640d7ee1917fcd3b6a5271aa6cf4576bccc7c5fb";
-            sha256 = "sha256-T52whJ7nZi8jerJaZtYInC2YDN0QM+9tUDqiNr6IsNY=";
-          };
-          # overwrite all patches, since patches for newer version do not apply
-          patches = [ ./0001-Compile-transupp.c-as-part-of-the-library.patch ];
-        };
       };
 
       mivisionx-hip = self.mivisionx.override {
@@ -267,6 +238,23 @@ let
       # See: https://rocm.docs.amd.com/en/docs-5.7.1/_images/image.004.png
       # See: https://rocm.docs.amd.com/en/docs-5.7.1/deploy/linux/os-native/package_manager_integration.html
       meta = with self; rec {
+        # eval all pkgsRocm release attrs with
+        # nix-eval-jobs --force-recurse pkgs/top-level/release.nix -I . --select "p: p.pkgsRocm" --no-instantiate
+        release-attrPaths = (builtins.fromJSON (builtins.readFile ./release-attrPaths.json)).attrPaths;
+        release-packagePlatforms =
+          let
+            platforms = [
+              "x86_64-linux"
+            ];
+          in
+          lib.foldl' (
+            acc: path:
+            if lib.hasAttrByPath (lib.splitString "." path) pkgs then
+              lib.recursiveUpdate acc (lib.setAttrByPath (lib.splitString "." path) platforms)
+            else
+              acc
+          ) { } self.meta.release-attrPaths;
+
         rocm-developer-tools = symlinkJoin {
           name = "rocm-developer-tools-meta";
           paths = [
@@ -432,6 +420,23 @@ let
       };
     }
     // lib.optionalAttrs config.allowAliases {
+      rocmPath = throw ''
+        'rocm-path' has been removed. If a ROCM_PATH value is required in nixpkgs please
+        construct one with the minimal set of required deps.
+        For convenience use outside of nixpkgs consider one of the entries in
+        'rocmPackages.meta'.
+      ''; # Added 2025-09-30
+
+      rocm-merged-llvm = throw ''
+        'rocm-merged-llvm' has been removed.
+        For 'libllvm' or 'libclang' use 'rocmPackages.llvm.libllvm/clang'.
+        For a ROCm compiler toolchain use 'rocmPackages.rocm-toolchain'.
+        If a package uses '$<TARGET_FILE:clang>' in CMake from 'libclang'
+        it may be necessary to convince it to use 'rocm-toolchain' instead.
+        'rocm-merged-llvm' avoided this at the cost of significantly bloating closure
+        size.
+      ''; # Added 2025-09-30
+
       hsa-amd-aqlprofile-bin = lib.warn ''
         'hsa-amd-aqlprofile-bin' has been replaced by 'aqlprofile'.
       '' self.aqlprofile; # Added 2025-08-27
