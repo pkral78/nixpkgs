@@ -277,6 +277,7 @@
   ./programs/nix-index.nix
   ./programs/nix-ld.nix
   ./programs/nix-required-mounts.nix
+  ./programs/nixbit.nix
   ./programs/nm-applet.nix
   ./programs/nncp.nix
   ./programs/noisetorch.nix
@@ -352,6 +353,7 @@
   ./programs/wayland/uwsm.nix
   ./programs/wayland/waybar.nix
   ./programs/wayland/wayfire.nix
+  ./programs/wayland/wayvnc.nix
   ./programs/weylus.nix
   ./programs/winbox.nix
   ./programs/wireshark.nix
@@ -360,6 +362,7 @@
   ./programs/xfconf.nix
   ./programs/xfs_quota.nix
   ./programs/xonsh.nix
+  ./programs/xppen.nix
   ./programs/xss-lock.nix
   ./programs/xwayland.nix
   ./programs/yazi.nix
@@ -397,7 +400,6 @@
   ./security/pam_mount.nix
   ./security/please.nix
   ./security/polkit.nix
-  ./security/rngd.nix
   ./security/rtkit.nix
   ./security/soteria.nix
   ./security/sudo-rs.nix
@@ -599,7 +601,6 @@
   ./services/development/livebook.nix
   ./services/development/lorri.nix
   ./services/development/nixseparatedebuginfod2.nix
-  ./services/development/nixseparatedebuginfod.nix
   ./services/development/rstudio-server/default.nix
   ./services/development/vsmartcard-vpcd.nix
   ./services/development/zammad.nix
@@ -857,6 +858,7 @@
   ./services/misc/heisenbridge.nix
   ./services/misc/homepage-dashboard.nix
   ./services/misc/ihaskell.nix
+  ./services/misc/iio-niri.nix
   ./services/misc/input-remapper.nix
   ./services/misc/invidious-router.nix
   ./services/misc/irkerd.nix
@@ -924,6 +926,7 @@
   ./services/misc/rkvm.nix
   ./services/misc/rmfakecloud.nix
   ./services/misc/rshim.nix
+  ./services/misc/rsync.nix
   ./services/misc/safeeyes.nix
   ./services/misc/sdrplay.nix
   ./services/misc/servarr/lidarr.nix
@@ -973,6 +976,8 @@
   ./services/monitoring/apcupsd.nix
   ./services/monitoring/arbtt.nix
   ./services/monitoring/below.nix
+  ./services/monitoring/beszel-agent.nix
+  ./services/monitoring/beszel-hub.nix
   ./services/monitoring/bosun.nix
   ./services/monitoring/cadvisor.nix
   ./services/monitoring/certspotter.nix
@@ -1495,6 +1500,7 @@
   ./services/security/vault-agent.nix
   ./services/security/vault.nix
   ./services/security/vaultwarden/default.nix
+  ./services/security/warpgate.nix
   ./services/security/yubikey-agent.nix
   ./services/system/automatic-timezoned.nix
   ./services/system/bpftune.nix

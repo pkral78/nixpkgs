@@ -1614,6 +1614,7 @@ assertNoAdditions {
       "lazyvim.plugins.extras.editor.snacks_picker"
       "lazyvim.plugins.extras.editor.telescope"
       "lazyvim.plugins.extras.formatting.prettier"
+      "lazyvim.plugins.extras.lang.dotnet"
       "lazyvim.plugins.extras.lang.markdown"
       "lazyvim.plugins.extras.lang.omnisharp"
       "lazyvim.plugins.extras.lang.python"
@@ -1859,6 +1860,10 @@ assertNoAdditions {
         pyperclip
         pnglatex
       ];
+  };
+
+  maple-nvim = super.maple-nvim.overrideAttrs {
+    dependencies = [ self.plenary-nvim ];
   };
 
   markdown-preview-nvim =
