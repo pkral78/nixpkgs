@@ -15,8 +15,6 @@ ocamlPackages.buildDunePackage rec {
     hash = "sha256-bMaLjHq/3ZrST5E9lBSIX0T2cAhDin+lv1XwgUF4/7w=";
   };
 
-  duneVersion = "3";
-
   buildInputs = with ocamlPackages; [
     gen
     sedlex
@@ -26,7 +24,7 @@ ocamlPackages.buildDunePackage rec {
     omd
     uri
     ounit2
-    yojson
+    yojson_2
   ];
 
   doCheck = true;
@@ -38,7 +36,7 @@ ocamlPackages.buildDunePackage rec {
 
   meta = {
     description = "Functional language for reasoning about formal systems";
-    homepage = "https://complogic.cs.mcgill.ca/beluga";
+    homepage = "https://github.com/Beluga-lang/Beluga";
     changelog = "https://github.com/Beluga-lang/Beluga/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.bcdarwin ];

@@ -63,10 +63,12 @@ buildNpmPackage {
 
   disallowedReferences = [ nodejs ];
 
-  meta = with lib; {
+  meta = {
     description = "Hunspell binding for NodeJS that exposes as much of Hunspell as possible and also adds new features";
     homepage = "https://github.com/Wulf/nodehun";
-    license = licenses.mit;
-    maintainers = [ maintainers.thomasjm ];
+    license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.thomasjm ];
+    # last successful hydra build on darwin was in 2025
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

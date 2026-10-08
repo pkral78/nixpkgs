@@ -5,28 +5,31 @@
   installShellFiles,
 }:
 
-buildGoModule rec {
+buildGoModule (finalAttrs: {
   pname = "exoscale-cli";
-  version = "1.85.4";
+  version = "1.101.0";
 
   src = fetchFromGitHub {
     owner = "exoscale";
     repo = "cli";
-    rev = "v${version}";
-    sha256 = "sha256-rulleAbiwnUABnHLpfHFjGXK3/DxFJLmse3NIClSpMQ=";
+    rev = "v${finalAttrs.version}";
+    sha256 = "sha256-lJOwFqBtvjHLcPa+/az0x+okqOdP+WrsXbkEG1CMQbk=";
   };
 
   vendorHash = null;
 
   nativeBuildInputs = [ installShellFiles ];
 
-  excludedPackages = [ "internal/integ" ];
+  excludedPackages = [
+    "tests/e2e"
+    "tests/integ"
+  ];
 
   ldflags = [
     "-s"
     "-w"
-    "-X main.version=${version}"
-    "-X main.commit=${src.rev}"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=${finalAttrs.src.rev}"
   ];
 
   # we need to rename the resulting binary but can't use buildFlags with -o here
@@ -55,4 +58,4 @@ buildGoModule rec {
     maintainers = with lib.maintainers; [ viraptor ];
     mainProgram = "exo";
   };
-}
+})

@@ -2,30 +2,33 @@
   lib,
   buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  uv-build,
   typing-extensions,
   numpy,
+  numpy-typing-compat,
   beartype,
   pytestCheckHook,
-  pythonOlder,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "optype";
-  version = "0.13.1";
+  version = "0.18.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jorenham";
     repo = "optype";
-    tag = "v${version}";
-    hash = "sha256-GhG2TR5FJgEXBXLyGTNQKFYtR2iZ0tLgZ9B0YL8SXu8=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-mtcGblOEyLfOmBwQCC+jX9wvpXiRJE/DNPfPMpcKEOI=";
   };
 
-  disabled = pythonOlder "3.11";
+  postPatch = ''
+    substituteInPlace tests/numpy/test_any_array.py \
+      --replace-fail "np.timedelta64(0)" "np.timedelta64(0, \"s\")"
+  '';
 
   build-system = [
-    hatchling
+    uv-build
   ];
 
   dependencies = [
@@ -35,6 +38,7 @@ buildPythonPackage rec {
   optional-dependencies = {
     numpy = [
       numpy
+      numpy-typing-compat
     ];
   };
 
@@ -45,6 +49,7 @@ buildPythonPackage rec {
   nativeCheckInputs = [
     pytestCheckHook
     numpy
+    numpy-typing-compat
     beartype
   ];
 
@@ -54,4 +59,4 @@ buildPythonPackage rec {
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jolars ];
   };
-}
+})

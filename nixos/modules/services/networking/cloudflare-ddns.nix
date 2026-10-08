@@ -7,9 +7,7 @@
 let
   cfg = config.services.cloudflare-ddns;
 
-  boolToString = b: if b then "true" else "false";
   formatList = l: lib.concatStringsSep "," l;
-  formatDuration = d: d.String;
 in
 {
   options.services.cloudflare-ddns = {
@@ -22,9 +20,8 @@ in
       description = ''
         Path to a file containing the Cloudflare API authentication token.
         The file content should be in the format `CLOUDFLARE_API_TOKEN=YOUR_SECRET_TOKEN`.
-        The service user `${cfg.user}` needs read access to this file.
+        The service user needs read access to this file.
         Ensure permissions are secure (e.g., `0400` or `0440`) and ownership is appropriate
-        (e.g., `owner = root`, `group = ${cfg.group}`).
         Using `CLOUDFLARE_API_TOKEN` is preferred over the deprecated `CF_API_TOKEN`.
       '';
       example = "/run/secrets/cloudflare-ddns-token";
@@ -267,8 +264,7 @@ in
           let
             toEnv = name: value: "${name}=\"${toString value}\"";
             toEnvList = name: value: "${name}=\"${formatList value}\"";
-            toEnvDuration = name: value: "${name}=\"${formatDuration value}\"";
-            toEnvBool = name: value: "${name}=\"${boolToString value}\"";
+            toEnvBool = name: value: "${name}=\"${lib.boolToString value}\"";
             toEnvMaybe =
               pred: name: value:
               lib.optionalString pred (toEnv name value);
@@ -324,4 +320,7 @@ in
       };
     };
   };
+  meta.maintainers = with lib.maintainers; [
+    shokerplz
+  ];
 }

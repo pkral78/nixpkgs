@@ -25,13 +25,13 @@ let
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "gogh";
-  version = "361";
+  version = "1247";
 
   src = fetchFromGitHub {
     owner = "Gogh-Co";
     repo = "Gogh";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-kzJiI1w8CYVYMcHo8mMqLseyFsU/PekjMkkk0gG+RH4=";
+    hash = "sha256-OB41buqusd+4ki0K28wK4DFJbQp3LsJ7ZU8qJNHprWs=";
   };
 
   postPatch = ''

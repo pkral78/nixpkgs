@@ -3,23 +3,29 @@
   stdenv,
   fetchgit,
   cmake,
+  libubox,
   unstableGitUpdater,
 }:
 
-stdenv.mkDerivation {
+stdenv.mkDerivation (finalAttrs: {
   pname = "odhcp6c";
-  version = "0-unstable-2025-10-03";
+  version = "0-unstable-2026-06-27";
+  __structuredAttrs = true;
 
   src = fetchgit {
     url = "https://git.openwrt.org/project/odhcp6c.git";
-    rev = "96d9e0b6e81330c61c954c6bc73a2302276fcda1";
-    hash = "sha256-EhkzSKf1t4MrGCN5oC1h0QJiY9w8VhMsa/jor4lEvD4=";
+    rev = "10a52220aec9d45803518d8cc4d63e552484ed61";
+    hash = "sha256-IDBbVWs017JcrApJ3s8fjEQghWCwrK1d+E6Wp5eHNX4=";
   };
 
+  # fix build w/ glibc-2.44
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=discarded-qualifiers";
+
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ libubox ];
 
   cmakeFlags = [
-    "-DCMAKE_INSTALL_PREFIX=$out"
+    "-DCMAKE_INSTALL_PREFIX=${placeholder "out"}"
   ];
 
   passthru.updateScript = unstableGitUpdater { };
@@ -30,5 +36,6 @@ stdenv.mkDerivation {
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ felbinger ];
     platforms = lib.platforms.linux;
+    mainProgram = "odhcp6c";
   };
-}
+})

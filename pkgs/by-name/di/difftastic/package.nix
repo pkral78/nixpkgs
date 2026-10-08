@@ -2,32 +2,41 @@
   lib,
   rustPlatform,
   fetchFromGitHub,
+  installShellFiles,
   stdenv,
   versionCheckHook,
   nix-update-script,
+  rust-jemalloc-sys,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "difftastic";
-  version = "0.65.0";
+  version = "0.71.0";
 
   src = fetchFromGitHub {
     owner = "wilfred";
     repo = "difftastic";
     tag = finalAttrs.version;
-    hash = "sha256-w4z1ljIjPQQYPpMGgrcptTYeP5S72iVvVgNvrctN61w=";
+    hash = "sha256-xJdR/t6O8PavCKBiKnueiLR01g7nWGUHp9bcjOuDDA8=";
   };
 
-  cargoHash = "sha256-qj2CyHlEVxTo3wsmuivpnhx02/gMbZjmpAM3dp4xXEQ=";
+  cargoHash = "sha256-HEX8njuArbgMQI8yDr66siRB8t+4P2Q7rxHuCeaD9Uw=";
+
+  nativeBuildInputs = [ installShellFiles ];
+
+  buildInputs = [ rust-jemalloc-sys ];
 
   env = lib.optionalAttrs stdenv.hostPlatform.isStatic { RUSTFLAGS = "-C relocation-model=static"; };
 
   # skip flaky tests
   checkFlags = [ "--skip=options::tests::test_detect_display_width" ];
 
+  postInstall = ''
+    installManPage difft.1
+  '';
+
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/difft";
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
@@ -39,7 +48,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [
       ethancedwards8
-      figsoda
       matthiasbeyer
       defelo
     ];

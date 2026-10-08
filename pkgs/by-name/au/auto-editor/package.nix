@@ -1,43 +1,71 @@
 {
   lib,
-  python3Packages,
+  stdenv,
+  buildNimPackage,
   fetchFromGitHub,
+
+  ffmpeg-full,
   yt-dlp,
+  lame,
+  libopus,
+  x264,
+  dav1d,
+  zlib,
+  alsa-lib,
+
+  python3,
+  python3Packages,
 }:
 
-python3Packages.buildPythonApplication rec {
+buildNimPackage rec {
   pname = "auto-editor";
-  version = "28.0.2";
-  pyproject = true;
+  version = "31.6.0";
 
   src = fetchFromGitHub {
     owner = "WyattBlue";
     repo = "auto-editor";
     tag = version;
-    hash = "sha256-ozw5ZPvKP7aTBBItQKNx85hZ1T4IxX9NYCcNHC5UuuM=";
+    hash = "sha256-N7pQQD6SVl566z3ud3yY/EFiSbIVRFWwNtlJPTPSgsI=";
+  };
+
+  lockFile = ./lock.json;
+
+  buildInputs = [
+    ffmpeg-full
+    lame # Upstream uses a minimal, unpackaged fork of `lame` named `lamer`.
+    libopus
+    x264
+    dav1d
+    zlib
+  ]
+  ++ lib.optional stdenv.hostPlatform.isLinux alsa-lib;
+
+  env = {
+    # Nothing should be dynamically linked, as ffmpeg should already link it.
+    DISABLE_HEVC = "1";
+    DISABLE_WHISPER = "1";
+    DISABLE_VPX = "1";
+    DISABLE_SVTAV1 = "1";
+    DISABLE_VPL = "1";
   };
 
   postPatch = ''
-    substituteInPlace auto_editor/__main__.py \
+    substituteInPlace src/log.nim \
       --replace-fail '"yt-dlp"' '"${lib.getExe yt-dlp}"'
+
+    # buildNimPackage hack
+    substituteInPlace ae.nimble \
+      --replace-fail '"main=auto-editor"' '"main"'
   '';
 
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [
-    basswood-av
-    numpy
+  nativeCheckInputs = [
+    python3
+    python3Packages.av
   ];
 
-  checkPhase = ''
-    runHook preCheck
-
-    $out/bin/auto-editor test all
-
-    runHook postCheck
+  postInstall = ''
+    mv $out/bin/main $out/bin/auto-editor
   '';
-
-  pythonImportsCheck = [ "auto_editor" ];
 
   meta = {
     changelog = "https://github.com/WyattBlue/auto-editor/releases/tag/${src.tag}";
@@ -45,6 +73,10 @@ python3Packages.buildPythonApplication rec {
     homepage = "https://auto-editor.com/";
     license = lib.licenses.unlicense;
     mainProgram = "auto-editor";
-    maintainers = with lib.maintainers; [ tomasajt ];
+    maintainers = with lib.maintainers; [
+      tomasajt
+      utopiatopia
+    ];
+    platforms = lib.platforms.unix;
   };
 }

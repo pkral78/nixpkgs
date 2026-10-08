@@ -2,6 +2,7 @@
   stdenv,
   lib,
   fetchFromGitHub,
+  fetchpatch,
   gitUpdater,
   nixosTests,
   boost,
@@ -11,6 +12,8 @@
   glib,
   glm,
   gtest,
+  gtk4,
+  gtk4-layer-shell,
   json_c,
   libevdev,
   libglvnd,
@@ -25,29 +28,28 @@
   pkg-config,
   python3,
   systemd,
+  wasmedge,
   wayland,
+  wayland-scanner,
+  wrapGAppsHook4,
   yaml-cpp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "miracle-wm";
-  version = "0.7.1";
+  version = "0.11.2";
 
   src = fetchFromGitHub {
     owner = "miracle-wm-org";
     repo = "miracle-wm";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-AgzLv6HkmHmWLQuWv2QXWhzB8jxvEKLyznVj67J6Wl8=";
+    hash = "sha256-XYU2I3hFjtQJgHqwS6EyW5PDjPap7TG/92e1v/IXKQA=";
   };
 
   postPatch = ''
     substituteInPlace CMakeLists.txt \
-      --replace-fail 'DESTINATION /usr/lib' 'DESTINATION ''${CMAKE_INSTALL_LIBDIR}' \
-      --replace-fail '-march=native' '# -march=native' \
-  ''
-  + lib.optionalString (!finalAttrs.finalPackage.doCheck) ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail 'add_subdirectory(tests/)' ""
+      --replace-fail 'DESTINATION lib' 'DESTINATION ''${CMAKE_INSTALL_LIBDIR}' \
+      --replace-fail '-march=native' '# -march=native'
   '';
 
   strictDeps = true;
@@ -56,12 +58,16 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     makeWrapper
     pkg-config
+    wayland-scanner
+    wrapGAppsHook4
   ];
 
   buildInputs = [
     boost
     glib
     glm
+    gtk4
+    gtk4-layer-shell
     json_c
     libevdev
     libglvnd
@@ -78,14 +84,22 @@ stdenv.mkDerivation (finalAttrs: {
         tenacity
       ]
     ))
+    wasmedge
     wayland
     yaml-cpp
   ];
 
   checkInputs = [ gtest ];
 
+  # Manually wrapping the few binaries that needs it
+  dontWrapGApps = true;
+
   cmakeFlags = [
+    (lib.cmakeBool "BUILD_DEBUG_OVERLAY" true)
+    (lib.cmakeBool "BUILD_ERROR_REPORTER" true)
     (lib.cmakeBool "ENABLE_LTO" true)
+    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
+    (lib.cmakeBool "FEATURE_PLUGIN_SYSTEM" true)
     (lib.cmakeBool "SYSTEMD_INTEGRATION" true)
     (lib.cmakeBool "END_TO_END_TESTS" finalAttrs.finalPackage.doCheck)
   ];
@@ -104,6 +118,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   postFixup = ''
     patchShebangs $out/libexec/miracle-wm-session-setup
+
     wrapProgram $out/libexec/miracle-wm-session-setup \
       --prefix PATH : "$out/bin:${
         lib.makeBinPath [
@@ -112,6 +127,9 @@ stdenv.mkDerivation (finalAttrs: {
           systemd # systemctl
         ]
       }"
+
+    wrapGApp $out/bin/miracle-wm-basic-error-reporter
+    wrapGApp $out/bin/miracle-wm-debug-overlay
   '';
 
   passthru = {
@@ -129,11 +147,11 @@ stdenv.mkDerivation (finalAttrs: {
 
       See the user guide for info on how to use miracle-wm: https://wiki.miracle-wm.org/v${finalAttrs.version}/
     '';
-    homepage = "https://github.com/mattkae/miracle-wm";
+    homepage = "https://miracle-wm.org";
     changelog = "https://github.com/miracle-wm-org/miracle-wm/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     mainProgram = "miracle-wm";
-    maintainers = with lib.maintainers; [ OPNA2608 ];
+    maintainers = [ ];
     platforms = lib.platforms.linux;
   };
 })

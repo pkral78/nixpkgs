@@ -16,18 +16,20 @@
   nixosTests,
   systemdLibs,
   which,
+  python3Packages,
   withSystemd ? true,
   withJanus ? true,
+  withPython ? true,
 }:
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "ustreamer";
-  version = "6.40";
+  version = "6.67";
 
   src = fetchFromGitHub {
     owner = "pikvm";
     repo = "ustreamer";
-    tag = "v${version}";
-    hash = "sha256-jKltFQsx8Q9+TMTOg1p6nljII72CLEg6VYe60/KojUY=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-fIjvxgFiwpPJ2M8v5AxeRnm+7kofXozD5dEe6pIjczk=";
   };
 
   buildInputs = [
@@ -36,6 +38,16 @@ stdenv.mkDerivation rec {
     libjpeg
     libdrm
   ]
+  ++ lib.optionals withPython (
+    with python3Packages;
+    [
+      python
+      setuptools
+      build
+      pip
+      installer
+    ]
+  )
   ++ lib.optionals withSystemd [
     systemdLibs
   ]
@@ -51,11 +63,15 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     pkg-config
     which
-  ];
+  ]
+  ++ lib.optional withPython python3Packages.python;
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"
     "WITH_V4P=1"
+  ]
+  ++ lib.optionals withPython [
+    "WITH_PYTHON=1"
   ]
   ++ lib.optionals withSystemd [
     "WITH_SYSTEMD=1"
@@ -71,7 +87,7 @@ stdenv.mkDerivation rec {
 
   passthru.tests = { inherit (nixosTests) ustreamer; };
 
-  meta = with lib; {
+  meta = {
     homepage = "https://github.com/pikvm/ustreamer";
     description = "Lightweight and fast MJPG-HTTP streamer";
     longDescription = ''
@@ -81,12 +97,12 @@ stdenv.mkDerivation rec {
       µStreamer is a part of the Pi-KVM project designed to stream VGA and HDMI
       screencast hardware data with the highest resolution and FPS possible.
     '';
-    license = licenses.gpl3Plus;
-    maintainers = with maintainers; [
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [
       tfc
       matthewcroughan
     ];
-    platforms = platforms.linux;
+    platforms = lib.platforms.linux;
     mainProgram = "ustreamer";
   };
-}
+})

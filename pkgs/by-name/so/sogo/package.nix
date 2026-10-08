@@ -25,14 +25,14 @@
 
 clangStdenv.mkDerivation rec {
   pname = "sogo";
-  version = "5.12.3";
+  version = "5.12.11";
 
   # always update the sope package as well, when updating sogo
   src = fetchFromGitHub {
     owner = "Alinto";
     repo = "sogo";
     rev = "SOGo-${version}";
-    hash = "sha256-HTfe/ZiipqS6QdKQK0wf4Xl6xCTNw5fEdXfRFbBMWMY=";
+    hash = "sha256-zGCQ6uI6TYTZONl3WeCHbE8k57Yn21uz7OFJOHUXDfE=";
   };
 
   nativeBuildInputs = [
@@ -58,6 +58,12 @@ clangStdenv.mkDerivation rec {
   patches = lib.optional enableActiveSync ./enable-activesync.patch;
 
   postPatch = ''
+    # Don't record the compile command line in .GCC.command.line sections of
+    # the installed binaries: it embeds the store paths of the whole toolchain
+    # and turns clang, llvm and gcc into runtime dependencies.
+    substituteInPlace general.make \
+      --replace-fail ' $(call cc-option,-frecord-gcc-switches)' ""
+
     # Exclude NIX_ variables
     sed -i 's/grep GNUSTEP_/grep ^GNUSTEP_/g' configure
 
@@ -108,14 +114,14 @@ clangStdenv.mkDerivation rec {
 
   passthru.tests.sogo = nixosTests.sogo;
 
-  meta = with lib; {
+  meta = {
     description = "Very fast and scalable modern collaboration suite (groupware)";
-    license = with licenses; [
+    license = with lib.licenses; [
       gpl2Only
       lgpl21Only
     ];
     homepage = "https://sogo.nu/";
-    platforms = platforms.linux;
-    maintainers = with maintainers; [ jceb ];
+    platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [ jceb ];
   };
 }

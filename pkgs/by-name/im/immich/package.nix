@@ -2,7 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pnpm_10,
+  fetchPnpmDeps,
+  pnpmConfigHook,
+  pnpm_11,
   python3,
   nodejs,
   node-gyp,
@@ -12,8 +14,10 @@
   # build-time deps
   pkg-config,
   makeWrapper,
+  binaryen,
   curl,
   cacert,
+  extism-js,
   unzip,
   # runtime deps
   cairo,
@@ -29,12 +33,12 @@
   pango,
   perl,
   pixman,
+  runtimeShellPackage,
   vips,
   buildPackages,
 }:
 let
-  pnpm = pnpm_10;
-  version = "2.1.0";
+  pnpm = pnpm_11;
 
   esbuild' = buildPackages.esbuild.override {
     buildGoModule =
@@ -42,12 +46,12 @@ let
       buildPackages.buildGoModule (
         args
         // rec {
-          version = "0.25.5";
+          version = "0.28.2";
           src = fetchFromGitHub {
             owner = "evanw";
             repo = "esbuild";
             tag = "v${version}";
-            hash = "sha256-jemGZkWmN1x2+ZzJ5cLp3MoXO0oDKjtZTmZS9Be/TDw=";
+            hash = "sha256-I1u+9U5Oj/KzxSjCxwyitwSuDKimatkbC3R2OtaUsfM=";
           };
           vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
         }
@@ -74,14 +78,14 @@ let
   # The geodata website is not versioned, so we use the internet archive
   geodata =
     let
-      timestamp = "20250818205425";
+      timestamp = "20260911002105";
       date =
         "${lib.substring 0 4 timestamp}-${lib.substring 4 2 timestamp}-${lib.substring 6 2 timestamp}T"
         + "${lib.substring 8 2 timestamp}:${lib.substring 10 2 timestamp}:${lib.substring 12 2 timestamp}Z";
     in
     runCommand "immich-geodata"
       {
-        outputHash = "sha256-zZHAomW1C4qReFbhme5dkVnTiLw+jmhZhzuYvoBVBCY=";
+        outputHash = "sha256-zxMbIEFF5MA2qkAbXs4sD4EQFWfCYt8t3AaC0m0LtEY=";
         outputHashMode = "recursive";
         nativeBuildInputs = [
           cacert
@@ -103,72 +107,40 @@ let
         unzip ./cities500.zip -d $out/
         echo "${date}" > $out/geodata-date.txt
       '';
+in
+stdenv.mkDerivation (finalAttrs: {
+  pname = "immich";
+  version = "3.2.4";
+
+  __structuredAttrs = true;
+  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "immich-app";
     repo = "immich";
-    tag = "v${version}";
-    hash = "sha256-xbOzTJKutuR5/oRBUyXjZ4FWAmDnWO+nS7dQcNNRHlE=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-/wWep6A/ryocuGMOElcD1lOEwT6tJDdwa5HAcCZUXSs=";
   };
 
-  pnpmDeps = pnpm.fetchDeps {
-    pname = "immich";
-    inherit version src;
-    fetcherVersion = 2;
-    hash = "sha256-JqI7te2M88CVfvqEOIggGn64Ue0rkrMlC6HvSRW1CU0=";
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-N6eaRcJxik1wzGE1H/LnKR1JUcSc8iswPFkIGymOKVA=";
   };
-
-  web = stdenv.mkDerivation {
-    pname = "immich-web";
-    inherit version src pnpmDeps;
-
-    nativeBuildInputs = [
-      nodejs
-      pnpm
-      pnpm.configHook
-    ];
-
-    buildPhase = ''
-      runHook preBuild
-
-      pnpm --filter @immich/sdk build
-      pnpm --filter immich-web build
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      cd web
-      cp -r build $out
-
-      runHook postInstall
-    '';
-  };
-
-  # Without this thumbnail generation for raw photos fails with
-  #     Error: Input file has corrupt header: tiff2vips: samples_per_pixel not a whole number of bytes
-  vips' = vips.overrideAttrs (prev: {
-    mesonFlags = prev.mesonFlags ++ [ "-Dtiff=disabled" ];
-  });
-in
-stdenv.mkDerivation {
-  pname = "immich";
-  inherit version src pnpmDeps;
 
   postPatch = ''
-    # pg_dumpall fails without database root access
-    # see https://github.com/immich-app/immich/issues/13971
-    substituteInPlace server/src/services/backup.service.ts \
-      --replace-fail '`/usr/lib/postgresql/''${databaseMajorVersion}/bin/pg_dumpall`' '`pg_dump`'
+    substituteInPlace server/src/services/database-backup.service.ts \
+      --replace-fail '`/usr/lib/postgresql/''${databaseMajorVersion}/bin/''${bin}`' '`''${bin}`'
   '';
 
   nativeBuildInputs = [
+    binaryen
+    extism-js
     nodejs
     pkg-config
-    pnpm_10
-    pnpm_10.configHook
+    pnpmConfigHook
+    pnpm
     python3
     makeWrapper
     node-gyp # for building node_modules/sharp from source
@@ -188,21 +160,22 @@ stdenv.mkDerivation {
     pango
     pixman
     # Required for sharp
-    vips'
+    vips
+    # Required for some packages in node_modules
+    runtimeShellPackage
   ];
 
   env.SHARP_FORCE_GLOBAL_LIBVIPS = 1;
   env.ESBUILD_BINARY_PATH = lib.getExe esbuild';
   # fix for node-gyp, see https://github.com/nodejs/node-gyp/issues/1191#issuecomment-301243919
   env.npm_config_nodedir = nodejs;
+  # Prevent Python (via node-gyp) from writing bytecode to ensure build determinism
+  env.PYTHONDONTWRITEBYTECODE = "1";
 
   buildPhase = ''
     runHook preBuild
 
-    # If exiftool-vendored.pl isn't found, exiftool is searched for on the PATH
-    rm node_modules/.pnpm/node_modules/exiftool-vendored.pl
-
-    pnpm --filter immich build
+    pnpm --filter immich... --filter immich-web... --filter @immich/plugin-core... build
 
     runHook postBuild
   '';
@@ -216,6 +189,9 @@ stdenv.mkDerivation {
     # upstream uses pnpm deploy to build their docker images
     pnpm --filter immich deploy --prod --no-optional "$packageOut"
 
+    # build sharp from source
+    pnpm --dir "$packageOut/node_modules/sharp" exec npm run build
+
     # remove build artifacts that bloat the closure
     find "$packageOut/node_modules" \( \
       -name config.gypi \
@@ -224,11 +200,17 @@ stdenv.mkDerivation {
       -o -name '*.target.mk' \
     \) -exec rm -r {} +
 
-    mkdir -p "$packageOut/build"
-    ln -s '${web}' "$packageOut/build/www"
+    mkdir -p "$packageOut/build/plugins/immich-plugin-core"
+    cp -r packages/plugin-core/{dist,manifest.json} "$packageOut/build/plugins/immich-plugin-core/"
+    cp -r web/build "$packageOut/build/www"
     ln -s '${geodata}' "$packageOut/build/geodata"
 
     echo '${builtins.toJSON buildLock}' > "$packageOut/build/build-lock.json"
+
+    # make exiftool-vendored to use exiftool from the PATH
+    find "$packageOut/node_modules" -type l -name "exiftool-vendored.pl" -delete
+    find "$packageOut/node_modules" -type d -name "exiftool-vendored.pl@*" -exec rm -rf {} +
+    find "$packageOut/node_modules" -type f -path "*/node_modules/.bin/exiftool" -delete
 
     makeWrapper '${lib.getExe nodejs}' "$out/bin/immich-admin" \
       --add-flags "$packageOut/dist/main" \
@@ -251,21 +233,21 @@ stdenv.mkDerivation {
 
   passthru = {
     tests = {
-      inherit (nixosTests) immich immich-vectorchord-migration;
+      inherit (nixosTests) immich immich-vectorchord-reindex;
     };
 
-    machine-learning = immich-machine-learning;
+    machine-learning = immich-machine-learning.override {
+      immich = finalAttrs.finalPackage;
+    };
 
     inherit
-      src
-      web
       geodata
       pnpm
       ;
   };
 
   meta = {
-    changelog = "https://github.com/immich-app/immich/releases/tag/${src.tag}";
+    changelog = "https://github.com/immich-app/immich/releases/tag/${finalAttrs.src.tag}";
     description = "Self-hosted photo and video backup solution";
     homepage = "https://immich.app/";
     license = with lib.licenses; [
@@ -273,6 +255,7 @@ stdenv.mkDerivation {
       cc-by-40 # geonames
     ];
     maintainers = with lib.maintainers; [
+      diogotcorreia
       dotlambda
       jvanbruegge
       Scrumplex
@@ -281,4 +264,4 @@ stdenv.mkDerivation {
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     mainProgram = "server";
   };
-}
+})

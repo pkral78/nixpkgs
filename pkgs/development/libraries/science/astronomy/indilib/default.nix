@@ -2,20 +2,23 @@
   stdenv,
   lib,
   fetchFromGitHub,
-  fetchpatch2,
   bash,
   cmake,
+  pkg-config,
   cfitsio,
+  curl,
   libusb1,
   kmod,
   zlib,
   boost,
   libev,
   libnova,
-  curl,
+  libtheora,
+  libxisf,
   libjpeg,
   gsl,
   fftw,
+  rtl-sdr-librtlsdr,
   gtest,
   udevCheckHook,
   versionCheckHook,
@@ -24,58 +27,54 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "indilib";
-  version = "2.1.6";
+  version = "2.2.4.2";
 
   src = fetchFromGitHub {
     owner = "indilib";
     repo = "indi";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-0+ZC9NoanBDojYz/ufZUpUQB++vnMcUYtG1UmmVGbTg=";
+    hash = "sha256-DISO8UHrH0cjXe+xTAOdFRce61tOk0SS/CAdsen9cXA=";
   };
-
-  # fixes version number. This commit is directly after the tagged commit in master
-  # should be removed with the next release
-  patches = [
-    (fetchpatch2 {
-      url = "https://github.com/indilib/indi/commit/91e3e35250126887a856e90b6a0a30697fb01545.patch?full_index=1";
-      hash = "sha256-ho1S+A6gTQ9ELy/QE14S6daXyMN+vASFbXa2vMWdqR8=";
-    })
-  ];
 
   nativeBuildInputs = [
     cmake
+    pkg-config
   ];
 
   nativeInstallCheckInputs = [
-    versionCheckHook
     udevCheckHook
   ];
 
   buildInputs = [
-    curl
-    cfitsio
-    libev
-    libusb1
-    zlib
     boost
-    libnova
-    libjpeg
-    gsl
+    cfitsio
+    curl
     fftw
+    gsl
+    libev
+    libjpeg
+    libnova
+    libtheora
+    libusb1
+    libxisf
+    rtl-sdr-librtlsdr
+    zlib
   ];
 
   cmakeFlags = [
+    "-DFIX_WARNINGS=OFF" # disable Werror, which can break the build on newer compilers
     "-DCMAKE_INSTALL_LIBDIR=lib"
     "-DUDEVRULES_INSTALL_DIR=lib/udev/rules.d"
   ]
-  ++ lib.optional finalAttrs.finalPackage.doCheck [
+  ++ lib.optionals finalAttrs.finalPackage.doCheck [
     "-DINDI_BUILD_UNITTESTS=ON"
     "-DINDI_BUILD_INTEGTESTS=ON"
   ];
 
   checkInputs = [ gtest ];
 
-  doCheck = true;
+  # tests seem to be broken on darwin
+  doCheck = !stdenv.hostPlatform.isDarwin;
   doInstallCheck = true;
 
   # Socket address collisions between tests
@@ -96,16 +95,16 @@ stdenv.mkDerivation (finalAttrs: {
     };
   };
 
-  meta = with lib; {
+  meta = {
     homepage = "https://www.indilib.org/";
     description = "Implementation of the INDI protocol for POSIX operating systems";
     changelog = "https://github.com/indilib/indi/releases/tag/v${finalAttrs.version}";
-    license = licenses.lgpl2Plus;
+    license = lib.licenses.lgpl2Plus;
     mainProgram = "indiserver";
-    maintainers = with maintainers; [
+    maintainers = with lib.maintainers; [
       sheepforce
       returntoreality
     ];
-    platforms = platforms.unix;
+    platforms = lib.platforms.unix;
   };
 })

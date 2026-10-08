@@ -15,7 +15,7 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "libunwind";
     repo = "libunwind";
-    rev = "v${finalAttrs.version}";
+    tag = "v${finalAttrs.version}";
     hash = "sha256-ed+FUPApDxNHxznXMhiTeNr8yRxRDSCyJJdIhouGNho=";
   };
 
@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
       '';
 
   nativeBuildInputs = [ autoreconfHook ];
+
+  strictDeps = true;
 
   outputs = [
     "out"
@@ -64,10 +66,12 @@ stdenv.mkDerivation (finalAttrs: {
     versionCheck = true;
   };
 
-  meta = with lib; {
+  __structuredAttrs = true;
+
+  meta = {
     homepage = "https://www.nongnu.org/libunwind";
     description = "Portable and efficient API to determine the call-chain of a program";
-    maintainers = with maintainers; [ orivej ];
+    maintainers = [ ];
     pkgConfigModules = [
       "libunwind"
       "libunwind-coredump"
@@ -96,6 +100,6 @@ stdenv.mkDerivation (finalAttrs: {
       "x86_64-linux"
       "x86_64-solaris"
     ];
-    license = licenses.mit;
+    license = lib.licenses.mit;
   };
 })

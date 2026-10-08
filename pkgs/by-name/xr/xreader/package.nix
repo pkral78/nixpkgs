@@ -11,6 +11,7 @@
   libarchive,
   libxml2,
   xapp,
+  xapp-symbolic-icons,
   meson,
   pkg-config,
   cairo,
@@ -18,8 +19,6 @@
   poppler,
   libspectre,
   libgxps,
-  webkitgtk_4_1,
-  nodePackages,
   ninja,
   djvulibre,
   backends ? [
@@ -30,19 +29,18 @@
     "pixbuf"
     "comics"
     "xps"
-    "epub"
   ],
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "xreader";
-  version = "4.4.0";
+  version = "4.6.9";
 
   src = fetchFromGitHub {
     owner = "linuxmint";
     repo = "xreader";
-    rev = version;
-    hash = "sha256-56G+UmYTNEp9lMU56Nm+OIuPwXwhDt92ANkaC0NWZZQ=";
+    rev = finalAttrs.version;
+    hash = "sha256-D1ztYrdK9GyuHpq6xX44FsRyBYOr4oH9XAuMCkV8vcs=";
   };
 
   nativeBuildInputs = [
@@ -56,7 +54,6 @@ stdenv.mkDerivation rec {
   ];
 
   mesonFlags = [
-    "-Dmathjax-directory=${nodePackages.mathjax}"
     "-Dintrospection=true"
   ]
   ++ (map (x: "-D${x}=true") backends);
@@ -72,17 +69,27 @@ stdenv.mkDerivation rec {
     poppler
     libspectre
     libgxps
-    webkitgtk_4_1
-    nodePackages.mathjax
     djvulibre
   ];
 
-  meta = with lib; {
+  postInstall = ''
+    substituteInPlace $out/share/thumbnailers/xreader.thumbnailer \
+      --replace-fail "TryExec=xreader-thumbnailer" "TryExec=$out/bin/xreader-thumbnailer" \
+      --replace-fail "Exec=xreader-thumbnailer" "Exec=$out/bin/xreader-thumbnailer"
+  '';
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --prefix XDG_DATA_DIRS : "${lib.makeSearchPath "share" [ xapp-symbolic-icons ]}"
+    )
+  '';
+
+  meta = {
     description = "Document viewer capable of displaying multiple and single page
 document formats like PDF and Postscript";
     homepage = "https://github.com/linuxmint/xreader";
-    license = licenses.gpl2Plus;
-    platforms = platforms.linux;
-    teams = [ teams.cinnamon ];
+    license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
+    teams = [ lib.teams.cinnamon ];
   };
-}
+})

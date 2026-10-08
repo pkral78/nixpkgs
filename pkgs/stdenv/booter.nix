@@ -118,16 +118,16 @@ let
                     pkgsBuildBuild = prevStage.buildPackages;
                     pkgsBuildHost = prevStage;
                     pkgsBuildTarget =
-                      if args.stdenv.targetPlatform == args.stdenv.hostPlatform then
+                      if lib.systems.equals args.stdenv.targetPlatform args.stdenv.hostPlatform then
                         pkgsBuildHost
                       else
-                        assert args.stdenv.hostPlatform == args.stdenv.buildPlatform;
+                        assert lib.systems.equals args.stdenv.hostPlatform args.stdenv.buildPlatform;
                         thisStage;
                     pkgsHostHost =
-                      if args.stdenv.hostPlatform == args.stdenv.targetPlatform then
+                      if lib.systems.equals args.stdenv.hostPlatform args.stdenv.targetPlatform then
                         thisStage
                       else
-                        assert args.stdenv.buildPlatform == args.stdenv.hostPlatform;
+                        assert lib.systems.equals args.stdenv.buildPlatform args.stdenv.hostPlatform;
                         pkgsBuildHost;
                     pkgsTargetTarget = nextStage;
                   };
@@ -162,5 +162,9 @@ let
         buildPackages.stdenv.cc;
   };
 
+  pkgs = dfold folder postStage (_: { }) withAllowCustomOverrides;
+
 in
-dfold folder postStage (_: { }) withAllowCustomOverrides
+# Return the spliced package set, so that consumers of the nixpkgs top-level
+# attributes, like NixOS, don't break when cross-compiling.
+pkgs.__splicedPackages

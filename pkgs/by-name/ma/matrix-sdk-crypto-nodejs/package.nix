@@ -12,18 +12,18 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "matrix-sdk-crypto-nodejs";
-  version = "0.4.0-beta.1";
+  version = "0.6.6";
 
   src = fetchFromGitHub {
     owner = "matrix-org";
     repo = "matrix-rust-sdk-crypto-nodejs";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-Rl0xtaEj2RnW9HPN94hjETwiMInxT1XGa1BocldQAPs=";
+    hash = "sha256-itTtLOLkqhcEQDmeVbYVokbTZw0xxdEi4BblIzY0iVY=";
   };
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit (finalAttrs) pname version src;
-    hash = "sha256-4AC+l52I8Z3sXiViNPe6GLCl1Z+GpqjbwkcFX6BhxDA=";
+    hash = "sha256-sFN2V+Du7ZsN992E6btI0R5iGO9835+0z+Uxw4VzvoM=";
   };
 
   nativeBuildInputs = [
@@ -47,19 +47,19 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase = ''
     runHook preInstall
 
-    local -r outPath="$out/lib/node_modules/@matrix-org/${finalAttrs.pname}"
+    local -r outPath="$out/lib/node_modules/@matrix-org/matrix-sdk-crypto-nodejs"
     mkdir -p "$outPath"
     cp package.json index.js index.d.ts matrix-sdk-crypto.*.node "$outPath"
 
     runHook postInstall
   '';
 
-  meta = with lib; {
+  meta = {
     description = "No-network-IO implementation of a state machine that handles E2EE for Matrix clients";
     homepage = "https://github.com/matrix-org/matrix-rust-sdk-crypto-nodejs";
     changelog = "https://github.com/matrix-org/matrix-rust-sdk-crypto-nodejs/blob/main/CHANGELOG.md";
-    license = licenses.asl20;
-    maintainers = with maintainers; [
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [
       winter
       dandellion
     ];

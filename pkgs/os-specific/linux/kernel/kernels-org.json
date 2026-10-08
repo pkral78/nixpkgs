@@ -1,47 +1,32 @@
 {
     "testing": {
-        "version": "6.18-rc1",
-        "hash": "sha256:1warfcvr86as1rcls3g5f9i4az6xqabjwmf6jxlx9dk2l523sl1l",
+        "version": "7.3-rc6",
+        "hash": "sha256:0ry76lwn873ks2a547ba95ydmx566n2dql0ij6k0y9vb7dkhcpfz",
         "lts": false
     },
     "6.1": {
-        "version": "6.1.156",
-        "hash": "sha256:13i2l04pmba7dksz2p5kwxgr5bydc5lp7284d4wfsnjf425i9fyl",
-        "lts": true
-    },
-    "5.15": {
-        "version": "5.15.194",
-        "hash": "sha256:0zi6ihvjmaf940arnc7jjvdqrjf3cvkc9mqc8n24dz85vam6z39l",
-        "lts": true
-    },
-    "5.10": {
-        "version": "5.10.245",
-        "hash": "sha256:17wxs8i8vd5ivv99ra0sri3wmkw5c22wsaw8nf1xcvys2kmpa7hk",
-        "lts": true
-    },
-    "5.4": {
-        "version": "5.4.300",
-        "hash": "sha256:0nl1l689d4jq2l39v816yy7z5lzc5dvv8aqn85xlv4najc022jcr",
+        "version": "6.1.189",
+        "hash": "sha256:0fclbhzzzjs98lxxc0bgvdih3ldcswjkb69gqsm0i6pwzsi39j1y",
         "lts": true
     },
     "6.6": {
-        "version": "6.6.112",
-        "hash": "sha256:08la2f8w5w2x0l9nmvzsmbwa951xyshhvdhwwhfyjmka66zr4zbc",
+        "version": "6.6.158",
+        "hash": "sha256:0krapcaaz0ny4drh1spjzpiijvpf8y6cg1qm8f6qjkp0n1rk3cwy",
         "lts": true
     },
     "6.12": {
-        "version": "6.12.53",
-        "hash": "sha256:1df0sahirxsby2imsbi04vcn2bimskl4l2r19v7sywz6ran0fdb6",
+        "version": "6.12.112",
+        "hash": "sha256:00zd1219cw9l4bkwqsf42wmpyilv6x41q1qzbshn2g69yv8wjk8n",
         "lts": true
     },
-    "6.16": {
-        "version": "6.16.12",
-        "hash": "sha256:0vm257d76hmimnac8hzg66gd1mdg330sai39lywfn4m9bjydx93w",
-        "lts": false
+    "6.18": {
+        "version": "6.18.55",
+        "hash": "sha256:1yadaa2gz74nh3pawpwv6lamalnd7wpiv1xb88pw2rd1c606647l",
+        "lts": true
     },
-    "6.17": {
-        "version": "6.17.3",
-        "hash": "sha256:16cld01iwn6hhayxh6f0z71rph0z3p3m4bsd49szddd5v0cqdk1y",
+    "7.2": {
+        "version": "7.2.9",
+        "hash": "sha256:1fnqp28vrikz9gqhb42k0dsggqf8i07j0s9qy33scr53a6zdzidl",
         "lts": false
     }
 }

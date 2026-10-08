@@ -13,14 +13,15 @@
   gettext,
   ghostscript,
   glib,
-  glibmm,
+  glibmm_2_4,
   gobject-introspection,
   gsl,
   gspell,
   gtk-mac-integration,
   gtkmm3,
+  gtksourceview4,
   gdk-pixbuf,
-  imagemagick,
+  graphicsmagick,
   lcms,
   lib2geom,
   libcdr,
@@ -28,12 +29,13 @@
   libpng,
   librevenge,
   librsvg,
-  libsigcxx,
+  libsigcxx_2_0,
   libvisio,
   libwpg,
-  libXft,
+  libxft,
   libxml2,
   libxslt,
+  readline,
   ninja,
   perlPackages,
   pkg-config,
@@ -74,11 +76,15 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "inkscape";
-  version = "1.4.2";
+  version = "1.4.4";
+  outputs = [
+    "out"
+    "man"
+  ];
 
   src = fetchurl {
     url = "https://inkscape.org/release/inkscape-${finalAttrs.version}/source/archive/xz/dl/inkscape-${finalAttrs.version}.tar.xz";
-    sha256 = "sha256-IABTDHkX5SYMnoV1pxVP9pJmQ9IAZIfXFOMEqWPwx4I=";
+    sha256 = "sha256-u85XU6Hgi4caXPFsZl6wYHAKqrmmo3ncY/TE2bO4hW4=";
   };
 
   # Inkscape hits the ARGMAX when linking on macOS. It appears to be
@@ -97,16 +103,16 @@ stdenv.mkDerivation (finalAttrs: {
       # Fix path to ps2pdf binary
       inherit ghostscript;
     })
+    # https://gitlab.com/inkscape/inkscape/-/merge_requests/7919
     (fetchpatch {
-      name = "fix-build-poppler-25.06.0.patch";
-      url = "https://gitlab.com/inkscape/inkscape/-/commit/97bd8f29a61e691ceea98ca2444b974cf4256ae0.patch";
-      hash = "sha256-bYRd/KUh/7qFb7x0EuUgQYA9P8abcTf5XS67gzaAiXA=";
+      name = "fix-build-poppler-26.05.0";
+      url = "https://gitlab.com/inkscape/inkscape/-/commit/98828255aa0c1212329236b3ff4ac7f41efb4a67.patch";
+      hash = "sha256-ujUl0SxZyb/TyJRmq1ETNn5W8lDDNn3JqHQQQPU5klA=";
     })
-    (fetchpatch {
-      name = "fix-build-poppler-25.07.0.patch";
-      url = "https://gitlab.com/inkscape/inkscape/-/commit/ce52c5f96106ae5747171663a46831f21aa52d95.patch";
-      hash = "sha256-3Yj+neSRSSQPeeZkHJ0P6v3Sis/lg9xiygktI6Z+zDY=";
-    })
+    # https://gitlab.com/inkscape/inkscape/-/merge_requests/7968
+    ./fix-build-poppler-26.06.0.patch
+    # https://gitlab.com/inkscape/inkscape/-/merge_requests/8034
+    ./fix-build-poppler-26.07.0.patch
   ];
 
   postPatch = ''
@@ -149,10 +155,11 @@ stdenv.mkDerivation (finalAttrs: {
     boost
     gettext
     glib
-    glibmm
+    glibmm_2_4
     gsl
     gtkmm3
-    imagemagick
+    gtksourceview4
+    graphicsmagick
     lcms
     lib2geom
     libcdr
@@ -160,12 +167,13 @@ stdenv.mkDerivation (finalAttrs: {
     libpng
     librevenge
     librsvg # for loading icons
-    libsigcxx
+    libsigcxx_2_0
     libvisio
     libwpg
-    libXft
+    libxft
     libxml2
     libxslt
+    readline
     perlPackages.perl
     poppler
     popt

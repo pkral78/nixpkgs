@@ -1,6 +1,5 @@
 {
   lib,
-  backports-datetime-fromisoformat,
   buildPythonPackage,
   charset-normalizer,
   dateparser,
@@ -9,23 +8,20 @@
   lxml,
   pytestCheckHook,
   python-dateutil,
-  pythonOlder,
   setuptools,
   urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "htmldate";
-  version = "1.9.3";
+  version = "1.11.0";
   pyproject = true;
-
-  disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "adbar";
     repo = "htmldate";
     tag = "v${version}";
-    hash = "sha256-9uFf/sx0AZdlvizU65H87hbtwDKf8Ykm67bKM9Oq//s=";
+    hash = "sha256-ehhhM3AmZq5CzNzSYDsuX2/0F3M4GzylYqxa+UZY5D4=";
   };
 
   build-system = [ setuptools ];
@@ -38,20 +34,22 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  pythonRelaxDeps = [ "lxml" ];
+  pythonRelaxDeps = [
+    "charset_normalizer"
+    "lxml"
+    "urllib3"
+  ];
 
   optional-dependencies = {
     speed = [
       faust-cchardet
       urllib3
     ]
-    ++ lib.optionals (pythonOlder "3.11") [ backports-datetime-fromisoformat ]
     ++ urllib3.optional-dependencies.brotli;
     all = [
       faust-cchardet
       urllib3
     ]
-    ++ lib.optionals (pythonOlder "3.11") [ backports-datetime-fromisoformat ]
     ++ urllib3.optional-dependencies.brotli;
   };
 
@@ -67,12 +65,12 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "htmldate" ];
 
-  meta = with lib; {
+  meta = {
     description = "Module for the extraction of original and updated publication dates from URLs and web pages";
     homepage = "https://htmldate.readthedocs.io";
     changelog = "https://github.com/adbar/htmldate/blob/${src.tag}/CHANGELOG.md";
-    license = licenses.asl20;
-    maintainers = with maintainers; [ jokatzke ];
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ jokatzke ];
     mainProgram = "htmldate";
   };
 }

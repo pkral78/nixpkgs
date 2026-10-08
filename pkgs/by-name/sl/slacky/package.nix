@@ -9,16 +9,16 @@
 }:
 buildNpmPackage (finalAttrs: {
   pname = "slacky";
-  version = "0.0.6";
+  version = "1.0.0";
 
   src = fetchFromGitHub {
     owner = "andirsun";
     repo = "Slacky";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-70mexW+8+0hvVr2PYGtQuBiTh6xo2WFDqLzeCZilgaE=";
+    hash = "sha256-Tx4UbvQV05ITFxBB5SyFx+jvxc0jpIvpHJ+hpgUy0t4=";
   };
 
-  npmDepsHash = "sha256-Vqpg+j2mIv5XKzX//ptt9gT+SWPXpVSKSCM+E5cmuCQ=";
+  npmDepsHash = "sha256-UAnIaAh8UPciwrOP/06KQPj1sb/ItkByQKgJxGorNSw=";
 
   npmPackFlags = [
     "--ignore-scripts"
@@ -70,7 +70,7 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/andirsun/Slacky";
     changelog = "https://github.com/andirsun/Slacky/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ awwpotato ];
+    maintainers = with lib.maintainers; [ da157 ];
     platforms = lib.platforms.linux;
     mainProgram = "slacky";
   };

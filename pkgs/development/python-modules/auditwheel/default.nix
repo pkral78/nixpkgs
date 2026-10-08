@@ -1,13 +1,13 @@
 {
   lib,
   buildPythonPackage,
-  pythonOlder,
   fetchPypi,
-  setuptools-scm,
-  pyelftools,
+  jsonschema,
   packaging,
   pretend,
+  pyelftools,
   pytestCheckHook,
+  setuptools-scm,
   # non-python dependencies
   bzip2,
   gnutar,
@@ -15,16 +15,14 @@
   unzip,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "auditwheel";
-  version = "6.4.2";
+  version = "6.8.2";
   pyproject = true;
 
-  disabled = pythonOlder "3.9";
-
   src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-t6Ya/JGDtrXGYd5ZylhvnHIARFpAnFjN8gSdb3FjbVE=";
+    inherit (finalAttrs) pname version;
+    hash = "sha256-0AfE/YycS1ETaQqwsVngXFqpstMbae/ECHWCbMCVWUs=";
   };
 
   build-system = [ setuptools-scm ];
@@ -35,6 +33,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [
+    jsonschema
     pretend
     pytestCheckHook
   ];
@@ -59,17 +58,17 @@ buildPythonPackage rec {
     ])
   ];
 
-  meta = with lib; {
-    changelog = "https://github.com/pypa/auditwheel/blob/${version}/CHANGELOG.md";
+  meta = {
+    changelog = "https://github.com/pypa/auditwheel/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "Auditing and relabeling cross-distribution Linux wheels";
     homepage = "https://github.com/pypa/auditwheel";
-    license = with licenses; [
+    license = with lib.licenses; [
       mit # auditwheel and nibabel
       bsd2 # from https://github.com/matthew-brett/delocate
       bsd3 # from https://sources.gentoo.org/cgi-bin/viewvc.cgi/gentoo-projects/pax-utils/lddtree.py
     ];
     mainProgram = "auditwheel";
-    maintainers = with maintainers; [ davhau ];
-    platforms = platforms.linux;
+    maintainers = with lib.maintainers; [ davhau ];
+    platforms = lib.platforms.linux;
   };
-}
+})

@@ -4,9 +4,8 @@
   fetchFromGitHub,
   kernel,
 }:
-
 let
-  version = "0.1.5-unstable-2025-06-04";
+  version = "0.1.7-unstable-2026-08-15";
 
   ## Upstream has not been merging PRs.
   ## Nixpkgs maintainers are providing a
@@ -15,8 +14,8 @@ let
   src = fetchFromGitHub {
     owner = "amkillam";
     repo = "ryzen_smu";
-    rev = "9f9569f889935f7c7294cc32c1467e5a4081701a";
-    hash = "sha256-i8T0+kUYsFMzYO3h6ffUXP1fgGOXymC4Ml2dArQLOdk=";
+    rev = "d2983668300dd2a598e5a7dc40e71ce0678cc270";
+    hash = "sha256-OmEoycRO3hGkqueLa0i6AzmwMEbdkkPrwJkMyYxOTek=";
   };
 
   monitor-cpu = stdenv.mkDerivation {
@@ -25,6 +24,7 @@ let
 
     makeFlags = [
       "-C userspace"
+      "CC=${stdenv.cc.targetPrefix}cc"
     ];
 
     installPhase = ''
@@ -35,7 +35,6 @@ let
       runHook postInstall
     '';
   };
-
 in
 stdenv.mkDerivation {
   pname = "ryzen-smu-${kernel.version}";
@@ -48,6 +47,7 @@ stdenv.mkDerivation {
   makeFlags = [
     "TARGET=${kernel.modDirVersion}"
     "KERNEL_BUILD=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+    "CC=${stdenv.cc.targetPrefix}cc"
   ];
 
   installPhase = ''
@@ -67,6 +67,7 @@ stdenv.mkDerivation {
       Cryolitia
       phdyellow
       aleksana
+      bradleyjones
     ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "monitor_cpu";

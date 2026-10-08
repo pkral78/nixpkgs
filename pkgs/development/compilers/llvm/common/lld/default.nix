@@ -3,7 +3,7 @@
   stdenv,
   llvm_meta,
   release_version,
-  buildLlvmTools,
+  buildLlvmPackages,
   monorepoSrc ? null,
   src ? null,
   runCommand,
@@ -22,14 +22,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   src =
     if monorepoSrc != null then
-      runCommand "lld-src-${version}" { inherit (monorepoSrc) passthru; } ''
-        mkdir -p "$out"
-        cp -r ${monorepoSrc}/cmake "$out"
-        cp -r ${monorepoSrc}/lld "$out"
-        mkdir -p "$out/libunwind"
-        cp -r ${monorepoSrc}/libunwind/include "$out/libunwind"
-        mkdir -p "$out/llvm"
-      ''
+      runCommand "lld-src-${version}"
+        {
+          inherit (monorepoSrc) passthru;
+          strictDeps = true;
+          __structuredAttrs = true;
+        }
+        ''
+          mkdir -p "$out"
+          cp -r ${monorepoSrc}/cmake "$out"
+          cp -r ${monorepoSrc}/lld "$out"
+          mkdir -p "$out/libunwind"
+          cp -r ${monorepoSrc}/libunwind/include "$out/libunwind"
+          mkdir -p "$out/llvm"
+        ''
     else
       src;
 
@@ -57,23 +63,26 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
+  strictDeps = true;
+
   cmakeFlags = [
     (lib.cmakeFeature "LLD_INSTALL_PACKAGE_DIR" "${placeholder "dev"}/lib/cmake/lld")
-    (lib.cmakeFeature "LLVM_TABLEGEN_EXE" "${buildLlvmTools.tblgen}/bin/llvm-tblgen")
+    (lib.cmakeFeature "LLVM_TABLEGEN_EXE" "${buildLlvmPackages.tblgen}/bin/llvm-tblgen")
   ]
   ++ devExtraCmakeFlags;
 
-  # TODO: Remove on `staging`.
-  postPatch = "";
-
   # Musl's default stack size is too small for lld to be able to link Firefox.
-  LDFLAGS = lib.optionalString stdenv.hostPlatform.isMusl "-Wl,-z,stack-size=2097152";
+  env = lib.optionalAttrs stdenv.hostPlatform.isMusl {
+    LDFLAGS = "-Wl,-z,stack-size=2097152";
+  };
 
   outputs = [
     "out"
     "lib"
     "dev"
   ];
+
+  __structuredAttrs = true;
 
   meta = llvm_meta // {
     homepage = "https://lld.llvm.org/";

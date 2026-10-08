@@ -1,53 +1,64 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3Packages,
+  writableTmpDirAsHomeHook,
 }:
 
-python3.pkgs.buildPythonApplication rec {
+python3Packages.buildPythonApplication (finalAttrs: {
   pname = "fromager";
-  version = "0.59.0";
+  version = "0.101.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-wheel-build";
     repo = "fromager";
-    tag = version;
-    hash = "sha256-aKoZKpzgJ3e5JRYSSeLmLlji1Fj8omxvwGZfNXDOhLs=";
+    tag = finalAttrs.version;
+    hash = "sha256-3zDHBVwjPCwqGFuwXw6+l1tZH4aguoVuwh8O7HuZG2M=";
   };
 
-  build-system = with python3.pkgs; [
+  build-system = with python3Packages; [
     hatchling
     hatch-vcs
   ];
 
-  dependencies = with python3.pkgs; [
+  dependencies = with python3Packages; [
     click
     elfdeps
-    html5lib
+    license-expression
     packaging
-    pkginfo
+    packageurl-python
     psutil
     pydantic
+    pypi-simple
     pyproject-hooks
     pyyaml
     requests
-    requests-mock
     resolvelib
     rich
-    setuptools
+    starlette
     stevedore
     tomlkit
     tqdm
-    virtualenv
+    uv
+    uvicorn
     wheel
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
+  nativeCheckInputs = with python3Packages; [
     pytestCheckHook
+    pytest-xdist
     requests-mock
+    spdx-tools
     twine
+    uv
+    writableTmpDirAsHomeHook
   ];
+
+  # Bootstrap tests leave resolver cache warm-up requests unmocked. Avoid
+  # HTTP retry backoffs when those requests fail in the sandbox.
+  # Remove after https://github.com/python-wheel-build/fromager/pull/1362
+  env.FROMAGER_HTTP_RETRIES = 0;
 
   pythonImportsCheck = [
     "fromager"
@@ -60,4 +71,4 @@ python3.pkgs.buildPythonApplication rec {
     maintainers = with lib.maintainers; [ booxter ];
     mainProgram = "fromager";
   };
-}
+})

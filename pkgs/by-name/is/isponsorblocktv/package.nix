@@ -5,29 +5,23 @@
   python3Packages,
 }:
 
-python3Packages.buildPythonApplication rec {
+python3Packages.buildPythonApplication (finalAttrs: {
   pname = "isponsorblocktv";
-  version = "2.5.3";
+  version = "2.11.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dmunozv04";
     repo = "iSponsorBlockTV";
-    tag = "v${version}";
-    hash = "sha256-vxTEec5SMq5zcX70PiRD61aDPJUySuBG0TBQH5Qw8ow=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-VbhkSrF18JluKAKqUsFKkjC0jdYsvjFotYr0aJ4BTKs=";
   };
 
   patches = [
-    # Port iSponsorBlockTV to pyytlounge v3
+    # Fix iSponsorBlockTV with async-cache 2.x - https://github.com/dmunozv04/iSponsorBlockTV/pull/505
     (fetchpatch {
-      url = "https://github.com/lukegb/iSponsorBlockTV/commit/3b50819fffbea23ef02f24726982a1b3313fa952.patch";
-      hash = "sha256-2adgGE3rBnp+/z+2iblWCxO+6qV9RHx0dqTxv/kjDJU=";
-    })
-
-    # Update setup_wizard for Textual v3
-    (fetchpatch {
-      url = "https://github.com/lukegb/iSponsorBlockTV/commit/4a3874b781f796ad32e40fc871fee7c080716171.patch";
-      hash = "sha256-kdfAaIuvQovst55sOmKv+zH/7JxN1JHI9aTF0c9fYAY=";
+      url = "https://github.com/lukegb/iSponsorBlockTV/commit/110ce5de788ccb262a323f743543e37af914f7fa.patch";
+      hash = "sha256-AW9VwFBMDKo3pJCNc/r5b8vrqpcL1bV8jUl/z85x+jE=";
     })
   ];
 
@@ -40,6 +34,7 @@ python3Packages.buildPythonApplication rec {
     aiohttp
     appdirs
     async-cache
+    pychromecast
     pyytlounge
     rich-click
     rich
@@ -47,6 +42,7 @@ python3Packages.buildPythonApplication rec {
     textual-slider
     textual
     xmltodict
+    zeroconf
   ];
 
   # all dependencies are pinned to exact version numbers
@@ -54,11 +50,11 @@ python3Packages.buildPythonApplication rec {
 
   meta = {
     homepage = "https://github.com/dmunozv04/iSponsorBlockTV";
-    changelog = "https://github.com/dmunozv04/iSponsorBlockTV/releases/tag/${src.tag}";
+    changelog = "https://github.com/dmunozv04/iSponsorBlockTV/releases/tag/${finalAttrs.src.tag}";
     description = "SponsorBlock client for all YouTube TV clients";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ lukegb ];
     mainProgram = "iSponsorBlockTV";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
-}
+})

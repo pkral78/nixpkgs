@@ -12,15 +12,15 @@
 
 stdenv.mkDerivation {
   pname = "cht.sh";
-  version = "0-unstable-2025-08-08";
+  version = "0-unstable-2026-09-22";
 
   nativeBuildInputs = [ makeWrapper ];
 
   src = fetchFromGitHub {
     owner = "chubin";
     repo = "cheat.sh";
-    rev = "b714a5f0d56427924a7871f083fd05e7ede6b0e4";
-    sha256 = "JkqHxHgs7gUk511CSJ/sLEBWCAYig1lqfslhABDNMGI=";
+    rev = "06af0000259bde1a347da368225c5962d7ffed3e";
+    sha256 = "v9NpTSBMAYIt14jSAQJQAUsBUvVjRQDo6VUc2p1lwBE=";
   };
 
   # Fix ".cht.sh-wrapped" in the help message
@@ -49,10 +49,10 @@ stdenv.mkDerivation {
     url = "https://github.com/chubin/cheat.sh.git";
   };
 
-  meta = with lib; {
+  meta = {
     description = "CLI client for cheat.sh, a community driven cheat sheet";
-    license = licenses.mit;
-    maintainers = with maintainers; [
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [
       fgaz
       evanjs
     ];

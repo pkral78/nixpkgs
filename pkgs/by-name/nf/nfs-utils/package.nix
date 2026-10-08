@@ -8,15 +8,15 @@
   libcap,
   libtirpc,
   libevent,
+  libnl,
   sqlite,
   libkrb5,
   kmod,
   libuuid,
   keyutils,
   lvm2,
-  systemd,
+  systemdMinimal,
   coreutils,
-  tcp_wrappers,
   python3,
   buildPackages,
   nixosTests,
@@ -24,26 +24,32 @@
   openldap,
   cyrus_sasl,
   libxml2,
+  readline,
   udevCheckHook,
   enablePython ? true,
   enableLdap ? true,
+  enableSystemd ? true,
 }:
 
 let
-  statdPath = lib.makeBinPath [
-    systemd
-    util-linux
-    coreutils
-  ];
+  statdPath = lib.makeBinPath (
+    [
+      util-linux
+      coreutils
+    ]
+    ++ lib.optionals enableSystemd [
+      systemdMinimal
+    ]
+  );
 in
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "nfs-utils";
-  version = "2.7.1";
+  version = "3.1.1";
 
   src = fetchurl {
-    url = "mirror://kernel/linux/utils/nfs-utils/${version}/${pname}-${version}.tar.xz";
-    hash = "sha256-iFyUioSli8pBSPRZWI+ac2nbtA3MRm8E5FXGsQ/Qqkg=";
+    url = "mirror://kernel/linux/utils/nfs-utils/${finalAttrs.version}/nfs-utils-${finalAttrs.version}.tar.xz";
+    hash = "sha256-fbwF64sygosyKHK3WaYss5ectBGPNE3YYWgT0TkOhOA=";
   };
 
   # libnfsidmap is built together with nfs-utils from the same source,
@@ -66,13 +72,14 @@ stdenv.mkDerivation rec {
     libtirpc
     libcap
     libevent
+    libnl
     sqlite
     lvm2
     libuuid
     keyutils
     libkrb5
-    tcp_wrappers
     libxml2
+    readline
   ]
   ++ lib.optional enablePython python3
   ++ lib.optionals enableLdap [
@@ -94,11 +101,16 @@ stdenv.mkDerivation rec {
     "--enable-svcgss"
     "--with-statedir=/var/lib/nfs"
     "--with-krb5=${lib.getLib libkrb5}"
-    "--with-systemd=${placeholder "out"}/etc/systemd/system"
     "--enable-libmount-mount"
     "--with-pluginpath=${placeholder "lib"}/lib/libnfsidmap" # this installs libnfsidmap
     "--with-rpcgen=${buildPackages.rpcsvc-proto}/bin/rpcgen"
     "--with-modprobedir=${placeholder "out"}/etc/modprobe.d"
+    (
+      if enableSystemd then
+        "--with-systemd=${placeholder "out"}/etc/systemd/system"
+      else
+        "--without-systemd"
+    )
   ]
   ++ lib.optional enableLdap "--enable-ldap";
 
@@ -109,16 +121,12 @@ stdenv.mkDerivation rec {
       sha256 = "1fqws9dz8n1d9a418c54r11y3w330qgy2652dpwcy96cm44sqyhf";
     })
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/void-linux/void-packages/bb636cdb1b274f44d92b1cb2fdf0dff6079f97aa/srcpkgs/nfs-utils/patches/nfs-utils-2.7.1-define_macros_for_musl.patch";
-      hash = "sha256-wsyioRjzs1PObMHwYgf5h/Ngv+s5MPsroAuUNGs9lR0=";
+      url = "https://github.com/void-linux/void-packages/raw/31f0d5fef2f74999212bcfa6f982969973432750/srcpkgs/nfs-utils/patches/musl-includes.patch";
+      hash = "sha256-dZEafrXDZH/IPo1u7B65u01nwFMfcqSMnVyHAapexa8=";
     })
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/void-linux/void-packages/bb636cdb1b274f44d92b1cb2fdf0dff6079f97aa/srcpkgs/nfs-utils/patches/musl-svcgssd-sysconf.patch";
-      hash = "sha256-3TXgqswxlhFqXRPcjwo4MdqlTYl+dWVaa0E5r9Mnw18=";
-    })
-    (fetchpatch {
-      url = "https://raw.githubusercontent.com/void-linux/void-packages/bb636cdb1b274f44d92b1cb2fdf0dff6079f97aa/srcpkgs/nfs-utils/patches/musl-fix_long_unsigned_int.patch";
-      hash = "sha256-rS6sqqoGLIaPVq04+QiqP4qa88i1z4ZZCssM5k/XQ68=";
+      url = "https://github.com/void-linux/void-packages/raw/31f0d5fef2f74999212bcfa6f982969973432750/srcpkgs/nfs-utils/patches/musl-fix_long_unsigned_int.patch";
+      hash = "sha256-wcQ2IRmlBP61qZVlXk6osi4UH8ETtjllVogPEaZNK9o=";
     })
   ];
 
@@ -134,13 +142,15 @@ stdenv.mkDerivation rec {
       --replace "/usr/lib/udev/rules.d/" "$out/lib/udev/rules.d/"
 
     substituteInPlace utils/mount/Makefile.in \
-      --replace "chmod 4511" "chmod 0511"
+      --replace-fail "chmod 4711" "chmod 0711"
 
     sed '1i#include <stdint.h>' -i support/nsm/rpc.c
   '';
 
   makeFlags = [
     "sbindir=$(out)/bin"
+  ]
+  ++ lib.optionals enableSystemd [
     "generator_dir=$(out)/etc/systemd/system-generators"
   ];
 
@@ -155,20 +165,23 @@ stdenv.mkDerivation rec {
     "lib"
     "libexec"
     "bin"
+  ]
+  ++ lib.optionals enableSystemd [
     "etc/systemd/system-generators"
   ];
 
-  postInstall = ''
-    # Not used on NixOS
-    sed -i \
-      -e "s,/sbin/modprobe,${kmod}/bin/modprobe,g" \
-      -e "s,/usr/sbin,$out/bin,g" \
-      $out/etc/systemd/system/*
-  ''
-  + lib.optionalString (!enablePython) ''
-    # Remove all scripts that require python (currently mountstats and nfsiostat)
-    grep -l /usr/bin/python $out/bin/* | xargs -I {} rm -v {}
-  '';
+  postInstall =
+    lib.optionalString enableSystemd ''
+      # Not used on NixOS
+      sed -i \
+        -e "s,/sbin/modprobe,${kmod}/bin/modprobe,g" \
+        -e "s,/usr/sbin,$out/bin,g" \
+        $out/etc/systemd/system/*
+    ''
+    + lib.optionalString (!enablePython) ''
+      # Remove all scripts that require python (currently mountstats and nfsiostat)
+      grep -l /usr/bin/python $out/bin/* | xargs -I {} rm -v {}
+    '';
 
   # One test fails on mips.
   # doCheck = !stdenv.hostPlatform.isMips;
@@ -183,7 +196,9 @@ stdenv.mkDerivation rec {
     nfs4-kerberos = nixosTests.nfs4.kerberos;
   };
 
-  meta = with lib; {
+  passthru.updateScript = ./update.sh;
+
+  meta = {
     description = "Linux user-space NFS utilities";
 
     longDescription = ''
@@ -192,9 +207,10 @@ stdenv.mkDerivation rec {
       daemons.
     '';
 
+    changelog = "https://www.kernel.org/pub/linux/utils/nfs-utils/${finalAttrs.version}/${finalAttrs.version}-Changelog";
     homepage = "https://linux-nfs.org/";
-    license = licenses.gpl2Plus;
-    platforms = platforms.linux;
-    maintainers = [ ];
+    license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
+    maintainers = [ lib.maintainers.dotlambda ];
   };
-}
+})

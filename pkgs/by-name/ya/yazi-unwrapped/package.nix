@@ -3,31 +3,49 @@
   fetchFromGitHub,
   lib,
 
+  pkg-config,
   installShellFiles,
+  oniguruma,
   rust-jemalloc-sys,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "yazi";
-  version = "25.5.31";
+  version = "26.9.1";
 
   srcs = builtins.attrValues finalAttrs.passthru.srcs;
 
   sourceRoot = finalAttrs.passthru.srcs.code_src.name;
 
-  cargoHash = "sha256-5oNhqiQYkzaNZ1vK3hV5vWQCNr6D9VPNoqkS8ZOLf/4=";
+  cargoHash = "sha256-V69VxhMiTY1Tgo4aW06AjwBIoXjK0Ov6oIahxk0NzGg=";
 
-  env.YAZI_GEN_COMPLETIONS = true;
-  env.VERGEN_GIT_SHA = "Nixpkgs";
-  env.VERGEN_BUILD_DATE = "2025-05-30";
+  env = {
+    YAZI_GEN_COMPLETIONS = true;
+    VERGEN_GIT_SHA = "Nixpkgs";
+    VERGEN_BUILD_DATE = "2026-09-1";
+    RUSTONIG_SYSTEM_LIBONIG = 1;
+  };
 
-  nativeBuildInputs = [ installShellFiles ];
-  buildInputs = [ rust-jemalloc-sys ];
+  nativeBuildInputs = [
+    pkg-config
+    installShellFiles
+  ];
+  buildInputs = [
+    oniguruma
+    rust-jemalloc-sys
+  ];
 
   postInstall = ''
     installShellCompletion --cmd yazi \
-      --bash ./yazi-boot/completions/yazi.bash \
-      --fish ./yazi-boot/completions/yazi.fish \
-      --zsh  ./yazi-boot/completions/_yazi
+      --nushell ./yazi-boot/completions/yazi.nu \
+      --bash    ./yazi-boot/completions/yazi.bash \
+      --fish    ./yazi-boot/completions/yazi.fish \
+      --zsh     ./yazi-boot/completions/_yazi
+
+    installShellCompletion --cmd ya \
+      --nushell ./yazi-cli/completions/ya.nu \
+      --bash    ./yazi-cli/completions/ya.bash \
+      --fish    ./yazi-cli/completions/ya.fish \
+      --zsh     ./yazi-cli/completions/_ya
 
     installManPage ../${finalAttrs.passthru.srcs.man_src.name}/yazi{.1,-config.5}
 
@@ -41,7 +59,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       owner = "sxyazi";
       repo = "yazi";
       tag = "v${finalAttrs.version}";
-      hash = "sha256-Er9d/5F34c2Uw+DN/9j+j7TdeWiSxMQlZSgsATC04cM=";
+      hash = "sha256-/8j4bEbT8DR/xlWtt62FXVyeHyWtBlvV8Rq0VbtY6ms=";
     };
 
     man_src = fetchFromGitHub {
@@ -56,6 +74,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Blazing fast terminal file manager written in Rust, based on async I/O";
     homepage = "https://github.com/sxyazi/yazi";
+    changelog = "https://github.com/sxyazi/yazi/blob/${finalAttrs.passthru.srcs.code_src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [
       eljamm

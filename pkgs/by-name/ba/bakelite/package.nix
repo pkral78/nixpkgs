@@ -16,7 +16,6 @@ stdenv.mkDerivation {
     hash = "sha256-rRJrtCcgfbqC/4qQiTVeUUcPqoJlNfitYRqIO58AmpA=";
   };
 
-  hardeningEnable = [ "pie" ];
   preBuild = ''
     # pipe2() is only exposed with _GNU_SOURCE
     # Upstream makefile explicitly uses -O3 to improve SHA-3 performance
@@ -39,7 +38,7 @@ stdenv.mkDerivation {
     description = "Incremental backup with strong cryptographic confidentality";
     mainProgram = "bakelite";
     license = lib.licenses.gpl2Only;
-    maintainers = with lib.maintainers; [ mvs ];
+    maintainers = [ ];
     # no support for Darwin (yet: https://github.com/richfelker/bakelite/pull/5)
     platforms = lib.platforms.linux;
   };

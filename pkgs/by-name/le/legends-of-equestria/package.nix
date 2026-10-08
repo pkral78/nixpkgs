@@ -27,27 +27,34 @@
   vulkan-loader,
   libasyncns,
   pango,
-  xorg,
+  libxscrnsaver,
+  libxrender,
+  libxrandr,
+  libxi,
+  libxinerama,
+  libxfixes,
+  libxext,
+  libxdmcp,
+  libxcursor,
+  libxau,
+  libx11,
+  libxcb,
   wayland,
 }:
 
 let
   pname = "legends-of-equestria";
-  version = "2025.04.001";
+  version = "2025.06.002";
   description = "Free-to-play MMORPG";
 
   srcOptions = {
     x86_64-linux = {
-      url = "https://mega.nz/file/w7BQTCAD#zW1atRLzSd1-V8GV7s7yj_HVZwB4v8zuX3aWIjA0ztc";
-      outputHash = "YYPxS/qNl/DvNmiGZorRGoONbtAI3nJslqCRzctwoz8=";
-    };
-    x86_64-darwin = {
-      url = "https://mega.nz/file/IqgBEJTD#aUd6LgigncoQ8o3owSkadYRp7GkfIOWl4B1Hwzti1qk";
-      outputHash = "XdcHM6zCDNFU5VJo3/QISuhtYnBKm1f6IEDfy6Fjnp8=";
+      url = "https://mega.nz/file/QmBXXDiC#XoG19N2_uBIHVKDNId5mE4cod9q29iPkYOfGDgAX_Oo";
+      outputHash = "IdcowkU2k2grg133jTf3EOENATCCige64BMYXtFupRE=";
     };
     aarch64-darwin = {
-      url = "https://mega.nz/file/QyZnkYYB#EtAZrVdHgqX10ag09M9nhJVEboG0J_5f_nVKxCHskYg";
-      outputHash = "GA0Zin+vlgYfBFC1ZbkkgX1eSn/NVBYuxuv8fayXMLU=";
+      url = "https://mega.nz/file/xr4AHIrb#pD5wDIiYys2my4_59UWiYoqBpdyUQHf_CalPZe7hpME";
+      outputHash = "PpDUFnobznB5FHYSF+m9S3RcNIdi7eWyxxDHRdS+zlY=";
     };
   };
 
@@ -66,21 +73,19 @@ let
     libGL
     vulkan-loader
     libasyncns
-  ]
-  ++ (with xorg; [
-    libX11
+    libx11
     libxcb
-    libXau
-    libXdmcp
-    libXext
-    libXcursor
-    libXrender
-    libXfixes
-    libXinerama
-    libXi
-    libXrandr
-    libXScrnSaver
-  ]);
+    libxau
+    libxdmcp
+    libxext
+    libxcursor
+    libxrender
+    libxfixes
+    libxinerama
+    libxi
+    libxrandr
+    libxscrnsaver
+  ];
 in
 stdenv.mkDerivation {
   inherit pname version;
@@ -134,7 +139,7 @@ stdenv.mkDerivation {
 
         loeHome=$out/lib/${pname}
         mkdir -p $loeHome
-        cp -r LoE/* $loeHome
+        cp -r * $loeHome
 
         chmod +x $loeHome/LoE.x86_64
         makeWrapper $loeHome/LoE.x86_64 $out/bin/LoE \

@@ -1,16 +1,18 @@
 {
-  fetchurl,
+  fetchFromGitHub,
   lib,
   stdenv,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "cd-discid";
   version = "1.4";
 
-  src = fetchurl {
-    url = "http://linukz.org/download/${pname}-${version}.tar.gz";
-    sha256 = "0qrcvn7227qaayjcd5rm7z0k5q89qfy5qkdgwr5pd7ih0va8rmpz";
+  src = fetchFromGitHub {
+    owner = "taem";
+    repo = "cd-discid";
+    tag = finalAttrs.version;
+    hash = "sha256-HHpqMRJr4PkmKgqGTyr8JSErcnQ2jwBqyCr4MvDoP68=";
   };
 
   installFlags = [
@@ -18,10 +20,10 @@ stdenv.mkDerivation rec {
     "INSTALL=install"
   ];
 
-  meta = with lib; {
-    homepage = "http://linukz.org/cd-discid.shtml";
-    license = licenses.gpl2Plus;
-    platforms = platforms.unix;
+  meta = {
+    homepage = "https://github.com/taem/cd-discid";
+    license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
     description = "Command-line utility to get CDDB discid information from a CD-ROM disc";
     mainProgram = "cd-discid";
 
@@ -31,4 +33,4 @@ stdenv.mkDerivation rec {
       abcde), but can be used for any purpose requiring CDDB data.
     '';
   };
-}
+})

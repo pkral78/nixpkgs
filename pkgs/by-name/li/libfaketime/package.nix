@@ -26,8 +26,29 @@ stdenv.mkDerivation (finalAttrs: {
     hash = hashes.${finalAttrs.version};
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
+
   patches = [
     ./nix-store-date.patch
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    # Fixes build w/ glibc-2.44
+    (fetchpatch {
+      url = "https://github.com/wolfcw/libfaketime/commit/dbe865dfdba0145d993d70b7fd4ec88b2f47554b.patch";
+      hash = "sha256-pn9MInefa4ZKuOorGEpi/sDQOQamCakjdYOkFSNA2VQ=";
+    })
+    # GCC 16's unused variable analysis is more advanced than previous
+    # versions, and detects that these variables are unused.
+    # https://github.com/wolfcw/libfaketime/pull/528
+    (fetchpatch {
+      name = "libfaketime-silence-unused-variable-warning.patch";
+      url = "https://github.com/wolfcw/libfaketime/commit/712733e5f01e45372f3160cfdbcfd91520cb093d.patch";
+      hash = "sha256-Gu13gFhgvkncj8aowAnSRbHbUCctF5sakbX4uRwdy+A=";
+    })
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     (fetchpatch {
@@ -52,23 +73,28 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail @DATE_CMD@ ${lib.getExe' coreutils "date"}
   '';
 
-  PREFIX = placeholder "out";
-  LIBDIRNAME = "/lib";
-
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals stdenv.cc.isClang [
-      "-Wno-error=cast-function-type"
-      "-Wno-error=format-truncation"
-    ]
-    # https://github.com/wolfcw/libfaketime/blob/6714b98794a9e8a413bf90d2927abf5d888ada99/README#L101-L104
-    ++ lib.optionals (stdenv.hostPlatform.isLoongArch64 || stdenv.hostPlatform.isRiscV64) [
-      "-DFORCE_PTHREAD_NONVER"
-    ]
-  );
+  env = {
+    PREFIX = placeholder "out";
+    LIBDIRNAME = "/lib";
+    CFLAGS = toString (
+      lib.optionals stdenv.cc.isClang [
+        "-Wno-error=cast-function-type"
+        "-Wno-error=format-truncation"
+      ]
+      # https://github.com/wolfcw/libfaketime/blob/6714b98794a9e8a413bf90d2927abf5d888ada99/README#L101-L104
+      ++ lib.optionals (stdenv.hostPlatform.isLoongArch64 || stdenv.hostPlatform.isRiscV64) [
+        "-DFORCE_PTHREAD_NONVER"
+      ]
+    );
+  };
 
   nativeCheckInputs = [ perl ];
 
   doCheck = true;
+
+  __structuredAttrs = true;
+  strictDeps = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Report faked system time to programs without having to change the system-wide time";

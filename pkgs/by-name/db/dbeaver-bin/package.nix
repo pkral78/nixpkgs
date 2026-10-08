@@ -1,3 +1,4 @@
+# dbeaver doesn't seem feasible to package from source, see https://github.com/NixOS/nixpkgs/pull/311888
 {
   lib,
   stdenvNoCC,
@@ -7,7 +8,7 @@
   openjdk21,
   gnused,
   autoPatchelfHook,
-  autoSignDarwinBinariesHook,
+  darwin,
   wrapGAppsHook3,
   gtk3,
   glib,
@@ -18,23 +19,21 @@
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "dbeaver-bin";
-  version = "25.2.2";
+  version = "26.2.1";
 
   src =
     let
       inherit (stdenvNoCC.hostPlatform) system;
       selectSystem = attrs: attrs.${system} or (throw "Unsupported system: ${system}");
       suffix = selectSystem {
-        x86_64-linux = "linux.gtk.x86_64-nojdk.tar.gz";
-        aarch64-linux = "linux.gtk.aarch64-nojdk.tar.gz";
-        x86_64-darwin = "macos-x86_64.dmg";
+        x86_64-linux = "linux-x86_64.tar.gz";
+        aarch64-linux = "linux-aarch64.tar.gz";
         aarch64-darwin = "macos-aarch64.dmg";
       };
       hash = selectSystem {
-        x86_64-linux = "sha256-e0xIFoDmhX1+VetCEJoDZqu6+wrFwTwgIzU8hQ/mXnI=";
-        aarch64-linux = "sha256-80HW2GGBAuCYo+fxz+XZG3sZm0/QW5krHLS4jSGgGvU=";
-        x86_64-darwin = "sha256-w1b22Uce2PmX3f6UMrrkVxSxT/E5rFhiSgb3PjYaYvY=";
-        aarch64-darwin = "sha256-oQ10VB4puNBxFcFRdOtFFF+FcN9I7CUbWMc56V1Z90E=";
+        x86_64-linux = "sha256-Fte9AehPjNj0bWl2rBJ/olZ47AEJU8m03OQZM68gZ+g=";
+        aarch64-linux = "sha256-dvrR2QZNDtra33rIEbM7Z17KeXoQjcRqjjgtoiOZzI4=";
+        aarch64-darwin = "sha256-K/9ehDV8pe4mY/SEI9o52zg9EZbAhvl6oiYYj0qiwKA=";
       };
     in
     fetchurl {
@@ -54,7 +53,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenvNoCC.hostPlatform.isDarwin [
     undmg
-    autoSignDarwinBinariesHook
+    darwin.autoSignDarwinBinariesHook
   ];
 
   dontConfigure = true;
@@ -76,10 +75,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     pushd ${lib.optionalString stdenvNoCC.hostPlatform.isDarwin "Contents/Eclipse/"}plugins/com.sun.jna_*/com/sun/jna/
     rm -r !(ptr|internal|linux-x86-64|linux-aarch64|darwin-x86-64|darwin-aarch64)/
     popd
-  ''
-  # remove the bundled JRE on Darwin
-  + lib.optionalString stdenvNoCC.hostPlatform.isDarwin ''
-    rm -r Contents/Eclipse/jre/
+
+    # remove the bundled JRE
+    rm -r ${lib.optionalString stdenvNoCC.hostPlatform.isDarwin "Contents/Eclipse/"}jre/
   '';
 
   installPhase =
@@ -144,10 +142,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     '';
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.asl20;
-    platforms = with lib.platforms; linux ++ darwin;
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "aarch64-darwin"
+    ];
     maintainers = with lib.maintainers; [
       gepbird
       mkg20001
+      staticdev
       yzx9
     ];
     mainProgram = "dbeaver";

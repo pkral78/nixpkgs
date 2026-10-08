@@ -7,31 +7,36 @@
   npmHooks,
   python3,
   cacert,
+  versionCheckHook,
+  nodejs_24,
 }:
 
-buildNpmPackage (finalAttrs: {
+buildNpmPackage.override { nodejs = nodejs_24; } (finalAttrs: {
   pname = "homebridge-config-ui-x";
-  version = "5.6.0";
+  version = "5.29.0";
 
   src = fetchFromGitHub {
     owner = "homebridge";
     repo = "homebridge-config-ui-x";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-RsUrJ6WR78yN+thKbrN53S32XNZ8N4pSDAzzhGso01A=";
+    hash = "sha256-QDvgi7tHS6OAlZ0+ybLemqlMD4a09YqtDs0YBcs+3uA=";
   };
 
   # Deps hash for the root package
-  npmDepsHash = "sha256-YFWbzhjUVMa9Do5TEVQPvXwwY9ap4j8kdbGVM2wCt4c=";
+  npmDepsHash = "sha256-7YhwV+IJsEVxrgir84uP+YwXgovtVxPMCk5Jt57mez8=";
 
   # Deps src and hash for ui subdirectory
   npmDeps_ui = fetchNpmDeps {
     name = "npm-deps-ui";
     src = "${finalAttrs.src}/ui";
-    hash = "sha256-Y4rB1GzsFX9Uw+UeiYJPcD5+u2kpmZw0tWhsmzaWo04=";
+    hash = "sha256-DKDixaXDDovHVnlWvV16p72a3ejMdDsNWaCfUnzMSX0=";
   };
 
   # Need to also run npm ci in the ui subdirectory
   preBuild = ''
+    # Apply upstream package patch before TypeScript compilation.
+    npm run prepare
+
     # Tricky way to run npmConfigHook multiple times
     (
       source ${npmHooks.npmConfigHook}/nix-support/setup-hook
@@ -48,16 +53,25 @@ buildNpmPackage (finalAttrs: {
   # compiling node-pty on darwin
   makeCacheWritable = stdenv.hostPlatform.isDarwin;
 
+  npmInstallFlags = [ "--ignore-scripts" ];
+
   nativeBuildInputs = [
     python3
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ cacert ];
 
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+  doInstallCheck = true;
+
+  passthru.updateScript = ./update.sh;
+
   meta = {
     description = "Configure Homebridge, monitor and backup from a browser";
     homepage = "https://github.com/homebridge/homebridge-config-ui-x";
     license = lib.licenses.mit;
-    mainProgram = "homebridge-config-ui-x";
+    mainProgram = "hb-service";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ fmoda3 ];
     # Works on darwin when not in sandbox because it downloads a prebuilt binary

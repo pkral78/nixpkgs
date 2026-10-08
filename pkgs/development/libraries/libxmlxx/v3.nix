@@ -4,7 +4,7 @@
   fetchurl,
   pkg-config,
   libxml2,
-  glibmm,
+  glibmm_2_4,
   perl,
   gnome,
   meson,
@@ -56,12 +56,12 @@ stdenv.mkDerivation rec {
     docbook5
     docbook-xsl-ns
   ]
-  ++ lib.lists.optional withPDF [
+  ++ lib.lists.optionals withPDF [
     fop
     dblatex
   ];
 
-  buildInputs = [ glibmm ];
+  buildInputs = [ glibmm_2_4 ];
 
   propagatedBuildInputs = [ libxml2 ];
 
@@ -94,11 +94,11 @@ stdenv.mkDerivation rec {
 
   doCheck = true;
 
-  meta = with lib; {
+  meta = {
     homepage = "https://libxmlplusplus.sourceforge.net/";
     description = "C++ wrapper for the libxml2 XML parser library, version 3";
-    license = licenses.lgpl2Plus;
-    platforms = platforms.unix;
-    maintainers = with maintainers; [ willow ];
+    license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.unix;
+    maintainers = with lib.maintainers; [ willow ];
   };
 }

@@ -8,16 +8,16 @@
 
 buildGoModule (finalAttrs: {
   pname = "brutespray";
-  version = "2.4.0";
+  version = "2.7.2";
 
   src = fetchFromGitHub {
     owner = "x90skysn3k";
     repo = "brutespray";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-tws3BvVQSlGcBgiJ8Ho7V/KJjzoq3TEOiChqTzrMbiU=";
+    hash = "sha256-O6bLzZaCNblPFLn1KStS/vdWEGg2+//+HpbCVxUJPMg=";
   };
 
-  vendorHash = "sha256-Fe3W5rlKygw4z5bF+6xy5mv86wKcBuCf3nhtdtFWJPM=";
+  vendorHash = "sha256-yUMVPfZkZNxkby7Pg8s9knkG5Cw9FFhqLRN7qeP4agY=";
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 
@@ -29,14 +29,15 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/x90skysn3k/brutespray";
     description = "Tool to do brute-forcing from Nmap output";
-    mainProgram = "brutespray";
+    homepage = "https://github.com/x90skysn3k/brutespray";
     longDescription = ''
       This tool automatically attempts default credentials on found services
       directly from Nmap output.
     '';
+    changelog = "https://github.com/x90skysn3k/brutespray/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "brutespray";
   };
 })

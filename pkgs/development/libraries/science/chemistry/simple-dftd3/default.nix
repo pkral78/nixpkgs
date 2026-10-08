@@ -24,14 +24,22 @@ assert (
 
 stdenv.mkDerivation rec {
   pname = "simple-dftd3";
-  version = "1.2.1";
+  version = "1.6.0";
 
   src = fetchFromGitHub {
     owner = "dftd3";
     repo = "simple-dftd3";
     tag = "v${version}";
-    hash = "sha256-c4xctcMcPQ70ippqbwtinygmnZ5en6ZGF5/v0ZWtzys=";
+    hash = "sha256-THl8sUY7pLxFz4mY7FMj/c1hwzqLaaNNMq0qkxWkUzw=";
   };
+
+  # set_model_ghost_index was not declared as part of the public api, leading
+  # to link errors with gfortran 16.
+  postPatch = ''
+    substituteInPlace src/dftd3/api.f90 --replace-fail \
+      "public :: set_model_ewald, set_model_work_partition" \
+      "public :: set_model_ewald, set_model_ghost_index, set_model_work_partition"
+  '';
 
   patches = [
     ./cmake.patch
@@ -64,19 +72,16 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = true;
-  preCheck = ''
-    export OMP_NUM_THREADS=2
-  '';
 
-  meta = with lib; {
+  meta = {
     description = "Reimplementation of the DFT-D3 program";
     mainProgram = "s-dftd3";
-    license = with licenses; [
+    license = with lib.licenses; [
       lgpl3Only
       gpl3Only
     ];
     homepage = "https://github.com/dftd3/simple-dftd3";
-    platforms = platforms.linux;
-    maintainers = [ maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
+    maintainers = [ lib.maintainers.sheepforce ];
   };
 }

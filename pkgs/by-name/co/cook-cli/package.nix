@@ -7,19 +7,20 @@
   pkg-config,
   openssl,
   nodejs,
+  nix-update-script,
 }:
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cook-cli";
-  version = "0.18.1";
+  version = "0.37.0";
 
   src = fetchFromGitHub {
     owner = "cooklang";
     repo = "cookcli";
-    rev = "v${version}";
-    hash = "sha256-alrmQOt9PY155fIWXmp1m2dfhhkMOd4PkfkBWS2XXRg=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-tHPVKigUqHZo84E+2wnky21UQfE7bQ1ZB1vZZNPlm7E=";
   };
 
-  cargoHash = "sha256-tYD49UrLzPPS8G2zy2GKFBK4SGYXQ7UEjFWKcHvUTSY=";
+  cargoHash = "sha256-DOXHQMYWyuArVwS+odyjImGCfzS4flNZM7NRSnLkLfc=";
 
   # Build without the self-updating feature
   buildNoDefaultFeatures = true;
@@ -35,19 +36,22 @@ rustPlatform.buildRustPackage rec {
     openssl
   ];
 
-  OPENSSL_NO_VENDOR = 1;
+  env.OPENSSL_NO_VENDOR = 1;
 
   npmDeps = fetchNpmDeps {
-    inherit src;
-    hash = "sha256-HxC9Tf+PZvvETuNqm1W3jaZx7SpYXlxZlI8FwGouK+s=";
+    inherit (finalAttrs) src;
+    hash = "sha256-n/pxjcgDqhlUC09ynWExxClVT9WixahpPYRU3GAvzBc=";
   };
 
   preBuild = ''
     npm run build-css
+    npm run build-js
   '';
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
-    changelog = "https://github.com/cooklang/cookcli/releases/tag/v${version}";
+    changelog = "https://github.com/cooklang/cookcli/releases/tag/v${finalAttrs.version}";
     description = "Suite of tools to create shopping lists and maintain recipes";
     homepage = "https://cooklang.org/";
     license = lib.licenses.mit;
@@ -55,7 +59,8 @@ rustPlatform.buildRustPackage rec {
     maintainers = [
       lib.maintainers.emilioziniades
       lib.maintainers.ginkogruen
+      lib.maintainers.pinage404
     ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
-}
+})

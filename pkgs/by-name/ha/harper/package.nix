@@ -2,30 +2,66 @@
   lib,
   rustPlatform,
   fetchFromGitHub,
+  installShellFiles,
+  stdenv,
   nix-update-script,
+  versionCheckHook,
+  vscode-extensions,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "harper";
-  version = "0.65.0";
+  version = "2.12.0";
+  __structuredAttrs = true;
+  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "Automattic";
     repo = "harper";
-    rev = "v${version}";
-    hash = "sha256-y2oYEJTZWZ7Rc7ZLjYUh3Cy9dtznGLhIXzJ6D0JUIGw=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-id5+LeHKsu9sZJ3QJeZWynFyOABSbL8KjMsk7GEEt9w=";
   };
 
-  buildAndTestSubdir = "harper-ls";
+  cargoHash = "sha256-xRQah0ckm7M1mtB8+xciuD9sYx0qNpH+fTXIHvIFAt0=";
 
-  cargoHash = "sha256-o6RFBCvPn3AH3mMI3guHziqOcYN99o8yk5b6VXWoepI=";
+  cargoBuildFlags = [
+    "--package=harper-cli"
+    "--package=harper-ls"
+  ];
 
-  passthru.updateScript = nix-update-script { };
+  cargoTestFlags = [
+    "--package=harper-cli"
+    "--package=harper-ls"
+  ];
+
+  nativeBuildInputs = [ installShellFiles ];
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd harper-cli \
+      --bash <($out/bin/harper-cli completion bash) \
+      --fish <($out/bin/harper-cli completion fish) \
+      --zsh <($out/bin/harper-cli completion zsh)
+  '';
+
+  passthru = {
+    tests.vscode = vscode-extensions.elijah-potter.harper;
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--subpackage"
+        "tests.vscode"
+      ];
+    };
+  };
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+  doInstallCheck = true;
 
   meta = {
     description = "Grammar Checker for Developers";
     homepage = "https://github.com/Automattic/harper";
-    changelog = "https://github.com/Automattic/harper/releases/tag/v${version}";
+    changelog = "https://github.com/Automattic/harper/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [
       pbsds
@@ -34,4 +70,4 @@ rustPlatform.buildRustPackage rec {
     ];
     mainProgram = "harper-ls";
   };
-}
+})

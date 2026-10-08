@@ -6,21 +6,18 @@
   installShellFiles,
 }:
 
-let
+buildGoModule (finalAttrs: {
   pname = "lefthook";
-  version = "1.13.4";
-in
-buildGoModule {
-  inherit pname version;
+  version = "2.1.15";
 
   src = fetchFromGitHub {
     owner = "evilmartians";
     repo = "lefthook";
-    rev = "v${version}";
-    hash = "sha256-/ZZ+eFHKQoqOzUNpTZ1Ef2A0EQbgT+CWau/q9hhuTHU=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-gBgydS6E35Jd3r8Tp1hvCk3c6E39kcNE5Gu60RCtLw4=";
   };
 
-  vendorHash = "sha256-HQ6xpHYAOkT48UvOIf0g49jp5dt/4zuwmy8r/9KAZUk=";
+  vendorHash = "sha256-61w4BJKInUbQOInbqjshWiwyrpGSM+/JziMRmK9pik4=";
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -41,9 +38,9 @@ buildGoModule {
   meta = {
     description = "Fast and powerful Git hooks manager for any type of projects";
     homepage = "https://github.com/evilmartians/lefthook";
-    changelog = "https://github.com/evilmartians/lefthook/raw/v${version}/CHANGELOG.md";
+    changelog = "https://github.com/evilmartians/lefthook/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     mainProgram = "lefthook";
-    maintainers = [ ];
+    maintainers = with lib.maintainers; [ nightconcept ];
   };
-}
+})

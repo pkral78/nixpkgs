@@ -2,20 +2,29 @@
   buildHomeAssistantComponent,
   fetchFromGitHub,
   lib,
+  numpy,
+  scipy,
+  vtherm-api,
   gitUpdater,
 }:
 
 buildHomeAssistantComponent rec {
   owner = "jmcollin78";
   domain = "versatile_thermostat";
-  version = "7.4.1";
+  version = "10.4.0";
 
   src = fetchFromGitHub {
     inherit owner;
     repo = domain;
-    rev = "refs/tags/${version}";
-    hash = "sha256-QE3XTummNZCziZPKfFjTI0ell+bftGqbcG0hh+QHx9s=";
+    tag = version;
+    hash = "sha256-ygghrEEGzzgmF/7wq5YvR6ZFX9DImVEy32Mr3k4g+rU=";
   };
+
+  dependencies = [
+    numpy
+    scipy
+    vtherm-api
+  ];
 
   passthru.updateScript = gitUpdater { ignoredVersions = "(Alpha|Beta|alpha|beta).*"; };
 

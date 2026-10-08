@@ -1,15 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
+  fetchFromGitHub,
   ddt,
+  hacking,
+  installShellFiles,
   openstackdocstheme,
   osc-lib,
   osc-placement,
   pbr,
-  python-aodhclient,
+  aodhclient,
   python-barbicanclient,
-  python-cinderclient,
   python-designateclient,
   python-heatclient,
   python-ironicclient,
@@ -18,7 +19,7 @@
   python-manilaclient,
   python-mistralclient,
   python-neutronclient,
-  python-openstackclient,
+  python-octaviaclient,
   python-watcherclient,
   python-zaqarclient,
   python-zunclient,
@@ -27,20 +28,24 @@
   setuptools,
   sphinxHook,
   sphinxcontrib-apidoc,
-  stestr,
-  testers,
+  stdenv,
+  stestrCheckHook,
+  versionCheckHook,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "python-openstackclient";
-  version = "8.2.0";
+  version = "10.3.0";
   pyproject = true;
 
-  src = fetchPypi {
-    pname = "python_openstackclient";
-    inherit version;
-    hash = "sha256-1hKvGN/GbMjzHmzpZpC2wnOt6KJA7EC39INaiJb7vgE=";
+  src = fetchFromGitHub {
+    owner = "openstack";
+    repo = "python-openstackclient";
+    tag = finalAttrs.version;
+    hash = "sha256-xOvDAwnJGYbMJDG+lO1TCLRFavlciJRVmbjYqU/E1DY=";
   };
+
+  env.PBR_VERSION = finalAttrs.version;
 
   build-system = [
     openstackdocstheme
@@ -54,59 +59,77 @@ buildPythonPackage rec {
   dependencies = [
     osc-lib
     pbr
-    python-cinderclient
+    python-manilaclient
     python-keystoneclient
     requests
   ]
   # to support proxy envs like ALL_PROXY in requests
   ++ requests.optional-dependencies.socks;
 
-  nativeCheckInputs = [
-    ddt
-    requests-mock
-    stestr
+  nativeBuildInputs = [
+    installShellFiles
   ];
 
-  checkPhase = ''
-    runHook preCheck
-    stestr run -E \
-      "openstackclient.tests.unit.network.v2.test_security_group_network.(TestCreateSecurityGroupNetwork.(test_create_with_tags|test_create_with_no_tag|test_create_min_options|test_create_all_options)|TestShowSecurityGroupNetwork.test_show_all_options)"
-    runHook postCheck
-  '';
+  nativeCheckInputs = [
+    ddt
+    hacking
+    requests-mock
+    stestrCheckHook
+  ];
 
-  pythonImportsCheck = [ "openstackclient" ];
+  pythonImportsCheck = [
+    "openstackclient"
+    "openstackclient.api"
+    "openstackclient.common"
+    "openstackclient.compute"
+    "openstackclient.identity"
+    "openstackclient.image"
+    "openstackclient.network"
+    "openstackclient.object"
+    "openstackclient.volume"
+    "openstackclient.tests"
+  ];
 
   optional-dependencies = {
     # See https://github.com/openstack/python-openstackclient/blob/master/doc/source/contributor/plugins.rst
     cli-plugins = [
+      aodhclient
+      # gnocchiclient not packaged
       osc-placement
-      python-aodhclient
       python-barbicanclient
+      # python-cyborgclient not packaged
       python-designateclient
       python-heatclient
       python-ironicclient
+      # python-ironic-inspector-client not packaged
       python-magnumclient
       python-manilaclient
       python-mistralclient
       python-neutronclient
+      python-octaviaclient
+      # python-troveclient not packaged
       python-watcherclient
       python-zaqarclient
       python-zunclient
     ];
   };
 
-  passthru = {
-    tests.version = testers.testVersion {
-      package = python-openstackclient;
-      command = "openstack --version";
-    };
-  };
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+  doInstallCheck = true;
 
-  meta = with lib; {
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd openstack \
+      --bash <($out/bin/openstack complete)
+  '';
+
+  meta = {
     description = "OpenStack Command-line Client";
     mainProgram = "openstack";
-    homepage = "https://github.com/openstack/python-openstackclient";
-    license = licenses.asl20;
-    teams = [ teams.openstack ];
+    homepage = "https://docs.openstack.org/python-openstackclient/latest/";
+    downloadPage = "https://github.com/openstack/python-openstackclient/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.asl20;
+    teams = [ lib.teams.openstack ];
   };
-}
+})

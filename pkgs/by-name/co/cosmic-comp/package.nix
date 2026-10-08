@@ -5,34 +5,40 @@
   fetchFromGitHub,
   libcosmicAppHook,
   pkg-config,
-  libdisplay-info,
+  libdisplay-info_0_3,
   libgbm,
   libinput,
   pixman,
   seatd,
   udev,
   systemd,
+  xrdb,
   nix-update-script,
   nixosTests,
 
   useSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  withXWayland ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cosmic-comp";
-  version = "1.0.0-beta.1.1";
+  version = "1.9.0";
 
   # nixpkgs-update: no auto update
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-comp";
     tag = "epoch-${finalAttrs.version}";
-    hash = "sha256-RHeQk1yBNnDN/efuDDWNLn9O7FQTYLBsbs+h+gxi+Xo=";
+    hash = "sha256-/q2SDp9Sa2MG4bMtryOizxnhPovrAgYb9GXQ35NRs6c=";
   };
 
-  cargoHash = "sha256-Jaw2v+02lA5wWRAhRNW/lcLnTI7beJIZ43dqcJ60EP0=";
+  cargoHash = "sha256-WTpJuj3Xz9hHLj+kuhys0Fr8FmosAuXpbtNSK3Y5twU=";
+
+  # Only default feature is systemd
+  buildNoDefaultFeatures = !useSystemd;
 
   separateDebugInfo = true;
+  __structuredAttrs = true;
 
   nativeBuildInputs = [
     libcosmicAppHook
@@ -40,7 +46,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [
-    libdisplay-info
+    libdisplay-info_0_3
     libgbm
     libinput
     pixman
@@ -49,15 +55,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optional useSystemd systemd;
 
-  # Only default feature is systemd
-  buildNoDefaultFeatures = !useSystemd;
-
   makeFlags = [
     "prefix=${placeholder "out"}"
     "CARGO_TARGET_DIR=target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
   dontCargoInstall = true;
+
+  # With Xwayland, cosmic-comp calls out to `xrdb -merge` to set
+  # `Xcursor.size` and `Xcursor.theme` for X11 clients (src/xwayland.rs,
+  # upstream pop-os/cosmic-comp#1976). Without it on PATH it logs
+  # "`xrdb` not found, cannot update Xresources." and X11 clients fall back
+  # to libXcursor's screen-derived default cursor size.
+  preFixup = lib.optionalString withXWayland ''
+    libcosmicAppWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ xrdb ]})
+  '';
 
   passthru = {
     tests = {
@@ -68,10 +80,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
         cosmic-autologin-noxwayland
         ;
     };
+
     updateScript = nix-update-script {
       extraArgs = [
-        "--version"
-        "unstable"
         "--version-regex"
         "epoch-(.*)"
       ];

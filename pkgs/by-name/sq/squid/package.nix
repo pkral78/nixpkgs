@@ -12,20 +12,20 @@
   libxml2,
   openssl,
   pkg-config,
-  systemd,
+  systemdLibs,
   cppunit,
   ipv6 ? true,
   nixosTests,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "squid";
-  version = "7.2";
+  version = "7.6";
 
   src = fetchurl {
     url = "https://github.com/squid-cache/squid/releases/download/SQUID_${
       builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }/squid-${finalAttrs.version}.tar.xz";
-    hash = "sha256-Xgd74dg6nmls6NDZ5yOxJzFSIHoJFAS+aKS5qeGMcAM=";
+    hash = "sha256-hSF4/cN8WweGqTT8mQx9L//IKs8ZsihL4gm5ZDHSWZI=";
   };
 
   nativeBuildInputs = [ pkg-config ];
@@ -41,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     libcap
     pam
-    systemd
+    systemdLibs
   ];
 
   enableParallelBuilding = true;
@@ -94,12 +94,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests.squid = nixosTests.squid;
 
-  meta = with lib; {
+  meta = {
     description = "Caching proxy for the Web supporting HTTP, HTTPS, FTP, and more";
     homepage = "http://www.squid-cache.org";
-    license = licenses.gpl2Plus;
-    platforms = platforms.linux;
-    maintainers = with maintainers; [ raskin ];
+    license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [ raskin ];
     # In the past, it has been brought up that Squid had many security vulnerabilities
     # (see https://megamansec.github.io/Squid-Security-Audit/). As of version 7.0,
     # all of them have been solved, as tracked in their GitHub Security page:

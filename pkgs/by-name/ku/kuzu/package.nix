@@ -35,12 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
     versionCheckHook
   ];
   doInstallCheck = true;
-  versionCheckProgramArg = [ "--version" ];
 
   meta = {
     changelog = "https://github.com/kuzudb/kuzu/releases/tag/v${finalAttrs.version}";
     description = "Embeddable property graph database management system";
-    homepage = "https://kuzudb.com/";
+    homepage = "https://github.com/kuzudb/kuzu";
     license = lib.licenses.mit;
     mainProgram = "kuzu";
     maintainers = with lib.maintainers; [ sdht0 ];

@@ -2,30 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  SDL2,
-  SDL2_mixer,
-  SDL2_image,
-  fluidsynth,
-  portmidi,
-  libopenmpt,
-  libvorbis,
-  libmad,
-  libGLU,
-  libzip,
   alsa-lib,
+  cmake,
+  fluidsynth,
+  libGLU,
+  libmad,
+  libsndfile,
+  libvorbis,
+  libxmp,
+  libzip,
+  portmidi,
+  SDL2,
+  SDL2_image,
+  SDL2_mixer,
   nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "dsda-doom";
-  version = "0.29.3";
+  version = "0.30.0";
 
   src = fetchFromGitHub {
-    owner = "kraflab";
+    owner = "dsda-org";
     repo = "dsda-doom";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-Nsz9bj+AJomkYOiy5cli+NLmrJKNjYOiXjEZDXnnFNo=";
+    hash = "sha256-n44h2U3Ist8Cr+CMW2SrhMhS+/5ojBp269P4B5Wum7k=";
   };
 
   sourceRoot = "${finalAttrs.src.name}/prboom2";
@@ -34,11 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [
     alsa-lib
-    libopenmpt
     fluidsynth
     libGLU
     libmad
+    libsndfile
     libvorbis
+    libxmp
     libzip
     portmidi
     SDL2
@@ -49,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/kraflab/dsda-doom";
-    changelog = "https://github.com/kraflab/dsda-doom/releases/tag/v${finalAttrs.version}";
+    homepage = "https://github.com/dsda-org/dsda-doom";
+    changelog = "https://github.com/dsda-org/dsda-doom/releases/tag/v${finalAttrs.version}";
     description = "Advanced Doom source port with a focus on speedrunning, successor of PrBoom+";
     mainProgram = "dsda-doom";
     license = lib.licenses.gpl2Plus;

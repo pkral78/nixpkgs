@@ -2,25 +2,30 @@
   lib,
   stdenvNoCC,
   fetchFromGitHub,
+  installAgentSkills,
   unstableGitUpdater,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "nu_scripts";
-  version = "0-unstable-2025-10-15";
+  version = "0-unstable-2026-10-02";
 
   src = fetchFromGitHub {
     owner = "nushell";
     repo = "nu_scripts";
-    rev = "0b97c5e1444b13db7c263bee646dea1e1ffe4ddb";
-    hash = "sha256-tKMLaSNniylbo9f0wdUzUZm059RPqyFQlxMtiTPIkWQ=";
+    rev = "3ffc5aa43194bb4d5295dec9fbf0a18b3a2dddfc";
+    hash = "sha256-/6nbTNfpkNRUJcXnQKw9yrm3UAvgfUoyKbNRUkQAfPY=";
   };
+
+  nativeBuildInputs = [ installAgentSkills ];
 
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/share/nu_scripts
     mv ./* $out/share/nu_scripts
+    rm -r $out/share/nu_scripts/themes/screenshots
+    rm -r $out/share/nu_scripts/skills/ # installAgentSkills installs these in the correct directory
 
     runHook postInstall
   '';

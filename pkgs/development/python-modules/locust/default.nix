@@ -4,6 +4,7 @@
   python,
   callPackage,
   fetchFromGitHub,
+  substitute,
   hatchling,
   hatch-vcs,
   pytestCheckHook,
@@ -18,23 +19,41 @@
   locust-cloud,
   psutil,
   pyquery,
+  pytest,
   pyzmq,
   requests,
   retry,
   tomli,
   werkzeug,
+  yarn-berry,
 }:
 
 buildPythonPackage rec {
   pname = "locust";
-  version = "2.37.14";
+  version = "2.46.3";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "locustio";
     repo = "locust";
     tag = version;
-    hash = "sha256-16pMl72OIZlAi6jNx0qv0TO9RTm6O9CgiE84sndsEhc=";
+    hash = "sha256-IFKphE/RuGXsCmddXNppnHzayTSETaFLrOm26+6tyBI=";
+
+    # Remove after upstream updates to Yarn 4.15
+    # https://github.com/locustio/locust/blob/master/locust/webui/package.json#L89
+    postFetch = ''
+      cd $out/locust/webui
+      patch -p1 < ${
+        (substitute {
+          src = ./yarn-fix.patch;
+          substitutions = [
+            "--replace-fail"
+            "YARN_LOCKFILE_VERSION_PLACEHOLDER"
+            yarn-berry.lockfileVersion
+          ];
+        })
+      }
+    '';
   };
 
   postPatch = ''
@@ -46,7 +65,7 @@ buildPythonPackage rec {
   '';
 
   webui = callPackage ./webui.nix {
-    inherit version;
+    inherit version yarn-berry;
     src = "${src}/locust/webui";
   };
 
@@ -65,6 +84,7 @@ buildPythonPackage rec {
     "flask-login"
     # version 6.0.1 is listed as 0.0.1 in the dependency check and 0.0.1 is not >= 3.0.10
     "flask-cors"
+    "requests"
   ];
 
   dependencies = [
@@ -81,6 +101,7 @@ buildPythonPackage rec {
     requests
     tomli
     werkzeug
+    pytest
   ];
 
   pythonImportsCheck = [ "locust" ];

@@ -10,8 +10,10 @@ on:
         required: true
         type: string
     secrets:
-      CACHIX_AUTH_TOKEN:
-        required: true
+      # Should only be provided in the merge queue, not in pull requests,
+      # where we're evaluating untrusted code.
+      CACHIX_AUTH_TOKEN_GHA:
+        required: false
 
 permissions: {}
 
@@ -24,15 +26,12 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          sparse-checkout: .github/actions
       - name: Checkout the merge commit
-        uses: ./.github/actions/checkout
+        uses: $/.github/actions/checkout
         with:
           merged-as-untrusted-at: ${{ inputs.mergedSha }}
 
-      - uses: cachix/install-nix-action@7ab6e7fd29da88e74b1e314a4ae9ac6b5cda3801 # v31
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
 
       # TODO: Figure out how to best enable caching for the treefmt job. Cachix won't work well,
       # because the cache would be invalidated on every commit - treefmt checks every file.
@@ -58,22 +57,20 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          sparse-checkout: .github/actions
       - name: Checkout the merge commit
-        uses: ./.github/actions/checkout
+        uses: $/.github/actions/checkout
         with:
           merged-as-untrusted-at: ${{ inputs.mergedSha }}
 
-      - uses: cachix/install-nix-action@7ab6e7fd29da88e74b1e314a4ae9ac6b5cda3801 # v31
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
 
-      - uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
+      - uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+        continue-on-error: true
         with:
-          # The nixpkgs-ci cache should not be trusted or used outside of Nixpkgs and its forks' CI.
-          name: ${{ vars.CACHIX_NAME || 'nixpkgs-ci' }}
-          extraPullNames: nixpkgs-ci
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          # The nixpkgs-gha cache should not be trusted or used outside of Nixpkgs and its forks' CI.
+          name: ${{ vars.CACHIX_NAME || 'nixpkgs-gha' }}
+          extraPullNames: nixpkgs-gha
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN_GHA }}
           pushFilter: -source$
 
       - name: Parse all nix files
@@ -85,23 +82,21 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          sparse-checkout: .github/actions
       - name: Checkout merge and target commits
-        uses: ./.github/actions/checkout
+        uses: $/.github/actions/checkout
         with:
           merged-as-untrusted-at: ${{ inputs.mergedSha }}
           target-as-trusted-at: ${{ inputs.targetSha }}
 
-      - uses: cachix/install-nix-action@7ab6e7fd29da88e74b1e314a4ae9ac6b5cda3801 # v31
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
 
-      - uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
+      - uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+        continue-on-error: true
         with:
-          # The nixpkgs-ci cache should not be trusted or used outside of Nixpkgs and its forks' CI.
-          name: ${{ vars.CACHIX_NAME || 'nixpkgs-ci' }}
-          extraPullNames: nixpkgs-ci
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          # The nixpkgs-gha cache should not be trusted or used outside of Nixpkgs and its forks' CI.
+          name: ${{ vars.CACHIX_NAME || 'nixpkgs-gha' }}
+          extraPullNames: nixpkgs-gha
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN_GHA }}
           pushFilter: -source$
 
       - name: Running nixpkgs-vet
@@ -117,3 +112,29 @@ jobs:
             echo "If you're having trouble, ping @NixOS/nixpkgs-vet"
             exit "$exitCode"
           fi
+
+  commits:
+    # Only check commits if we have access to the pull_request context.
+    #
+    # Luckily there's no need to lint commit messages in the Merge Queue, because
+    # changes to the target branch can't change commit messages on the base branch.
+    if: ${{ github.event.pull_request.number }}
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true # Needed to run git fetch for large PRs.
+          path: trusted
+      - name: Check commit messages
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { default: checkCommitMessages } = await import('${{ github.workspace }}/trusted/ci/github-script/lint-commits.ts')
+
+            await checkCommitMessages({
+              github,
+              context,
+              core,
+              repoPath: 'trusted',
+            })

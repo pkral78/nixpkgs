@@ -12,10 +12,11 @@
   release_version,
   version,
   python3,
-  buildLlvmTools,
+  buildLlvmPackages,
   fixDarwinDylibNames,
   enableManpages ? false,
   enableClangToolsExtra ? true,
+  extraPatches ? [ ],
   devExtraCmakeFlags ? [ ],
   replaceVars,
   getVersionFile,
@@ -31,12 +32,33 @@ stdenv.mkDerivation (
 
     src =
       if monorepoSrc != null then
-        runCommand "clang-src-${version}" { inherit (monorepoSrc) passthru; } ''
-          mkdir -p "$out"
-          cp -r ${monorepoSrc}/cmake "$out"
-          cp -r ${monorepoSrc}/clang "$out"
-          ${lib.optionalString enableClangToolsExtra "cp -r ${monorepoSrc}/clang-tools-extra \"$out\""}
-        ''
+        runCommand "clang-src-${version}"
+          {
+            inherit (monorepoSrc) passthru;
+            strictDeps = true;
+            __structuredAttrs = true;
+          }
+          (
+            ''
+              mkdir -p "$out"
+              cp -r ${monorepoSrc}/cmake "$out"
+              cp -r ${monorepoSrc}/clang "$out"
+              ${lib.optionalString enableClangToolsExtra "cp -r ${monorepoSrc}/clang-tools-extra \"$out\""}
+            ''
+            + lib.optionalString (lib.versionAtLeast release_version "23" && enableManpages) ''
+              # AddSphinxBuild.cmake sets PYTHONPATH to this roughly $out/clang/../llvm/../utils/docs
+              # The directory has to exist for PYTHONPATH's traversal
+              mkdir -p "$out/llvm"
+
+              # utils/docs contains an internal tooling Python module llvm_sphinx needed for building docs
+              mkdir -p "$out/utils"
+              cp -r ${monorepoSrc}/utils/docs "$out/utils/docs"
+
+              # The docs are referring to a file from mlir/utils/
+              mkdir -p "$out/mlir"
+              cp -r ${monorepoSrc}/mlir/utils "$out/mlir/utils"
+            ''
+          )
       else
         src;
 
@@ -73,7 +95,8 @@ stdenv.mkDerivation (
       ];
       stripLen = 1;
       hash = "sha256-1NKej08R9SPlbDY/5b0OKUsHjX07i9brR84yXiPwi7E=";
-    });
+    })
+    ++ extraPatches;
 
     nativeBuildInputs = [
       cmake
@@ -91,19 +114,22 @@ stdenv.mkDerivation (
       libllvm
     ];
 
+    strictDeps = true;
+
     cmakeFlags = [
       (lib.cmakeFeature "CLANG_INSTALL_PACKAGE_DIR" "${placeholder "dev"}/lib/cmake/clang")
       (lib.cmakeBool "CLANGD_BUILD_XPC" false)
       (lib.cmakeBool "LLVM_ENABLE_RTTI" true)
-      (lib.cmakeFeature "LLVM_TABLEGEN_EXE" "${buildLlvmTools.tblgen}/bin/llvm-tblgen")
-      (lib.cmakeFeature "CLANG_TABLEGEN" "${buildLlvmTools.tblgen}/bin/clang-tblgen")
+      (lib.cmakeBool "LLVM_INCLUDE_TESTS" false)
+      (lib.cmakeFeature "LLVM_TABLEGEN_EXE" "${buildLlvmPackages.tblgen}/bin/llvm-tblgen")
+      (lib.cmakeFeature "CLANG_TABLEGEN" "${buildLlvmPackages.tblgen}/bin/clang-tblgen")
+      (lib.cmakeFeature "CLANG_TIDY_CONFUSABLE_CHARS_GEN" "${buildLlvmPackages.tblgen}/bin/clang-tidy-confusable-chars-gen")
     ]
+    ++ lib.optional (lib.versionAtLeast release_version "20") (
+      lib.cmakeFeature "LLVM_DIR" "${libllvm.dev}/lib/cmake/llvm"
+    )
     ++ lib.optionals (lib.versionAtLeast release_version "21") [
       (lib.cmakeFeature "CLANG_RESOURCE_DIR" "${placeholder "lib"}/lib/clang/${lib.versions.major release_version}")
-    ]
-    # TODO: Clean up on `staging`.
-    ++ [
-      (lib.cmakeBool "LLVM_INCLUDE_TESTS" false)
     ]
     ++ lib.optionals enableManpages [
       (lib.cmakeBool "CLANG_INCLUDE_DOCS" true)
@@ -112,20 +138,10 @@ stdenv.mkDerivation (
       (lib.cmakeBool "SPHINX_OUTPUT_HTML" false)
       (lib.cmakeBool "SPHINX_WARNINGS_AS_ERRORS" false)
     ]
-    # TODO: Clean up on `staging`.
-    ++ [
-      # Added in LLVM15:
-      # `clang-tidy-confusable-chars-gen`: https://github.com/llvm/llvm-project/commit/c3574ef739fbfcc59d405985a3a4fa6f4619ecdb
-      # `clang-pseudo-gen`: https://github.com/llvm/llvm-project/commit/cd2292ef824591cc34cc299910a3098545c840c7
-      (lib.cmakeFeature "CLANG_TIDY_CONFUSABLE_CHARS_GEN" "${buildLlvmTools.tblgen}/bin/clang-tidy-confusable-chars-gen")
-    ]
     ++ lib.optionals (lib.versionOlder release_version "20") [
       # clang-pseudo removed in LLVM20: https://github.com/llvm/llvm-project/commit/ed8f78827895050442f544edef2933a60d4a7935
-      (lib.cmakeFeature "CLANG_PSEUDO_GEN" "${buildLlvmTools.tblgen}/bin/clang-pseudo-gen")
+      (lib.cmakeFeature "CLANG_PSEUDO_GEN" "${buildLlvmPackages.tblgen}/bin/clang-pseudo-gen")
     ]
-    ++ lib.optional (lib.versionAtLeast release_version "20") (
-      lib.cmakeFeature "LLVM_DIR" "${libllvm.dev}/lib/cmake/llvm"
-    )
     ++ devExtraCmakeFlags;
 
     postPatch = ''
@@ -169,24 +185,22 @@ stdenv.mkDerivation (
         mv $out/bin/set-xcode-analyzer $python/bin
       fi
       mv $out/share/clang/*.py $python/share/clang
+    ''
+    + lib.optionalString (lib.versionOlder release_version "22") ''
       rm $out/bin/c-index-test
+    ''
+    + ''
       patchShebangs $python/bin
+      patchShebangs $python/share/clang/
 
       mkdir -p $dev/bin
-    ''
-    # TODO(@LunNova): Clean up this rebuild avoidance in staging
-    + lib.optionalString enableClangToolsExtra (
-      if lib.versionOlder release_version "20" then
-        ''
-          cp bin/{clang-tblgen,clang-tidy-confusable-chars-gen,clang-pseudo-gen} $dev/bin
-        ''
-      else
-        ''
-          cp bin/{clang-tblgen,clang-tidy-confusable-chars-gen} $dev/bin
-        ''
-    )
-    + lib.optionalString (!enableClangToolsExtra) ''
       cp bin/clang-tblgen $dev/bin
+    ''
+    + lib.optionalString enableClangToolsExtra ''
+      cp bin/clang-tidy-confusable-chars-gen $dev/bin
+    ''
+    + lib.optionalString (enableClangToolsExtra && lib.versionOlder release_version "20") ''
+      cp bin/clang-pseudo-gen $dev/bin
     '';
 
     env =
@@ -200,6 +214,8 @@ stdenv.mkDerivation (
     passthru = {
       inherit libllvm;
       isClang = true;
+      langC = true;
+      langCC = true;
       hardeningUnsupportedFlagsByTargetPlatform =
         targetPlatform:
         [ "fortify3" ]
@@ -220,6 +236,8 @@ stdenv.mkDerivation (
         enableClangToolsExtra = false;
       };
     };
+
+    __structuredAttrs = true;
 
     requiredSystemFeatures = [ "big-parallel" ];
     meta = llvm_meta // {
@@ -256,6 +274,7 @@ stdenv.mkDerivation (
 
     meta = llvm_meta // {
       description = "man page for Clang ${version}";
+      homepage = "https://github.com/llvm/llvm-project";
     };
   }
 )

@@ -4,59 +4,63 @@
   aresponses,
   buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
-  pythonOlder,
+  pyprojectVersionPatchHook,
   pytest-asyncio,
+  pytest-cov-stub,
   pytestCheckHook,
-  pytz,
   syrupy,
+  uv-build,
+  yarl,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "odp-amsterdam";
-  version = "6.1.2";
+  version = "7.1.0";
   pyproject = true;
-
-  disabled = pythonOlder "3.11";
 
   src = fetchFromGitHub {
     owner = "klaasnicolaas";
     repo = "python-odp-amsterdam";
-    tag = "v${version}";
-    hash = "sha256-vamWelyEcwvYI5I9wmKk8kKc7j0OMer/BKgC0pbN4g0=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-YUO8L40FjqjdDWLcmDldQ+5hkdVgBQHvAhd1rBTfDLg=";
   };
 
   postPatch = ''
     substituteInPlace pyproject.toml \
-      --replace-fail '"0.0.0"' '"${version}"'
-    sed -i '/addopts/d' pyproject.toml
+      --replace-fail "uv_build>=0.12.13,<0.13" "uv_build"
   '';
 
-  build-system = [
-    poetry-core
-  ];
+  build-system = [ uv-build ];
 
-  pythonRelaxDeps = [ "pytz" ];
+  nativeBuildInputs = [ pyprojectVersionPatchHook ];
 
   dependencies = [
     aiohttp
-    pytz
+    yarl
   ];
 
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
+    pytest-cov-stub
     pytestCheckHook
     syrupy
   ];
 
   pythonImportsCheck = [ "odp_amsterdam" ];
 
-  meta = with lib; {
+  disabledTests = [
+    # Tests are outdated
+    "test_all_garages"
+    "test_single_garage"
+    "test_filter_garage_model"
+  ];
+
+  meta = {
     description = "Python client for getting garage occupancy in Amsterdam";
     homepage = "https://github.com/klaasnicolaas/python-odp-amsterdam";
-    changelog = "https://github.com/klaasnicolaas/python-odp-amsterdam/releases/tag/${src.tag}";
-    license = licenses.mit;
-    maintainers = with maintainers; [ fab ];
+    changelog = "https://github.com/klaasnicolaas/python-odp-amsterdam/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ fab ];
   };
-}
+})

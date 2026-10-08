@@ -5,6 +5,7 @@
   nodejs,
   nix-update-script,
   versionCheckHook,
+  stdenv, # for meta.broken
 }:
 buildNpmPackage (finalAttrs: {
   pname = "task-master-ai";
@@ -40,15 +41,16 @@ buildNpmPackage (finalAttrs: {
   nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
   versionCheckProgram = "${placeholder "out"}/bin/task-master";
-  versionCheckProgramArg = "--version";
 
-  meta = with lib; {
+  meta = {
     description = "Node.js agentic AI workflow orchestrator";
     homepage = "https://task-master.dev";
     changelog = "https://github.com/eyaltoledano/claude-task-master/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    license = licenses.mit;
+    license = lib.licenses.mit;
     mainProgram = "task-master-ai";
-    maintainers = [ maintainers.repparw ];
-    platforms = platforms.all;
+    maintainers = [ lib.maintainers.repparw ];
+    platforms = lib.platforms.all;
+    # last successful hydra build on darwin was in 2025
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

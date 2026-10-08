@@ -6,14 +6,14 @@
   fetchpatch,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "target-isns";
   version = "0.6.8";
 
   src = fetchFromGitHub {
     owner = "open-iscsi";
     repo = "target-isns";
-    rev = "v${version}";
+    rev = "v${finalAttrs.version}";
     sha256 = "1b6jjalvvkkjyjbg1pcgk8vmvc6xzzksyjnh2pfi45bbpya4zxim";
   };
 
@@ -32,18 +32,24 @@ stdenv.mkDerivation rec {
       url = "https://github.com/open-iscsi/target-isns/commit/e209821423f936d1cc9b946fb8f7a8979b8e751b.patch?full_index=1";
       hash = "sha256-86nl8wTiI9WSZ+Hhw/a9VtgS8OLqoFwiot5iU5IK0f8=";
     })
+
+    # Fix build w/ glibc-2.44
+    (fetchpatch {
+      url = "https://github.com/open-iscsi/target-isns/commit/d3645f0c357b2b14fb682fa2cd4ba3621efc4cea.patch";
+      hash = "sha256-/ew+B4WDF2s5bjfPLZ7glHW+o/pRTI7zPHLTDh+n4lY=";
+    })
   ];
 
   cmakeFlags = [ "-DSUPPORT_SYSTEMD=ON" ];
 
   nativeBuildInputs = [ cmake ];
 
-  meta = with lib; {
+  meta = {
     description = "iSNS client for the Linux LIO iSCSI target";
     mainProgram = "target-isns";
     homepage = "https://github.com/open-iscsi/target-isns";
-    maintainers = [ maintainers.markuskowa ];
-    license = licenses.gpl2Only;
-    platforms = platforms.linux;
+    maintainers = [ lib.maintainers.markuskowa ];
+    license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.linux;
   };
-}
+})

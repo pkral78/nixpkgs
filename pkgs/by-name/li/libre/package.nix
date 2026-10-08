@@ -7,14 +7,14 @@
   cmake,
 }:
 
-stdenv.mkDerivation rec {
-  version = "3.24.0";
+stdenv.mkDerivation (finalAttrs: {
+  version = "4.11.0";
   pname = "libre";
   src = fetchFromGitHub {
     owner = "baresip";
     repo = "re";
-    rev = "v${version}";
-    sha256 = "sha256-wcntgFKpVxDlRMF8a7s9UxeXihguiGxTL/PGv9ImB80=";
+    rev = "v${finalAttrs.version}";
+    sha256 = "sha256-cG7etDjpWdOhZ2dUhkXxlKpDpEoUG/7z8KkQXgSSVbw=";
   };
 
   buildInputs = [
@@ -37,4 +37,4 @@ stdenv.mkDerivation rec {
     maintainers = with lib.maintainers; [ raskin ];
     license = lib.licenses.bsd3;
   };
-}
+})

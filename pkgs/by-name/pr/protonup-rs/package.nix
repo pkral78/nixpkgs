@@ -1,19 +1,23 @@
 {
   lib,
   rustPlatform,
-  fetchCrate,
+  fetchFromGitHub,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "protonup-rs";
-  version = "0.9.1";
+  version = "0.15.1";
 
-  src = fetchCrate {
-    inherit (finalAttrs) pname version;
-    hash = "sha256-zUsb+ZJmKUizBVwE4Uf/YnIukRn0AEQa7UeXdIIWYt8=";
+  __structuredAttrs = true;
+
+  src = fetchFromGitHub {
+    owner = "auyer";
+    repo = "protonup-rs";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-b4ZYHoJoGayt2jTFMBaLP8UrVqKQDNXzM9/kLbkSgaA=";
   };
 
-  cargoHash = "sha256-baa3VtGUnVFMwlPdKSa4jXecSlKogRHjKMfcGbqUFM0=";
+  cargoHash = "sha256-j4eWSQUIsH4E45NgMLIWA+IpyBLh3IJwLoXIr8wSEaY=";
 
   checkFlags = [
     # Requires internet access

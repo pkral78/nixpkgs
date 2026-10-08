@@ -1,5 +1,4 @@
 {
-  apple-sdk_13,
   stdenv,
   cmake,
   lsb-release,
@@ -26,29 +25,38 @@
   nlohmann_json,
   tinyxml-2,
   spdlog,
+  stb,
   writeTextFile,
   fixDarwinDylibNames,
   applyPatches,
   shipwright,
+  libopus,
+  opusfile,
+  libogg,
+  libvorbis,
+  bzip2,
+  libx11,
+  sdl_gamecontrollerdb,
+  fetchpatch,
 }:
 
 let
 
   # The following would normally get fetched at build time, or a specific version is required
 
-  gamecontrollerdb = fetchFromGitHub {
-    owner = "mdqinc";
-    repo = "SDL_GameControllerDB";
-    rev = "a74711e1e87733ccdf02d7020d8fa9e4fa67176e";
-    hash = "sha256-rXC4akz9BaKzr/C2CryZC6RGk6+fGVG7RsQryUFUUk0=";
+  dr_libs = fetchFromGitHub {
+    owner = "mackron";
+    repo = "dr_libs";
+    rev = "da35f9d6c7374a95353fd1df1d394d44ab66cf01";
+    hash = "sha256-ydFhQ8LTYDBnRTuETtfWwIHZpRciWfqGsZC6SuViEn0=";
   };
 
   imgui' = applyPatches {
     src = fetchFromGitHub {
       owner = "ocornut";
       repo = "imgui";
-      tag = "v1.91.6-docking";
-      hash = "sha256-28wyzzwXE02W5vbEdRCw2iOF8ONkb3M3Al8XlYBvz1A=";
+      tag = "v1.91.9b-docking";
+      hash = "sha256-mQOJ6jCN+7VopgZ61yzaCnt4R1QLrW7+47xxMhFRHLQ=";
     };
     patches = [
       "${shipwright.src}/libultraship/cmake/dependencies/patches/imgui-fixes-and-config.patch"
@@ -65,8 +73,8 @@ let
   prism = fetchFromGitHub {
     owner = "KiritoDv";
     repo = "prism-processor";
-    rev = "fb3f8b4a2d14dfcbae654d0f0e59a73b6f6ca850";
-    hash = "sha256-gGdQSpX/TgCNZ0uyIDdnazgVHpAQhl30e+V0aVvTFMM=";
+    rev = "bbcbc7e3f890a5806b579361e7aa0336acd547e7";
+    hash = "sha256-jRPwO1Vub0cH12YMlME6kd8zGzKmcfIrIJZYpQJeOks=";
   };
 
   stb_impl = writeTextFile {
@@ -75,12 +83,6 @@ let
       #define STB_IMAGE_IMPLEMENTATION
       #include "stb_image.h"
     '';
-  };
-
-  stb' = fetchurl {
-    name = "stb_image.h";
-    url = "https://raw.githubusercontent.com/nothings/stb/0bc88af4de5fb022db643c2d8e549a0927749354/stb_image.h";
-    hash = "sha256-xUsVponmofMsdeLsI6+kQuPg436JS3PBl00IZ5sg3Vw=";
   };
 
   stormlib' = applyPatches {
@@ -111,12 +113,12 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "shipwright";
-  version = "9.0.5";
+  version = "9.2.3";
   src = fetchFromGitHub {
     owner = "harbourmasters";
     repo = "shipwright";
     tag = finalAttrs.version;
-    hash = "sha256-F5d4u3Nq/+yYiOgkH/bwWPhZDxgBpJ5ktee0Hc5UmEo=";
+    hash = "sha256-jTKhvyFaP59+T85CI7IteMABggOt6WVvQJ1vbSz1ops=";
     fetchSubmodules = true;
     deepClone = true;
     postFetch = ''
@@ -131,6 +133,16 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./darwin-fixes.patch
     ./disable-downloading-stb_image.patch
+
+    # Fix building with gcc16
+    # Remove after 9.2.3
+    (fetchpatch {
+      name = "libultraship-fix-gcc16.patch";
+      url = "https://github.com/Kenix3/libultraship/commit/42ecb8ed48e4b15c21fe2e0d7e34cb5c02efa23d.patch";
+      stripLen = 1;
+      extraPrefix = "libultraship/";
+      hash = "sha256-LuaYeBdYf+pzRxUhZfFup4/r6oYzWi0YpAZzW1SR8Wk=";
+    })
   ];
 
   nativeBuildInputs = [
@@ -161,25 +173,30 @@ stdenv.mkDerivation (finalAttrs: {
     nlohmann_json
     tinyxml-2
     spdlog
+    (lib.getDev libopus)
+    (lib.getDev opusfile)
+    libogg
+    libvorbis
+    bzip2
+    libx11
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     libpulseaudio
     zenity
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Metal.hpp requires macOS 13.x min.
-    apple-sdk_13
   ];
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_REMOTE_CONTROL" true)
     (lib.cmakeBool "NON_PORTABLE" true)
     (lib.cmakeFeature "CMAKE_INSTALL_PREFIX" "${placeholder "out"}/lib")
+    (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_DR_LIBS" "${dr_libs}")
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_IMGUI" "${imgui'}")
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_LIBGFXD" "${libgfxd}")
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_PRISM" "${prism}")
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_STORMLIB" "${stormlib'}")
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_THREADPOOL" "${thread_pool}")
+    (lib.cmakeFeature "OPUS_INCLUDE_DIR" "${lib.getDev libopus}/include/opus")
+    (lib.cmakeFeature "OPUSFILE_INCLUDE_DIR" "${lib.getDev opusfile}/include/opus")
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_METALCPP" "${metalcpp}")
@@ -188,6 +205,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-int-conversion -Wno-implicit-int -Wno-elaborated-enum-base";
 
+  strictDeps = true;
+
   dontAddPrefix = true;
 
   # Linking fails without this
@@ -195,7 +214,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   preConfigure = ''
     mkdir stb
-    cp ${stb'} ./stb/${stb'.name}
+    cp ${stb}/include/stb/stb_image.h ./stb/stb_image.h
     cp ${stb_impl} ./stb/${stb_impl.name}
     substituteInPlace libultraship/cmake/dependencies/common.cmake \
       --replace-fail "\''${STB_DIR}" "$(readlink -f ./stb)"
@@ -210,23 +229,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   postBuild = ''
     port_ver=$(grep CMAKE_PROJECT_VERSION: "$PWD/CMakeCache.txt" | cut -d= -f2)
-    cp ${gamecontrollerdb}/gamecontrollerdb.txt gamecontrollerdb.txt
-    mv ../libultraship/src/graphic/Fast3D/shaders ../soh/assets/custom
+    cp ${sdl_gamecontrollerdb}/share/gamecontrollerdb.txt gamecontrollerdb.txt
+    mv ../libultraship/src/fast/shaders ../soh/assets/custom
     pushd ../OTRExporter
-    python3 ./extract_assets.py -z ../build/ZAPD/ZAPD.out --norom --xml-root ../soh/assets/xml --custom-assets-path ../soh/assets/custom --custom-otr-file soh.otr --port-ver $port_ver
+    python3 ./extract_assets.py -z ../build/ZAPD/ZAPD.out --norom --xml-root ../soh/assets/xml --custom-assets-path ../soh/assets/custom --custom-otr-file soh.o2r --port-ver $port_ver
     popd
   '';
 
   preInstall = ''
     # Cmake likes it here for its install paths
-    cp ../OTRExporter/soh.otr soh/soh.otr
+    cp ../OTRExporter/soh.o2r soh/soh.o2r
   '';
 
   postInstall =
     lib.optionalString stdenv.hostPlatform.isLinux ''
       mkdir -p $out/bin
       ln -s $out/lib/soh.elf $out/bin/soh
-      install -Dm644 ../soh/macosx/sohIcon.png $out/share/pixmaps/soh.png
+      install -Dm644 ../soh/macosx/sohIcon.png $out/share/icons/soh.png
     ''
     + lib.optionalString stdenv.hostPlatform.isDarwin ''
       # Recreate the macOS bundle (without using cpack)
@@ -275,10 +294,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "PC port of Ocarina of Time with modern controls, widescreen, high-resolution, and more";
     mainProgram = "soh";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    maintainers = with lib.maintainers; [
-      j0lol
-      matteopacini
-    ];
+    maintainers = with lib.maintainers; [ matteopacini ];
     license = with lib.licenses; [
       # OTRExporter, OTRGui, ZAPDTR, libultraship
       mit

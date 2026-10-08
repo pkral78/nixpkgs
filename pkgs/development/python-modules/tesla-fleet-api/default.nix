@@ -9,22 +9,21 @@
   cryptography,
   fetchFromGitHub,
   protobuf,
-  pythonOlder,
   setuptools,
+  tesla-protocol,
+  typing-extensions,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "tesla-fleet-api";
-  version = "1.2.4";
+  version = "1.17.3";
   pyproject = true;
-
-  disabled = pythonOlder "3.10";
 
   src = fetchFromGitHub {
     owner = "Teslemetry";
     repo = "python-tesla-fleet-api";
-    tag = "v${version}";
-    hash = "sha256-h6MGYzDNzEss5FIf+2J5oROQw/7OVLpkXuheYKd4BrQ=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-EtnmGkVUHLA7Bvv/kU47ja0RRl3y4x7xFe7oJ8mdjnI=";
   };
 
   build-system = [ setuptools ];
@@ -37,6 +36,8 @@ buildPythonPackage rec {
     bleak-retry-connector
     cryptography
     protobuf
+    tesla-protocol
+    typing-extensions
   ];
 
   # Module has no tests
@@ -44,11 +45,11 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "tesla_fleet_api" ];
 
-  meta = with lib; {
+  meta = {
     description = "Python library for Tesla Fleet API and Teslemetry";
     homepage = "https://github.com/Teslemetry/python-tesla-fleet-api";
-    changelog = "https://github.com/Teslemetry/python-tesla-fleet-api/releases/tag/${src.tag}";
-    license = licenses.asl20;
-    maintainers = with maintainers; [ fab ];
+    changelog = "https://github.com/Teslemetry/python-tesla-fleet-api/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ fab ];
   };
-}
+})

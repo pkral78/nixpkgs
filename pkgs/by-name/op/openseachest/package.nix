@@ -4,19 +4,19 @@
   stdenv,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "openseachest";
-  version = "25.05.3";
+  version = "26.03.2";
 
   src = fetchFromGitHub {
     owner = "Seagate";
     repo = "openSeaChest";
-    tag = "v${version}";
-    hash = "sha256-huhdRF2K1AEDRX6Jyz8a/OpUEKFmH+FLNr5KHM/4Sk4=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-wCuHiYlmZodJdyFJSTANL1TfUhENrSSQ72hMGo7VQrc=";
     fetchSubmodules = true;
   };
 
-  makeFlags = [ "-C Make/gcc" ];
+  makeFlags = [ "--directory=Make/gcc" ];
   buildFlags = [ "release" ];
 
   installPhase = ''
@@ -29,11 +29,11 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Collection of command line diagnostic tools for storage devices";
     homepage = "https://github.com/Seagate/openSeaChest";
-    license = licenses.mpl20;
-    maintainers = with maintainers; [ justinas ];
-    platforms = with platforms; freebsd ++ linux;
+    license = lib.licenses.mpl20;
+    maintainers = with lib.maintainers; [ justinas ];
+    platforms = with lib.platforms; freebsd ++ linux;
   };
-}
+})

@@ -7,14 +7,14 @@
 
 buildGoModule (finalAttrs: {
   pname = "tempo";
-  version = "2.8.2";
+  version = "3.0.3";
 
   src = fetchFromGitHub {
     owner = "grafana";
     repo = "tempo";
     tag = "v${finalAttrs.version}";
     fetchSubmodules = true;
-    hash = "sha256-mROhsqbCwPulxtg3pHVZi8FmW9PrYzGPdE0ajVvzRBY=";
+    hash = "sha256-DZ/tUlZyNFNk66h38kuarU4o5P1tPuVVk5pYZ+4gRSo=";
   };
 
   vendorHash = null;
@@ -39,11 +39,16 @@ buildGoModule (finalAttrs: {
 
   passthru.updateScript = nix-update-script { };
 
-  meta = with lib; {
+  meta = {
     description = "High volume, minimal dependency trace storage";
     changelog = "https://github.com/grafana/tempo/releases/tag/v${finalAttrs.version}";
-    license = licenses.asl20;
+    license =
+      with lib.licenses;
+      AND [
+        agpl3Only
+        asl20
+      ];
     homepage = "https://grafana.com/oss/tempo/";
-    maintainers = [ ];
+    maintainers = [ lib.maintainers.kashw2 ];
   };
 })

@@ -35,14 +35,29 @@ let
       user = "sa";
     };
     logger.console = "true";
-    media.path = "${stateDirectory}/media";
-    templates.root = "${stateDirectory}/templates";
+    web.override = "${stateDirectory}/override";
   };
 
 in
 {
   options.services.traccar = {
     enable = lib.mkEnableOption "Traccar, an open source GPS tracking system";
+    package = lib.mkPackageOption pkgs "traccar" { };
+    environment = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      description = ''
+        Extra environment variables to pass to Traccar. Secrets should be passed
+        using the {option}`services.traccar.environmentFile` option instead.
+
+        See [the documentation](https://www.traccar.org/configuration-file/)
+        for more information.
+      '';
+      default = { };
+      example = {
+        CONFIG_USE_ENVIRONMENT_VARIABLES = "true";
+        DATABASE_URL = "jdbc:postgresql://localhost/traccar?socketFactory=org.newsclub.net.unix.AFUNIXSocketFactory$FactoryArg&socketFactoryArg=/run/postgresql/.s.PGSQL.5432";
+      };
+    };
     settingsFile = lib.mkOption {
       type = with lib.types; nullOr path;
       default = null;
@@ -94,24 +109,25 @@ in
         wantedBy = [ "multi-user.target" ];
         wants = [ "network-online.target" ];
 
+        inherit (cfg) environment;
+
         preStart = ''
-          # Copy new templates into our state directory.
-          cp -a --update=none ${pkgs.traccar}/templates ${stateDirectory}
           test -f '${configFilePath}' && rm -f '${configFilePath}'
 
-          # Substitute the configFile from Envvars read from EnvironmentFile
+          # Perform envvars substition read from environmentFile
           old_umask=$(umask)
           umask 0177
           ${lib.getExe pkgs.envsubst} \
             -i ${configuration} \
             -o ${configFilePath}
-          umask $old_umask
+          umask "$old_umask"
         '';
 
         serviceConfig = {
           DynamicUser = true;
+          WorkingDirectory = "${cfg.package}";
           EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
-          ExecStart = "${lib.getExe pkgs.traccar} ${configFilePath}";
+          ExecStart = "${lib.getExe cfg.package} ${configFilePath}";
           LockPersonality = true;
           NoNewPrivileges = true;
           PrivateDevices = true;
@@ -132,11 +148,6 @@ in
           StateDirectory = "traccar";
           SuccessExitStatus = 143;
           Type = "simple";
-          # Set the working directory to traccar's package.
-          # Traccar only searches for the DB migrations relative to it's WorkingDirectory and nothing worked to
-          # work around this. To avoid copying the migrations over to the state directory, we use the package as
-          # WorkingDirectory.
-          WorkingDirectory = "${pkgs.traccar}";
         };
       };
     };

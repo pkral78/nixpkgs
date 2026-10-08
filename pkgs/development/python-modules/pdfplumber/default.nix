@@ -20,14 +20,14 @@
 
 buildPythonPackage rec {
   pname = "pdfplumber";
-  version = "0.11.7";
+  version = "0.11.10";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jsvine";
     repo = "pdfplumber";
     tag = "v${version}";
-    hash = "sha256-6oCHFf/lNQidP69l0lVcvIQ0ldO3djRDnxLwcZ+VDVk=";
+    hash = "sha256-0fdH8SKU8ude43x7tsWxeGFQeSCYrTGTELG6SimloLQ=";
   };
 
   build-system = [ setuptools ];

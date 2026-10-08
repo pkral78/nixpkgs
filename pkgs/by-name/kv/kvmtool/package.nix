@@ -19,6 +19,9 @@ stdenv.mkDerivation {
 
   buildInputs = lib.optionals stdenv.hostPlatform.isAarch64 [ dtc ];
 
+  # glibc 2.43 C23 const-preserving strchr/strstr macros
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=discarded-qualifiers";
+
   enableParallelBuilding = true;
 
   makeFlags = [
@@ -30,11 +33,11 @@ stdenv.mkDerivation {
     "LIBFDT_DIR=${dtc}/lib"
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Lightweight tool for hosting KVM guests";
     homepage = "https://git.kernel.org/pub/scm/linux/kernel/git/will/kvmtool.git/tree/README";
-    license = licenses.gpl2Only;
-    maintainers = with maintainers; [
+    license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [
       astro
       mfrw
       peigongdsd

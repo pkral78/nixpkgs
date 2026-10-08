@@ -2,22 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  nix-update-script,
+  php,
   python3Packages,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 
-python3Packages.buildPythonApplication rec {
+python3Packages.buildPythonApplication (finalAttrs: {
   pname = "wapiti";
-  version = "3.2.6";
+  version = "3.3.2";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wapiti-scanner";
     repo = "wapiti";
-    tag = version;
-    hash = "sha256-dcPFHy7W6wJ+KpD8e9VfO+AgedwaA2+xeJImxRxq4oE=";
+    tag = finalAttrs.version;
+    hash = "sha256-gnZdNm6XZ2QiSppFAyCqbnpMiy06+qofVnWyUIEwDMI=";
   };
 
   pythonRelaxDeps = true;
@@ -42,6 +43,7 @@ python3Packages.buildPythonApplication rec {
     mitmproxy
     msgpack
     packaging
+    playwright
     pyasn1
     sqlalchemy
     tld
@@ -63,11 +65,10 @@ python3Packages.buildPythonApplication rec {
       pytestCheckHook
     ]
     ++ [
+      php
       versionCheckHook
       writableTmpDirAsHomeHook
     ];
-
-  versionCheckProgramArg = "--version";
 
   disabledTests = [
     # Tests requires network access
@@ -85,12 +86,17 @@ python3Packages.buildPythonApplication rec {
     "test_escape_with_style"
     "test_explorer_extract_links"
     "test_explorer_filtering"
+    "test_explorer_for_non_existing_files"
     "test_false"
+    "test_fetch_source_files_typo3"
+    "test_fetch_source_files"
     "test_frame"
     "test_headers_detection"
     "test_html_detection"
     "test_implies_detection"
     "test_inclusion_detection"
+    "test_magento_multi_version_detected"
+    "test_magento_version_detected"
     "test_merge_with_and_without_redirection"
     "test_meta_detection"
     "test_multi_detection"
@@ -170,9 +176,9 @@ python3Packages.buildPythonApplication rec {
       if a script is vulnerable.
     '';
     homepage = "https://wapiti-scanner.github.io/";
-    changelog = "https://github.com/wapiti-scanner/wapiti/blob/${version}/doc/ChangeLog_Wapiti";
+    changelog = "https://github.com/wapiti-scanner/wapiti/blob/${finalAttrs.src.tag}/doc/ChangeLog_Wapiti";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fab ];
     mainProgram = "wapiti";
   };
-}
+})

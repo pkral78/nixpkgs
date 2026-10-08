@@ -4,27 +4,31 @@
   rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  libgit2,
   openssl,
   libiconv,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-udeps";
-  version = "0.1.59";
+  version = "0.1.61";
 
   src = fetchFromGitHub {
     owner = "est31";
     repo = "cargo-udeps";
-    rev = "v${version}";
-    sha256 = "sha256-oA/oWXTaQPY7bCBUP52b+PACZXV+32G3/STh+sec6AI=";
+    rev = "v${finalAttrs.version}";
+    sha256 = "sha256-yT/EJWGGhQapbU1o1Gus1Vk5cAhso5ALTBecB3BH46g=";
   };
 
-  cargoHash = "sha256-X+Y2ialZnwusy3XVnXiTcGmSYsKsFOmEOL4Gc5SgXWU=";
+  cargoHash = "sha256-DGfAsBucFRFJkjmJkpTpNfQO79jaNa5NezXKf7hYYeM=";
+
+  env.LIBGIT2_NO_VENDOR = 1;
 
   nativeBuildInputs = [ pkg-config ];
 
   # TODO figure out how to use provided curl instead of compiling curl from curl-sys
   buildInputs = [
+    libgit2
     openssl
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
@@ -34,14 +38,15 @@ rustPlatform.buildRustPackage rec {
   # Requires network access
   doCheck = false;
 
-  meta = with lib; {
+  meta = {
     description = "Find unused dependencies in Cargo.toml";
     homepage = "https://github.com/est31/cargo-udeps";
-    license = licenses.mit;
-    maintainers = with maintainers; [
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [
       b4dm4n
       matthiasbeyer
+      chrjabs
     ];
     mainProgram = "cargo-udeps";
   };
-}
+})

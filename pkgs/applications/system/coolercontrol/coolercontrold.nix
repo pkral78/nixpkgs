@@ -1,9 +1,18 @@
 {
+  lib,
   rustPlatform,
   testers,
+  hwdata,
+  pkg-config,
   libdrm,
+  libglvnd,
+  vulkan-loader,
   coolercontrol,
   runtimeShell,
+  addDriverRunpath,
+  python3Packages,
+  liquidctl,
+  which,
 }:
 
 {
@@ -17,9 +26,22 @@ rustPlatform.buildRustPackage {
   inherit version src;
   sourceRoot = "${src.name}/coolercontrold";
 
-  cargoHash = "sha256-ZyYyQcaYd3VZ7FL0Hki33JO3LscPfBT5gl+nw2cXvUs=";
+  cargoHash = "sha256-tbGNVyYrTRmxOqVM7mjNgwZXXcUY205mKuFjrptr+m4=";
 
-  buildInputs = [ libdrm ];
+  buildInputs = [
+    hwdata
+    libdrm
+    libglvnd
+    vulkan-loader
+  ];
+
+  nativeBuildInputs = [
+    pkg-config
+    addDriverRunpath
+    python3Packages.wrapPython
+  ];
+
+  pythonPath = [ liquidctl ];
 
   postPatch = ''
     # copy the frontend static resources to a directory for embedding
@@ -27,7 +49,7 @@ rustPlatform.buildRustPackage {
     cp -R ${coolercontrol.coolercontrol-ui-data}/* resources/app/
 
     # Hardcode a shell
-    substituteInPlace src/repositories/utils.rs \
+    substituteInPlace daemon/src/repositories/utils.rs \
       --replace-fail 'Command::new("sh")' 'Command::new("${runtimeShell}")'
   '';
 
@@ -37,10 +59,30 @@ rustPlatform.buildRustPackage {
       --replace-fail '/usr/bin' "$out/bin"
   '';
 
+  postFixup = ''
+    addDriverRunpath "$out/bin/coolercontrold"
+
+    patchelf --add-rpath ${
+      lib.strings.makeLibraryPath [
+        # could instead patch out dynamic_loading for libdrm_amdgpu_sys in daemon/Cargo.toml,
+        # but we have to add other libraries to the search path anyway
+        libdrm
+
+        # Finding GPUs for stress-testing
+        libglvnd
+        vulkan-loader
+      ]
+    } $out/bin/coolercontrold
+
+    buildPythonPath "''${pythonPath[*]}"
+    wrapProgram "$out/bin/coolercontrold" \
+      --prefix PATH : ${lib.makeBinPath [ which ]} \
+      --prefix PATH : $program_PATH \
+      --prefix PYTHONPATH : $program_PYTHONPATH
+  '';
+
   passthru.tests.version = testers.testVersion {
     package = coolercontrol.coolercontrold;
-    # coolercontrold prints its version with "v" prefix
-    version = "v${version}";
   };
 
   meta = meta // {

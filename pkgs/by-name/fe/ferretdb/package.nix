@@ -34,7 +34,6 @@ buildGoModule (finalAttrs: {
   # the binary panics if something required wasn't set during compilation
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
 
   passthru.tests = nixosTests.ferretdb;
 
@@ -42,10 +41,9 @@ buildGoModule (finalAttrs: {
     description = "Truly Open Source MongoDB alternative";
     mainProgram = "ferretdb";
     changelog = "https://github.com/FerretDB/FerretDB/releases/tag/v${finalAttrs.version}";
-    homepage = "https://www.ferretdb.com/";
+    homepage = "https://github.com/FerretDB/FerretDB";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [
-      dit7ya
       noisersup
       julienmalka
     ];

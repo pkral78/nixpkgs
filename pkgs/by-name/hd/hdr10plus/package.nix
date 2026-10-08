@@ -1,7 +1,7 @@
 {
   lib,
   stdenv,
-  rust,
+  buildPackages,
   rustPlatform,
   hdr10plus_tool,
   cargo-c,
@@ -10,7 +10,7 @@
 
 let
   inherit (lib) optionals concatStringsSep;
-  inherit (rust.envVars) setEnv;
+  inherit (buildPackages.rust.envVars) setEnv;
 in
 rustPlatform.buildRustPackage (finalAttrs: {
   __structuredAttrs = true;
@@ -106,7 +106,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/quietvoid/hdr10plus_tool";
     changelog = "https://github.com/quietvoid/hdr10plus_tool/releases/tag/${hdr10plus_tool.version}";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ mvs ];
+    maintainers = [ ];
     pkgConfigModules = [ "hdr10plus-rs" ];
   };
 })

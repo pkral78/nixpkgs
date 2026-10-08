@@ -5,6 +5,7 @@
   fetchFromGitHub,
 
   # build-system
+  setuptools,
   setuptools-scm,
 
   # dependencies
@@ -25,22 +26,20 @@
 
 buildPythonPackage rec {
   pname = "spectral-cube";
-  version = "0.6.6-unstable-2025-06-11";
+  version = "0.6.7";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "radio-astro-tools";
     repo = "spectral-cube";
-    # tag = "v${version}";
-    # Unreleased PR with several build and test fixes: https://github.com/radio-astro-tools/spectral-cube/pull/951
-    rev = "f95ba1ca1823758d340ce0bfd3181ae3bc041b93";
-    hash = "sha256-LUWdxA7gfZI2MDpKuk+DiEJtXyWeS8co+3tZt97Uh3w=";
+    tag = "v${version}";
+    hash = "sha256-l5r7oeWr/JrmGOmUo4po2VlGldh8y7E3ufd+Gw1/JmM=";
   };
 
-  # remove after update to 0.6.7
-  env.SETUPTOOLS_SCM_PRETEND_VERSION = "0.6.6";
-
-  build-system = [ setuptools-scm ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
 
   dependencies = [
     astropy
@@ -70,7 +69,11 @@ buildPythonPackage rec {
     "test_reproject_3D_memory"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+  disabledTestPaths = [
+    # This test fails with "Passing a non-Collection iterable to parametrize is deprecated".
+    "spectral_cube/tests/test_casafuncs.py"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
     # On x86_darwin, this test fails with "Fatal Python error: Aborted"
     # when sandbox = true.
     "spectral_cube/tests/test_visualization.py"

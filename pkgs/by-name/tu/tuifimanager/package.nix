@@ -1,10 +1,9 @@
 {
   stdenv,
   lib,
-  python3,
+  python3Packages,
   fetchFromGitHub,
   kdePackages,
-  gnome-themes-extra,
   qt6,
   makeWrapper,
   x11Support ? stdenv.hostPlatform.isLinux,
@@ -18,21 +17,21 @@
 lib.throwIf (enableDragAndDrop && !hasDndSupport)
   "Drag and drop support is only available for linux with xorg."
 
-  python3.pkgs.buildPythonApplication
-  rec {
+  python3Packages.buildPythonApplication
+  (finalAttrs: {
     pname = "tuifimanager";
-    version = "5.1.5";
+    version = "5.2.6";
 
     pyproject = true;
 
     src = fetchFromGitHub {
       owner = "GiorgosXou";
       repo = "TUIFIManager";
-      tag = "v.${version}";
-      hash = "sha256-5ShrmjEFKGdmaGBFjMnIfcM6p8AZd13uIEFwDVAkU/8=";
+      tag = "v.${finalAttrs.version}";
+      hash = "sha256-cN1I/bCOO2YdxdHGNVbDDH1+P1q+tU3gbEeQjl8jmNI=";
     };
 
-    build-system = with python3.pkgs; [
+    build-system = with python3Packages; [
       setuptools
       setuptools-scm
     ];
@@ -44,30 +43,23 @@ lib.throwIf (enableDragAndDrop && !hasDndSupport)
         makeWrapper
       ]);
 
-    propagatedBuildInputs = [
-      python3.pkgs.send2trash
-      python3.pkgs.unicurses
+    makeWrapperArgs = lib.optionals enableDragAndDrop [
+      "--set"
+      "tuifi_synth_dnd"
+      "True"
+    ];
+
+    dependencies = [
+      python3Packages.send2trash
+      python3Packages.uni-curses
     ]
     ++ (lib.optionals enableDragAndDrop [
-      python3.pkgs.pynput
-      python3.pkgs.pyside6
-      python3.pkgs.requests
-      python3.pkgs.xlib
+      python3Packages.pynput
+      python3Packages.pyside6
+      python3Packages.requests
+      python3Packages.python-xlib
       kdePackages.qtbase
-      kdePackages.qt6gtk2
     ]);
-
-    postFixup =
-      let
-        # fix missing 'adwaita' warning missing with ncurses tui
-        # see: https://github.com/NixOS/nixpkgs/issues/60918
-        theme = gnome-themes-extra;
-      in
-      lib.optionalString enableDragAndDrop ''
-        wrapProgram $out/bin/tuifi \
-          --prefix GTK_PATH : "${theme}/lib/gtk-2.0" \
-          --set tuifi_synth_dnd True
-      '';
 
     pythonImportsCheck = [ "TUIFIManager" ];
 
@@ -86,4 +78,4 @@ lib.throwIf (enableDragAndDrop && !hasDndSupport)
       ];
       mainProgram = "tuifi";
     };
-  }
+  })

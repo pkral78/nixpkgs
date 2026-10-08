@@ -5,12 +5,12 @@
   cmake,
   doxygen,
   fetchurl,
-  fuse,
+  fuse3,
   libevent,
   xz,
   openssl,
   pkg-config,
-  systemd,
+  systemdLibs,
   tcp_wrappers,
   zlib,
   c-ares,
@@ -32,11 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
   buildInputs = [
     bzip2
-    fuse
+    fuse3
     libevent
     xz
     openssl
-    systemd
+    systemdLibs
     tcp_wrappers
     zlib
     c-ares

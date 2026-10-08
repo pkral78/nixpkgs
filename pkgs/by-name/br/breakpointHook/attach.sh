@@ -49,7 +49,7 @@ id="$1"
 pids="$(pgrep "sleep $id" || :)"
 if [ -z "$pids" ]; then
   echo "Error: No process found for 'sleep $id'. The build must still be running in order to attach. Also make sure it's not on a remote builder." >&2
-  exit 1s
+  exit 1
 elif [ "$(echo "$pids" | wc -l)" -ne 1 ]; then
   echo "Error: Multiple processes found matching 'sleep $id'" >&2
   exit 1
@@ -73,7 +73,7 @@ pwd="$(readlink /proc/$pid/cwd)"
 # bash needs to be executed with --init-file /build/env-vars to include the bash native
 #   variables like ones declared via `declare -a`.
 # If another shell is chosen via `debugShell`, it will only have simple env vars avaialable.
-exec nsenter --mount --ipc --uts --pid  --net --target "$pid" "$bashInteractive" -c "
+exec nsenter --mount --ipc --uts --pid --user --setuid follow --setgid follow --net --target "$pid" "$bashInteractive" -c "
   set -eu -o pipefail
   source \"$buildDir/env-vars\"
   cd \"$pwd\"

@@ -9,13 +9,13 @@
 }:
 stdenv.mkDerivation {
   pname = "msi-ec-kmods";
-  version = "0-unstable-2025-05-17";
+  version = "0-unstable-2026-08-02";
 
   src = fetchFromGitHub {
     owner = "BeardOverflow";
     repo = "msi-ec";
-    rev = "796be9047b13c311ac4cdec33913775f4057f600";
-    hash = "sha256-npJbnWFBVb8TK9ynVD/kXWq2iqO0ACKF4UYsu5mQuok=";
+    rev = "050d4394a6747ebd106ae2f8ddb3a4eebe7c700f";
+    hash = "sha256-b7wwZstjeLPEsxIjmZentDwkQTxdBYbpJfdOR24Ofww=";
   };
 
   dontMakeSourcesWritable = false;
@@ -44,6 +44,6 @@ stdenv.mkDerivation {
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.m1dugh ];
     platforms = lib.platforms.linux;
-    broken = kernel.kernelOlder "5.5";
+    broken = kernel.kernelOlder "6.5";
   };
 }

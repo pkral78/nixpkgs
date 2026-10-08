@@ -16,20 +16,16 @@ let
     }:
     attrsOfAttrs:
     let
-      # map function to string for each key val
-      mapAttrsToStringsSep =
-        sep: mapFn: attrs:
-        lib.concatStringsSep sep (lib.mapAttrsToList mapFn attrs);
       mkSection =
         sectName: sectValues:
         ''
           ${sectName} {
         ''
         + lib.generators.toKeyValue { inherit mkKeyValue listsAsDuplicateKeys; } sectValues
-        + ''}'';
+        + "}";
     in
     # map input to ini sections
-    mapAttrsToStringsSep "\n" mkSection attrsOfAttrs;
+    lib.concatMapAttrsStringSep "\n" mkSection attrsOfAttrs;
 
   configFile = pkgs.writeText "manticore.conf" (
     toSphinx {

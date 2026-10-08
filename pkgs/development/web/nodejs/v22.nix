@@ -6,7 +6,6 @@
   fetchpatch2,
   openssl,
   python3,
-  enableNpm ? true,
 }:
 
 let
@@ -15,12 +14,17 @@ let
     python = python3;
   };
 
-  gypPatches = if stdenv.buildPlatform.isDarwin then callPackage ./gyp-patches.nix { } else [ ];
+  gypPatches =
+    if stdenv.buildPlatform.isDarwin then
+      [
+        ./gyp-patches-set-fallback-value-for-CLT-darwin.patch
+      ]
+    else
+      [ ];
 in
 buildNodejs {
-  inherit enableNpm;
-  version = "22.19.0";
-  sha256 = "0272acfce50ce9ad060288321b1092719a7f19966f81419835410c59c09daa46";
+  version = "22.23.3";
+  sha256 = "bd97093e1a1e9243338950c174a693a64d4e0926a9c6ce259962bc58d5e96909";
   patches =
     (
       if (stdenv.hostPlatform.emulatorAvailable buildPackages) then
@@ -54,10 +58,23 @@ buildNodejs {
       ./bin-sh-node-run-v22.patch
       ./use-nix-codesign.patch
 
-      # TODO: remove when included in a release
+      # TODO: remove when support for Ada 4.x has landed upstream
       (fetchpatch2 {
-        url = "https://github.com/nodejs/node/commit/499a5c345165f0d4a94b98d08f1ace7268781564.patch?full_index=1";
-        hash = "sha256-wF4+CytC1OB5egJGOfLm1USsYY12f9kADymVrxotezE=";
+        url = "https://github.com/nodejs/node/commit/eb1a49b0aec9e05cbb59f093d38f0a92818b7de1.patch?full_index=1";
+        hash = "sha256-LmLbsRZKkOGXzqDQxNrK/B8TGIrsr4pXIUEv3P6C9Sc=";
+        excludes = [ "deps/*" ];
+      })
+      (fetchpatch2 {
+        url = "https://github.com/nodejs/node/commit/064e2eee1ec7b17c4bc6e36befc2935eee80d0f7.patch?full_index=1";
+        hash = "sha256-RcmWiTpWYwA952nNmhaiq4zw/iuVAXFnuTeuB6ltR1U=";
+        includes = [ "test/fixtures/wpt/url/resources/urltestdata.json" ];
+      })
+    ]
+    ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
+      # Fix builds with shared llhttp
+      (fetchpatch2 {
+        url = "https://github.com/nodejs/node/commit/ff3a028f8bf88da70dc79e1d7b7947a8d5a8548a.patch?full_index=1";
+        hash = "sha256-LJcO3RXVPnpbeuD87fiJ260m3BQXNk3+vvZkBMFUz5w=";
       })
     ];
 }

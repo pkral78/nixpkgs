@@ -1,30 +1,25 @@
 {
   buildGoModule,
   fetchgit,
+  nix-update-script,
   lib,
 }:
-buildGoModule rec {
+buildGoModule (finalAttrs: {
   pname = "libcwtch";
-  version = "0.1.7";
+  version = "0.3.1";
   # This Gitea instance has archive downloads disabled, so: fetchgit
   src = fetchgit {
     url = "https://git.openprivacy.ca/cwtch.im/autobindings.git";
-    rev = "v${version}";
-    hash = "sha256-QHEaf3xm6SIHLnQamf0cUrKJ/A1v0iFaaGsMg33uIBs=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-2cxCLn3yDIsMkZzWVzBSTYHAoqifVCdMs2ygSGe3Ggw=";
   };
 
-  vendorHash = "sha256-pnAdUFG1G0Bi/e9KNVX0WwloJy8xQ25YVFnGerRGy9A=";
-  overrideModAttrs = (
-    old: {
-      preBuild = ''
-        make lib.go
-      '';
-    }
-  );
+  proxyVendor = true;
+  vendorHash = "sha256-q9h96TPE2BpyG6IzIX0ViGCIjPNsN4+wkGKr9L+hn5c=";
 
   postPatch = ''
     substituteInPlace Makefile \
-      --replace-fail '$(shell git describe --tags)' v${version} \
+      --replace-fail '$(shell git describe --tags)' v${finalAttrs.version} \
       --replace-fail '$(shell git log -1 --format=%cd --date=format:%G-%m-%d-%H-%M)' 1980-01-01-00-00
   '';
 
@@ -42,6 +37,8 @@ buildGoModule rec {
     runHook postInstall
   '';
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Decentralized, privacy-preserving, multi-party messaging protocol";
     homepage = "https://cwtch.im/";
@@ -50,4 +47,4 @@ buildGoModule rec {
     platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.gmacon ];
   };
-}
+})

@@ -8,15 +8,16 @@
   perl,
   writeScript,
   enableUnstable ? false,
+  gcc14Stdenv,
 }:
 
 let
   stableVersion = "1.4.0";
 in
 
-stdenv.mkDerivation (finalAttrs: {
+gcc14Stdenv.mkDerivation (finalAttrs: {
   pname = "ath9k-htc-blobless-firmware";
-  version = if enableUnstable then "unstable-2022-05-22" else stableVersion;
+  version = if enableUnstable then "${stableVersion}-unstable-2022-05-22" else stableVersion;
 
   src = fetchFromGitHub (
     {
@@ -39,6 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   postPatch = ''
     patchShebangs target_firmware/firmware-crc.pl
+    substituteInPlace target_firmware/CMakeLists.txt \
+    --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 2.6)" \
+                   "CMAKE_MINIMUM_REQUIRED(VERSION 3.10)"
   '';
 
   nativeBuildInputs = [
@@ -186,5 +190,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "http://lists.infradead.org/mailman/listinfo/ath9k_htc_fw";
     downloadPage = "https://github.com/qca/open-ath9k-htc-firmware";
     changelog = "https://github.com/qca/open-ath9k-htc-firmware/tags";
+    # The last successful Darwin Hydra build was in 2024
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

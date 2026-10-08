@@ -9,16 +9,16 @@
 
 buildGoModule (finalAttrs: {
   pname = "tmuxai";
-  version = "1.1.3";
+  version = "2.3.2";
 
   src = fetchFromGitHub {
     owner = "alvinunreal";
     repo = "tmuxai";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-SOqfEaCtJ8xlv0RA83tevbXjxwyGILSWlxNCVrKeLak=";
+    hash = "sha256-HD7UdzEmJBcy+VlBSbp3cuNe4aVjTZ2Wg1A2iVfZTVc=";
   };
 
-  vendorHash = "sha256-6X79tFZCiuVq3ZgHC/EhwF9Nlge/8UoubRG1O9DGwxc=";
+  vendorHash = "sha256-9tMT84mf8XfDOn55JNtHhLa4F4Y+0j0vpn14JtICzvY=";
 
   ldflags = [
     "-s"
@@ -33,7 +33,6 @@ buildGoModule (finalAttrs: {
   ];
 
   versionCheckKeepEnvironment = [ "HOME" ];
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
 
   __darwinAllowLocalNetworking = true;

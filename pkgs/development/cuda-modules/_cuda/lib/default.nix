@@ -11,10 +11,10 @@
     ;
 
   # See ./cuda.nix for documentation.
-  inherit (import ./cuda.nix { inherit lib; })
+  inherit (import ./cuda.nix { inherit _cuda lib; })
     _cudaCapabilityIsDefault
     _cudaCapabilityIsSupported
-    _mkCudaVariant
+    _mkCudaVariants
     allowUnfreeCudaPredicate
     ;
 
@@ -26,10 +26,12 @@
 
   # See ./redist.nix for documentation.
   inherit (import ./redist.nix { inherit _cuda lib; })
+    _getJetsonMinSbsaCapability
     _redistSystemIsSupported
     getNixSystems
     getRedistSystem
     mkRedistUrl
+    selectManifests
     ;
 
   # See ./strings.nix for documentation.

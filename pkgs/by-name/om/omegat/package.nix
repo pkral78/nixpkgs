@@ -8,13 +8,13 @@
 }:
 
 stdenv.mkDerivation {
-  version = "6.0.1";
+  version = "6.1.1";
   pname = "omegat";
 
   src = fetchurl {
     # their zip has repeated files or something, so no fetchzip
-    url = "mirror://sourceforge/project/omegat/OmegaT%20-%20Standard/OmegaT%206.0.1/OmegaT_6.0.1_Without_JRE.zip";
-    sha256 = "sha256-Rj50bzT8k7+GWb0p/ma+zy+PzkF7tB6iV4F4UVAImJg=";
+    url = "mirror://sourceforge/project/omegat/OmegaT%20-%20Standard/OmegaT%206.1.1/OmegaT_6.1.1_Without_JRE.zip";
+    sha256 = "sha256-apnR+GeHs+ySARtH2LvYR9hfRuznC0xqrWN8WOtq9uk=";
   };
 
   nativeBuildInputs = [
@@ -36,7 +36,7 @@ stdenv.mkDerivation {
     chmod +x $out/bin/omegat
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Free computer aided translation (CAT) tool for professionals";
     mainProgram = "omegat";
     longDescription = ''
@@ -44,10 +44,10 @@ stdenv.mkDerivation {
       tool with fuzzy matching, translation memory, keyword search, glossaries, and
       translation leveraging into updated projects.
     '';
-    homepage = "http://www.omegat.org/";
-    sourceProvenance = with sourceTypes; [ binaryBytecode ];
-    license = licenses.gpl3Plus;
-    maintainers = with maintainers; [ t184256 ];
+    homepage = "https://www.omegat.org/";
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ t184256 ];
     platforms = [
       "i686-linux"
       "x86_64-linux"

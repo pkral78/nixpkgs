@@ -2,35 +2,47 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitMinimal,
-  cacert,
+  substitute,
   makeBinaryWrapper,
   nodejs,
   python3,
   nixosTests,
   yarn-berry_4,
-  writableTmpDirAsHomeHook,
 }:
 
-let
-  version = "1.10.3";
+stdenv.mkDerivation (finalAttrs: {
+  pname = "hedgedoc";
+  version = "1.12.0";
 
   src = fetchFromGitHub {
     owner = "hedgedoc";
     repo = "hedgedoc";
-    tag = version;
-    hash = "sha256-hXcPcGj+efvRVt3cHQc9KttE0/DOD9Bul6f3cY4ofgs=";
+    tag = finalAttrs.version;
+    hash = "sha256-sKmy80FO5cp2aKoirtzaPmf2IqTn5yLUkbakIZMa5aQ=";
+
+    # Remove after https://github.com/hedgedoc/hedgedoc/commit/6e6536df1b7b8e1ad30a0929be5b851eef98029f is released
+    postFetch = ''
+      cd $out
+      patch -p1 < ${
+        (substitute {
+          src = ./yarn-fix.patch;
+          substitutions = [
+            "--replace-fail"
+            "YARN_LOCKFILE_VERSION_PLACEHOLDER"
+            yarn-berry_4.lockfileVersion
+          ];
+        })
+      }
+    '';
   };
+
+  # Generate this file with:
+  # nix run nixpkgs#yarn-berry_4.yarn-berry-fetcher missing-hashes yarn.lock
   missingHashes = ./missing-hashes.json;
 
-in
-stdenv.mkDerivation {
-  pname = "hedgedoc";
-  inherit version src missingHashes;
-
   offlineCache = yarn-berry_4.fetchYarnBerryDeps {
-    inherit src missingHashes;
-    hash = "sha256-V7ptquAohv0t5oA+3iTvlQOZoEtY5xWyhSoJP8jwYI8=";
+    inherit (finalAttrs) src missingHashes;
+    hash = "sha256-OywEJNs1DwUnPPjW2CzEYKhfHz03EcSEJ1PUWx8DGUI=";
   };
 
   nativeBuildInputs = [
@@ -83,8 +95,9 @@ stdenv.mkDerivation {
     description = "Realtime collaborative markdown notes on all platforms";
     license = lib.licenses.agpl3Only;
     homepage = "https://hedgedoc.org";
+    changelog = "https://github.com/hedgedoc/hedgedoc/releases/tag/${finalAttrs.src.tag}";
     mainProgram = "hedgedoc";
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
     platforms = lib.platforms.linux;
   };
-}
+})

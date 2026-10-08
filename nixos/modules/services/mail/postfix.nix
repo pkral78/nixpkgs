@@ -522,6 +522,7 @@ in
                 nullOr (oneOf [
                   bool
                   int
+                  path
                   str
                   (listOf str)
                 ])
@@ -971,7 +972,7 @@ in
             ${lib.concatStringsSep "\n" (
               lib.mapAttrsToList (to: from: ''
                 ln -sf ${from} /var/lib/postfix/conf/${to}
-                ${lib.getExe' cfg.package "postmap"} -o -p /var/lib/postfix/conf/${to}
+                ${lib.getExe' cfg.package "postmap"} /var/lib/postfix/conf/${to}
               '') cfg.mapFiles
             )}
 
@@ -1010,7 +1011,7 @@ in
             PrivateDevices = true;
             ProtectSystem = "full";
             CapabilityBoundingSet = [ "~CAP_NET_ADMIN CAP_SYS_ADMIN CAP_SYS_BOOT CAP_SYS_MODULE" ];
-            MemoryDenyWriteExecute = true;
+            MemoryDenyWriteExecute = false; # pcre2 jit
             ProtectKernelModules = true;
             ProtectKernelTunables = true;
             ProtectControlGroups = true;
@@ -1243,7 +1244,7 @@ in
       "services.postfix.relayPort was removed in favor of services.postfix.settings.main.relayhost, which now takes a list of host:port."
     )
     (lib.mkRemovedOptionModule [ "services" "postfix" "extraConfig" ]
-      "services.postfix.extraConfig was replaced by the structured freeform service.postfix.settings.main option."
+      "services.postfix.extraConfig was replaced by the structured freeform services.postfix.settings.main option."
     )
     (lib.mkRenamedOptionModule
       [ "services" "postfix" "networks" ]
@@ -1278,7 +1279,7 @@ in
       [ "services" "postfix" "settings" "main" "recipient_delimiter" ]
     )
     (lib.mkRenamedOptionModule
-      [ "services" "postfix" "tlsTrustedAuthoriies" ]
+      [ "services" "postfix" "tlsTrustedAuthorities" ]
       [ "services" "postfix" "settings" "main" "smtp_tls_CAfile" ]
     )
     (lib.mkRenamedOptionModule
@@ -1295,6 +1296,5 @@ in
       [ "services" "postfix" "settings" "main" "smtp_tls_security_level" ]
       (config: lib.mkIf config.services.postfix.useDane "dane")
     )
-    (lib.mkRenamedOptionModule [ "services" "postfix" "useSrs" ] [ "services" "pfix-srsd" "enable" ])
   ];
 }

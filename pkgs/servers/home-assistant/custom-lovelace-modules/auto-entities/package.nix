@@ -6,30 +6,33 @@
 
 buildNpmPackage rec {
   pname = "auto-entities";
-  version = "1.16.1";
+  version = "2.8.1";
 
   src = fetchFromGitHub {
-    owner = "thomasloven";
+    owner = "Lint-Free-Technology";
     repo = "lovelace-auto-entities";
     tag = "v${version}";
-    hash = "sha256-yMqf4LA/fBTIrrYwacUTb2fL758ZB1k471vdsHAiOj8=";
+    hash = "sha256-fTyDQ2imr339uAYOnGMxcIzb2I5x+31tKUQQt85xGYQ=";
   };
 
-  npmDepsHash = "sha256-XLhTLK08zW1BFj/PI8/61FWzoyvWi5X5sEkGlF1IuZU=";
+  npmDepsHash = "sha256-6RA8Nr83buN+7CI2ZulgafrJhtVb3aX/WOyDMpER3yE=";
 
   installPhase = ''
     runHook preInstall
 
-    install -D auto-entities.js $out/auto-entities.js
+    install -D dist/auto-entities.js $out/auto-entities.js
 
     runHook postInstall
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Automatically populate the entities-list of lovelace cards";
-    homepage = "https://github.com/thomasloven/lovelace-auto-entities";
-    changelog = "https://github.com/thomasloven/lovelace-auto-entities/releases/tag/v${version}";
+    homepage = "https://github.com/Lint-Free-Technology/lovelace-auto-entities";
+    changelog = "https://github.com/Lint-Free-Technology/lovelace-auto-entities/releases/tag/v${version}";
     license = lib.licenses.mit;
-    maintainers = with maintainers; [ kranzes ];
+    maintainers = with lib.maintainers; [
+      kranzes
+      SuperSandro2000
+    ];
   };
 }

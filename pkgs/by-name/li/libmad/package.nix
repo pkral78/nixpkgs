@@ -14,12 +14,12 @@
   vlc,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "libmad";
   version = "0.15.1b";
 
   src = fetchurl {
-    url = "mirror://sourceforge/mad/${pname}-${version}.tar.gz";
+    url = "mirror://sourceforge/mad/libmad-${finalAttrs.version}.tar.gz";
     sha256 = "14460zhacxhswnzb36qfpd1f2wbk10qvksvm6wyq5hpvdgnw7ymv";
   };
 
@@ -70,6 +70,8 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ autoconf ];
 
+  strictDeps = true;
+
   preConfigure = "autoconf";
 
   passthru.tests = {
@@ -83,11 +85,13 @@ stdenv.mkDerivation rec {
     ocaml-mad = ocamlPackages.mad;
   };
 
-  meta = with lib; {
+  __structuredAttrs = true;
+
+  meta = {
     homepage = "https://sourceforge.net/projects/mad/";
     description = "High-quality, fixed-point MPEG audio decoder supporting MPEG-1 and MPEG-2";
-    license = licenses.gpl2;
-    maintainers = with maintainers; [ lovek323 ];
-    platforms = platforms.unix;
+    license = lib.licenses.gpl2;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
-}
+})

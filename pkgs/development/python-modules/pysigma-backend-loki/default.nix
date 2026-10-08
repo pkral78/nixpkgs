@@ -7,16 +7,16 @@
   pytestCheckHook,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "pysigma-backend-loki";
-  version = "0.12.4";
+  version = "0.14.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "grafana";
     repo = "pySigma-backend-loki";
-    tag = "v${version}";
-    hash = "sha256-2VgrIJocFtMFZCTyPQZcSnNJ5XgfD+nbmJ1wvesrQoE=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-2kSzJGr9Xokq3mHeFQ1+0aRqdr47tyWUQivap5CVL4k=";
   };
 
   build-system = [ poetry-core ];
@@ -34,10 +34,10 @@ buildPythonPackage rec {
     "tests/test_backend_loki_field_modifiers.py"
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Library to support the loki backend for pySigma";
     homepage = "https://github.com/grafana/pySigma-backend-loki";
-    license = with licenses; [ lgpl21Only ];
-    maintainers = with maintainers; [ peterromfeldhk ];
+    license = lib.licenses.lgpl21Only;
+    maintainers = with lib.maintainers; [ fab ];
   };
-}
+})

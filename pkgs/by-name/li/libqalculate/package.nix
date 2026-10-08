@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  intltool,
   pkg-config,
   doxygen,
   autoreconfHook,
@@ -27,13 +26,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libqalculate";
-  version = "5.8.0";
+  version = "5.13.1";
 
   src = fetchFromGitHub {
     owner = "qalculate";
     repo = "libqalculate";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-8rw+SPRGWTdlJkrqSk7FXKMgOWSfErlC8FXqQM49o8A=";
+    hash = "sha256-hXSH75VUjmXXUJlKqmlWZxFWWBVH2Nbvx4sO+bRkNvE=";
   };
 
   outputs = [
@@ -43,7 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [
-    intltool
     pkg-config
     autoreconfHook
     doxygen
@@ -64,10 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     icu
   ];
   enableParallelBuilding = true;
-
-  preConfigure = ''
-    intltoolize -f
-  '';
 
   postPatch = lib.optionalString (gnuplotBinary != "") ''
     substituteInPlace libqalculate/Calculator-plot.cc \

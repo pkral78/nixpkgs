@@ -3,7 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  doctest,
   fetchpatch,
+  nlohmann_json,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,8 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ToruNiina";
     repo = "toml11";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-NnM+I43UVcd72Y9h+ysAAc7s5gZ78mjVwIMReTJ7G5M=";
-    fetchSubmodules = true;
+    hash = "sha256-sgWKYxNT22nw376ttGsTdg0AMzOwp8QH3E8mx0BZJTQ=";
   };
 
   patches = [
@@ -26,11 +27,26 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
+  # Required to use the system `doctest` over upstream's submodule
+  postPatch = lib.optionalString finalAttrs.finalPackage.doCheck ''
+    substituteInPlace tests/*.{c,h}pp \
+      --replace-warn '"doctest.h"' '"doctest/doctest.h"'
+  '';
+
   nativeBuildInputs = [
     cmake
   ];
   cmakeFlags = [
-    (lib.cmakeBool "TOML11_BUILD_TOML_TESTS" true)
+    # GCC 16 warns that various uses of `fmt` in value.hpp are used
+    # uninitialized. This may be a true failure, but it does not seem like a
+    # major concern, so we silence it for now.
+    # https://github.com/ToruNiina/toml11/issues/313
+    (lib.cmakeFeature "CMAKE_CXX_FLAGS" "-Wno-error=maybe-uninitialized")
+    (lib.cmakeBool "TOML11_BUILD_TOML_TESTS" finalAttrs.finalPackage.doCheck)
+  ];
+  checkInputs = [
+    doctest
+    nlohmann_json
   ];
   doCheck = true;
 

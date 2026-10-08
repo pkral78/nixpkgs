@@ -1,85 +1,112 @@
 {
   lib,
-  python3,
+  stdenv,
+  callPackage,
+  python3Packages,
   fetchFromGitHub,
   go-md2man,
 
-  # TODO: switch to llama-cpp-vulkan when moltenvk is upgraded to 1.3.0:
-  # https://github.com/NixOS/nixpkgs/pull/434130
-  llama-cpp,
+  llama-cpp-vulkan,
   podman,
   withPodman ? true,
+  writableTmpDirAsHomeHook,
 
   # passthru
   ramalama,
 }:
 
-python3.pkgs.buildPythonApplication rec {
+python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ramalama";
-  version = "0.12.3";
+  version = "0.25.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "containers";
     repo = "ramalama";
-    tag = "v${version}";
-    hash = "sha256-PnuAPQ9RF7IRnmHtUrwDRXIKEzZBDEU2mWfG5FyfY0c=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-AwlB2JeOMFCXoIovqfr9nhy36QWC2m42kHFIGg4dJFo=";
   };
 
-  build-system = with python3.pkgs; [
+  build-system = with python3Packages; [
     setuptools
     wheel
   ];
 
-  dependencies = with python3.pkgs; [
+  dependencies = with python3Packages; [
     argcomplete
+    bcrypt
     pyyaml
+    jinja2
   ];
 
   nativeBuildInputs = [
     go-md2man
   ];
 
+  postPatch = ''
+    substituteInPlace ramalama/config.py --replace-fail "{sys.prefix}" "$out"
+    patchShebangs hack/markdown-preprocess
+  '';
+
   preBuild = ''
     make docs
   '';
 
-  postInstall = lib.optionalString withPodman ''
-    wrapProgram $out/bin/ramalama \
-      --prefix PATH : ${
-        lib.makeBinPath (
-          [
-            llama-cpp
-            podman
-          ]
-          ++ (
-            with python3.pkgs;
-            [
-              huggingface-hub
-            ]
-            ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform mlx-lm) mlx-lm
-          )
-        )
-      }
-  '';
+  postInstall =
+    let
+      binPackages = [
+        llama-cpp-vulkan
+        python3Packages.huggingface-hub
+      ]
+      ++ lib.optional stdenv.hostPlatform.isDarwin python3Packages.mlx-lm
+      ++ lib.optional withPodman podman;
+    in
+    ''
+      wrapProgram $out/bin/ramalama \
+        --prefix PATH : ${lib.makeBinPath binPackages}
+    '';
 
   pythonImportsCheck = [
     "ramalama"
   ];
 
   nativeCheckInputs = [
-    python3.pkgs.pytestCheckHook
+    podman
+    python3Packages.pytestCheckHook
+    python3Packages.requests
+    writableTmpDirAsHomeHook
   ];
 
-  # Enable when https://github.com/containers/ramalama/pull/1891 is released
-  disabledTests = [
-    "test_ollama_model_pull"
-  ];
+  __darwinAllowLocalNetworking = true;
+
+  preCheck = ''
+    export PATH="$out/bin:$PATH"
+  '';
 
   passthru = {
+    updateScript = ./update.sh;
+
     tests = {
+      nocontainer = callPackage ./tests/nocontainer.nix {
+        ramalama = finalAttrs.finalPackage;
+      };
+
       withoutPodman = ramalama.override {
         withPodman = false;
+      };
+    }
+    //
+      lib.optionalAttrs
+        (
+          stdenv.hostPlatform.isDarwin
+          || (stdenv.hostPlatform.isLinux && (stdenv.hostPlatform.isx86_64 || stdenv.hostPlatform.isAarch64))
+        )
+        {
+          podman = callPackage ./tests/podman.nix { };
+        }
+    // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+      mlx = callPackage ./tests/mlx.nix {
+        ramalama = finalAttrs.finalPackage;
       };
     };
   };
@@ -96,4 +123,4 @@ python3.pkgs.buildPythonApplication rec {
     maintainers = with lib.maintainers; [ booxter ];
     mainProgram = "ramalama";
   };
-}
+})

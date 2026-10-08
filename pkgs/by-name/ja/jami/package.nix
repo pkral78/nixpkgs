@@ -3,16 +3,16 @@
   lib,
   pkg-config,
   fetchFromGitLab,
+  fetchpatch,
   gitUpdater,
   ffmpeg_6,
+  ninja,
 
   # for daemon
-  autoreconfHook,
-  perl, # for pod2man
   alsa-lib,
   asio,
   dbus,
-  sdbus-cpp,
+  sdbus-cpp_2,
   fmt,
   gmp,
   gnutls,
@@ -28,6 +28,7 @@
   openssl,
   restinio,
   secp256k1,
+  simdutf,
   speex,
   udev,
   webrtc-audio-processing_0_3,
@@ -62,25 +63,38 @@
 
 stdenv.mkDerivation rec {
   pname = "jami";
-  version = "20250718.0";
+  version = "20260811.0";
 
   src = fetchFromGitLab {
     domain = "git.jami.net";
     owner = "savoirfairelinux";
     repo = "jami-client-qt";
     rev = "stable/${version}";
-    hash = "sha256-EEiuymfu28bJ6pfBKwlsCGDq7XlKGZYK+2WjPJ+tcxw=";
+    hash = "sha256-6MywBm2kT1VJmgHEGKifcrHxG08s53fqfPYSfsFxgFk=";
     fetchSubmodules = true;
   };
 
+  patches = [
+    (fetchpatch {
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jami-qt/-/raw/20260717.0-2/zxing-cpp-3.patch";
+      hash = "sha256-fTGrsdeC3kN277DvSuKyR5fMZhtBmk1nsL2BbeHYjTY=";
+    })
+    (fetchpatch {
+      # Fix for Qt 6.11
+      url = "https://git.jami.net/savoirfairelinux/jami-client-qt/-/commit/b97eb85af48b36008a9d619077965d6284660031.patch";
+      hash = "sha256-2gY4cqWg5FY6Q6j6V/x3IMWN3AP8RThjZdxYI+ktLI4=";
+      revert = true;
+    })
+  ];
+
   pjsip-jami = pjsip.overrideAttrs (old: {
-    version = "sfl-2.15-unstable-2025-02-24";
+    version = "sfl-2.15-unstable-2025-09-18";
 
     src = fetchFromGitHub {
       owner = "savoirfairelinux";
       repo = "pjproject";
-      rev = "37130c943d59f25a71935803ea2d84515074a237";
-      hash = "sha256-7gAiriuooqqF38oajAuD/Lj5trn/9VMkCGOumcV45NA=";
+      rev = "3a92a7ee340dbc1f4730fcaf32acac9a54cacf1b";
+      hash = "sha256-luW1lZ+QrOXBVyaWjGCesSnI8tNDBLmAiqUtTjNmRN8=";
     };
 
     configureFlags = [
@@ -118,14 +132,14 @@ stdenv.mkDerivation rec {
 
   dhtnet = stdenv.mkDerivation {
     pname = "dhtnet";
-    version = "unstable-2025-05-26";
+    version = "unstable-2026-08-11";
 
     src = fetchFromGitLab {
       domain = "git.jami.net";
       owner = "savoirfairelinux";
       repo = "dhtnet";
-      rev = "6c5ee3a21556d668d047cdedb5c4b746c3c6bdb2";
-      hash = "sha256-uweYSEysVMUC7DhI9BhS1TDZ6ZY7WQ9JS3ZF9lKA4Fo=";
+      rev = "11f916f2cccba068a48d2fd6ed6f02407d95b7ce";
+      hash = "sha256-Ly3LvKqbvvA6FQTEwJKv1St+RvyaLIPQiY2MvPLvgaw=";
     };
 
     postPatch = ''
@@ -156,7 +170,8 @@ stdenv.mkDerivation rec {
     ];
 
     cmakeFlags = [
-      "-DBUILD_SHARED_LIBS=Off"
+      "-DBUILD_SHARED_LIBS=ON"
+      "-DCMAKE_CXX_STANDARD=20"
       "-DBUILD_BENCHMARKS=Off"
       "-DBUILD_TOOLS=Off"
       "-DBUILD_TESTING=Off"
@@ -164,76 +179,24 @@ stdenv.mkDerivation rec {
       "-DBUILD_EXAMPLE=Off"
     ];
 
-    meta = with lib; {
+    meta = {
       description = "Lightweight Peer-to-Peer Communication Library";
-      license = licenses.gpl3Only;
-      platforms = platforms.linux;
-      maintainers = [ maintainers.linsui ];
+      license = lib.licenses.gpl3Only;
+      platforms = lib.platforms.linux;
+      maintainers = [ lib.maintainers.linsui ];
     };
   };
 
-  daemon = stdenv.mkDerivation {
-    pname = "jami-daemon";
-    inherit src version meta;
-    sourceRoot = "${src.name}/daemon";
-
-    # Fix for libgit2 breaking changes
-    postPatch = ''
-      substituteInPlace src/jamidht/conversationrepository.cpp \
-        --replace-fail "git_commit* const" "const git_commit*"
-    '';
-
-    nativeBuildInputs = [
-      autoreconfHook
-      pkg-config
-      perl
-    ];
-
-    buildInputs = [
-      alsa-lib
-      asio
-      dbus
-      dhtnet
-      sdbus-cpp
-      fmt
-      ffmpeg_6
-      gmp
-      gnutls
-      llhttp
-      libjack2
-      jsoncpp
-      libarchive
-      libgit2
-      libnatpmp
-      libpulseaudio
-      libupnp
-      msgpack-cxx
-      opendht-jami
-      openssl
-      pjsip-jami
-      restinio
-      secp256k1
-      speex
-      udev
-      webrtc-audio-processing_0_3
-      yaml-cpp
-      zlib
-    ];
-
-    enableParallelBuilding = true;
-  };
-
   qwindowkit-src = fetchFromGitHub {
-    owner = "stdware";
+    owner = "atraczyk";
     repo = "qwindowkit";
-    rev = "758b00cb6c2d924be3a1ea137ec366dc33a5132d";
-    hash = "sha256-qpVsF4gUX2noG9nKgjNP7FCEe59okZtDA8R/aZOef7Q=";
+    rev = "c5c7da2163dfcba144e09a905ee98f920d9d94e7";
+    hash = "sha256-G7vX1zPrs+rKCrXNNZ5Lt7agK3hag13c4s61h53ExPE=";
     fetchSubmodules = true;
   };
 
   postPatch = ''
     sed -i -e '/GIT_REPOSITORY/,+1c SOURCE_DIR ''${CMAKE_CURRENT_SOURCE_DIR}/qwindowkit' extras/build/cmake/contrib_tools.cmake
-    sed -i -e 's/if(DISTRO_NEEDS_QMSETUP_PATCH)/if(TRUE)/' CMakeLists.txt
     cp -R --no-preserve=mode,ownership ${qwindowkit-src} qwindowkit
     substituteInPlace CMakeLists.txt \
       --replace-fail 'add_subdirectory(3rdparty/zxing-cpp EXCLUDE_FROM_ALL)' 'find_package(ZXing)'
@@ -241,10 +204,6 @@ stdenv.mkDerivation rec {
 
   preConfigure = ''
     echo 'const char VERSION_STRING[] = "${version}";' > src/app/version.h
-    # Currently the daemon is still built seperately but jami expects it in CMAKE_INSTALL_PREFIX
-    # This can be removed in future versions when JAMICORE_AS_SUBDIR is on
-    mkdir -p $out
-    ln -s ${daemon} $out/daemon
   '';
 
   dontWrapGApps = true;
@@ -257,16 +216,45 @@ stdenv.mkDerivation rec {
     git
     python3
     qt6Packages.qttools # for translations
+    ninja
   ];
 
   buildInputs = [
+    alsa-lib
+    asio
+    dbus
+    dhtnet
+    fmt
     ffmpeg_6
+    gmp
+    gnutls
     html-tidy
     hunspell
+    jsoncpp
+    llhttp
+    libjack2
+    libarchive
+    libgit2
+    libnatpmp
     libnotify
+    libpulseaudio
+    libupnp
     md4c
+    msgpack-cxx
     networkmanager
+    opendht-jami
+    openssl
+    pjsip-jami
     qrencode
+    restinio
+    sdbus-cpp_2
+    secp256k1
+    simdutf
+    speex
+    udev
+    webrtc-audio-processing_0_3
+    yaml-cpp
+    zlib
     zxing-cpp
   ]
   ++ (
@@ -276,6 +264,7 @@ stdenv.mkDerivation rec {
       qt5compat
       qtnetworkauth
       qtdeclarative
+      qthttpserver
       qtmultimedia
       qtpositioning
       qtsvg
@@ -284,7 +273,11 @@ stdenv.mkDerivation rec {
     ++ lib.optionals withWebengine [ qtwebengine ]
   );
 
-  cmakeFlags = lib.optionals (!withWebengine) [ "-DWITH_WEBENGINE=false" ];
+  cmakeFlags = [
+    (lib.cmakeBool "DWITH_WEBENGINE" withWebengine)
+  ];
+
+  env.NIX_LDFLAGS = "-lz";
 
   qtWrapperArgs = [
     # With wayland the titlebar is not themed and the wmclass is wrong.
@@ -295,14 +288,17 @@ stdenv.mkDerivation rec {
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
-  passthru.updateScript = gitUpdater { rev-prefix = "stable/"; };
+  passthru = {
+    updateScript = gitUpdater { rev-prefix = "stable/"; };
+    inherit pjsip-jami dhtnet;
+  };
 
-  meta = with lib; {
+  meta = {
     homepage = "https://jami.net/";
     description = "Free and universal communication platform that respects the privacy and freedoms of its users";
     mainProgram = "jami";
-    license = licenses.gpl3Plus;
-    platforms = platforms.linux;
-    maintainers = [ maintainers.linsui ];
+    license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.linux;
+    maintainers = [ lib.maintainers.linsui ];
   };
 }

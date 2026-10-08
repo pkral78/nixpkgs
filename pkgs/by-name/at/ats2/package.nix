@@ -49,6 +49,10 @@ stdenv.mkDerivation rec {
     sed -i 's/gcc/clang/g' utils/*/DATS/atscc_util.dats
   '';
 
+  patches = [
+    ./fix-build-glibc-2.44.patch
+  ];
+
   buildInputs = [ gmp ];
 
   # Disable parallel build, errors:
@@ -70,14 +74,13 @@ stdenv.mkDerivation rec {
 
   postInstall = postInstallContrib + postInstallEmacs;
 
-  meta = with lib; {
+  meta = {
     description = "Functional programming language with dependent types";
     homepage = "http://www.ats-lang.org";
-    license = licenses.gpl3Plus;
-    platforms = platforms.unix;
-    maintainers = with maintainers; [
+    license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.unix;
+    maintainers = with lib.maintainers; [
       thoughtpolice
-      ttuegel
       bbarker
     ];
   };

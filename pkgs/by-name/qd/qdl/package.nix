@@ -2,38 +2,65 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  meson,
   pkg-config,
   libxml2,
-  systemd,
   libusb1,
-  unstableGitUpdater,
+  libzip,
+  nbdkit,
+  zip,
+  cmocka,
+  ninja,
+  versionCheckHook,
+  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "qdl";
-  version = "0-unstable-2025-07-07";
+  version = "2.8";
+
+  __structuredAttrs = true;
+
+  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "linux-msm";
     repo = "qdl";
-    rev = "cd3272350328185b1d4f7de08fdecf38f8fd31be";
-    hash = "sha256-Q4XcnBfr4wk2Kt0iLwF8niYoofg1YuXUehkg3G/gNOo=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-ysL9tO1GKvzphxezMspGMW8kkUNGHHspA1YU+v5HA/A=";
   };
 
-  postPatch = ''
-    substituteInPlace Makefile --replace-fail 'pkg-config' '${stdenv.cc.targetPrefix}pkg-config'
-  '';
-
-  nativeBuildInputs = [ pkg-config ];
+  nativeBuildInputs = [
+    meson
+    pkg-config
+    ninja
+  ];
   buildInputs = [
     libxml2
     libusb1
+    libzip
+    nbdkit
+  ];
+  checkInputs = [
+    cmocka
+  ];
+  nativeCheckInputs = [
+    zip
   ];
 
-  makeFlags = [
-    "VERSION=${finalAttrs.src.rev}"
-    "prefix=${placeholder "out"}"
+  mesonFlags = [
+    "--prefix=${placeholder "out"}"
+    "-DVERSION=${finalAttrs.version}"
   ];
+
+  enableParallelBuilding = true;
+
+  doCheck = true;
+
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  doInstallCheck = true;
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     homepage = "https://github.com/linux-msm/qdl";
@@ -42,10 +69,9 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = with lib.maintainers; [
       muscaln
       anas
+      numinit
     ];
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "qdl";
   };
-
-  passthru.updateScript = unstableGitUpdater { };
 })

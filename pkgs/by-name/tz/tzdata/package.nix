@@ -3,27 +3,28 @@
   stdenv,
   fetchurl,
   buildPackages,
+  bashNonInteractive,
   postgresql,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "tzdata";
-  version = "2025b";
+  version = "2026d";
 
   srcs = [
     (fetchurl {
       url = "https://data.iana.org/time-zones/releases/tzdata${finalAttrs.version}.tar.gz";
-      hash = "sha256-EYEEEzRfx4BQF+J+qfpIhf10zWGykRcRrQOPXSjXFHQ=";
+      hash = "sha256-DLKqjjM8PcBJutxCoMYfIZh7jNROEH+pALrXZKrMd2c=";
     })
     (fetchurl {
       url = "https://data.iana.org/time-zones/releases/tzcode${finalAttrs.version}.tar.gz";
-      hash = "sha256-Bfj+2zUl7nDUnIfT+ueKig265P6HqlZcZc2plIrhNew=";
+      hash = "sha256-L1yff+Kea4y4Y1g2Z4hLjOF7CkhTVaBUtZHGvfzYF5E=";
     })
   ];
 
   sourceRoot = ".";
 
-  patches = lib.optionals stdenv.hostPlatform.isWindows [
+  patches = lib.optionals (stdenv.hostPlatform.isWindows || stdenv.hostPlatform.isCygwin) [
     ./0001-Add-exe-extension-for-MS-Windows-binaries.patch
   ];
 
@@ -34,6 +35,14 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
   propagatedBuildOutputs = [ ];
+
+  buildInputs =
+    # For `tzselect`'s shebang. Where `bashNonInteractive` is unavailable
+    # (e.g. MinGW), `tzselect` keeps its `#!/bin/bash`, which is fine for now
+    # as we're not going to run it there anyways.
+    lib.optional (lib.meta.availableOn stdenv.hostPlatform bashNonInteractive) bashNonInteractive;
+
+  strictDeps = true;
 
   makeFlags = [
     "TOPDIR=${placeholder "out"}"
@@ -50,12 +59,31 @@ stdenv.mkDerivation (finalAttrs: {
     "CFLAGS+=-DZIC_BLOAT_DEFAULT=\\\"fat\\\""
     "cc=${stdenv.cc.targetPrefix}cc"
     "AR=${stdenv.cc.targetPrefix}ar"
+    "REDO=posix_right"
   ]
   ++ lib.optionals stdenv.hostPlatform.isWindows [
     "CFLAGS+=-DHAVE_DIRECT_H"
+    "CFLAGS+=-DHAVE_FCHMOD=0"
+    "CFLAGS+=-DHAVE_GETEUID=0"
+    "CFLAGS+=-DHAVE_GETRESUID=0"
+    "CFLAGS+=-DHAVE_MEMPCPY=1"
     "CFLAGS+=-DHAVE_SETENV=0"
+    "CFLAGS+=-DHAVE_STRUCT_STAT_ST_CTIM=0"
     "CFLAGS+=-DHAVE_SYMLINK=0"
     "CFLAGS+=-DRESERVE_STD_EXT_IDS"
+    # sys/stat.h does exist on Windows for us
+    "CFLAGS+=-DHAVE_SYS_STAT_H=1"
+    # It is called st_ctime on windows, this forces that
+    # choice
+    "CFLAGS+=-DHAVE_STRUCT_STAT_ST_CTIM=0"
+    "CFLAGS+=-DHAVE_MEMPCPY=1"
+    "CFLAGS+=-DHAVE_GETRESUID=0"
+    "CFLAGS+=-DHAVE_GETEUID=0"
+    "CFLAGS+=-DHAVE_FCHMOD=0"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isCygwin [
+    "CFLAGS+=-DHAVE_GETRESUID=0"
+    "CFLAGS+=-DHAVE_ISSETUGID=1"
   ]
   ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
     "CFLAGS+=-DNETBSD_INSPIRED=0"
@@ -94,16 +122,18 @@ stdenv.mkDerivation (finalAttrs: {
   # minor releases.
   passthru.tests = postgresql;
 
-  meta = with lib; {
+  __structuredAttrs = true;
+
+  meta = {
     homepage = "http://www.iana.org/time-zones";
     description = "Database of current and historical time zones";
     changelog = "https://github.com/eggert/tz/blob/${finalAttrs.version}/NEWS";
-    license = with licenses; [
+    license = with lib.licenses; [
       bsd3 # tzcode
       publicDomain # tzdata
     ];
-    platforms = platforms.all;
-    maintainers = with maintainers; [
+    platforms = lib.platforms.all;
+    maintainers = with lib.maintainers; [
       ajs124
       fpletz
     ];

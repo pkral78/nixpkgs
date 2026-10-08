@@ -4,37 +4,37 @@
   fetchFromGitHub,
   nodejs,
   npmHooks,
-  pnpm_9,
+  pnpm_10,
+  fetchPnpmDeps,
+  pnpmConfigHook,
   systemdMinimal,
   nixosTests,
   nix-update-script,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
 }:
-
-let
-  pnpm = pnpm_9;
-in
 stdenv.mkDerivation (finalAttrs: {
   pname = "zigbee2mqtt";
-  version = "2.6.2";
+  version = "2.14.2";
 
   src = fetchFromGitHub {
     owner = "Koenkk";
     repo = "zigbee2mqtt";
     tag = finalAttrs.version;
-    hash = "sha256-tPjIfFAXtezdHDXBSAYLRPYd0G4p1XnU9R36YBRkYTQ=";
+    hash = "sha256-az/mbrflILDWSu3kIA280dJWqTlImh1s7FvHeu/DKe4=";
   };
 
-  pnpmDeps = pnpm.fetchDeps {
+  pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
-    fetcherVersion = 1;
-    hash = "sha256-E4FAtOa8FQnPbv0wiMdp1k/L/RYoVOLMPZynag5iGjM=";
+    pnpm = pnpm_10;
+    fetcherVersion = 4;
+    hash = "sha256-D4qF40ZyyqHjveLvu56Vy6lRJF6LxxhU+79KlfLYhN4=";
   };
 
   nativeBuildInputs = [
     nodejs
     npmHooks.npmInstallHook
-    pnpm.configHook
+    pnpmConfigHook
+    pnpm_10
   ];
 
   buildInputs = lib.optionals withSystemd [
@@ -54,21 +54,18 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.zigbee2mqtt = nixosTests.zigbee2mqtt;
   passthru.updateScript = nix-update-script { };
 
-  meta = with lib; {
+  meta = {
     changelog = "https://github.com/Koenkk/zigbee2mqtt/releases/tag/${finalAttrs.version}";
     description = "Zigbee to MQTT bridge using zigbee-shepherd";
     homepage = "https://github.com/Koenkk/zigbee2mqtt";
-    license = licenses.gpl3;
+    license = lib.licenses.gpl3;
     longDescription = ''
       Allows you to use your Zigbee devices without the vendor's bridge or gateway.
 
       It bridges events and allows you to control your Zigbee devices via MQTT.
       In this way you can integrate your Zigbee devices with whatever smart home infrastructure you are using.
     '';
-    maintainers = with maintainers; [
-      sweber
-      hexa
-    ];
+    maintainers = with lib.maintainers; [ hexa ];
     mainProgram = "zigbee2mqtt";
   };
 })

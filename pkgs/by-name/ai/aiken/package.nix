@@ -6,18 +6,18 @@
   fetchFromGitHub,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "aiken";
-  version = "1.1.19";
+  version = "1.1.24";
 
   src = fetchFromGitHub {
     owner = "aiken-lang";
     repo = "aiken";
-    tag = "v${version}";
-    hash = "sha256-S3KIOlOz21ItWI+RoeHPYROIlMbKAoNi7hXwHHjHaJs=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-yG96JwZ/H4/MrLkrmsResRg3HGUfh1Kz3kA6qv0Y62c=";
   };
 
-  cargoHash = "sha256-RrcP23p3KVIGKiW1crDDn5eoowjX3nTPUWBYtT9qdz0=";
+  cargoHash = "sha256-BDe1GQtKzE2fyKPDdOEriF4wUxONe/jLfnyHiF/dUh4=";
 
   buildInputs = [ openssl ];
 
@@ -30,4 +30,4 @@ rustPlatform.buildRustPackage rec {
     maintainers = with lib.maintainers; [ aciceri ];
     mainProgram = "aiken";
   };
-}
+})

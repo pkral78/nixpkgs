@@ -5,21 +5,18 @@
   hatchling,
   pytest-cov-stub,
   pytestCheckHook,
-  pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "in-place";
-  version = "1.0.1";
+  version = "1.0.2";
   pyproject = true;
-
-  disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "jwodder";
     repo = "inplace";
     tag = "v${version}";
-    hash = "sha256-PyOSuHHtftEPwL3mTwWYStZNXYX3EhptKfTu0PJjOZ8=";
+    hash = "sha256-oko4yDqkxVWGri315HenqfLjoUqmauO1bSaDh8cBK4s=";
   };
 
   build-system = [ hatchling ];
@@ -31,11 +28,11 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "in_place" ];
 
-  meta = with lib; {
+  meta = {
     description = "In-place file processing";
     homepage = "https://github.com/jwodder/inplace";
     changelog = "https://github.com/jwodder/inplace/blob/${src.tag}/CHANGELOG.md";
-    license = licenses.mit;
-    maintainers = with maintainers; [ samuela ];
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ samuela ];
   };
 }

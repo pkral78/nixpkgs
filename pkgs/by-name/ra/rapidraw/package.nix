@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchNpmDeps,
   rustPlatform,
@@ -15,7 +16,14 @@
   libappindicator,
   cairo,
   pango,
-  xorg,
+  libxrender,
+  libxrandr,
+  libxi,
+  libxfixes,
+  libxext,
+  libxcursor,
+  libx11,
+  libxcb,
   libxkbcommon,
   vulkan-loader,
   libjpeg,
@@ -25,60 +33,61 @@
   dbus,
   gvfs,
   libheif,
+  libgphoto2,
   glib-networking,
-  nodejs_20,
+  nodejs_24,
   npmHooks,
   cargo-tauri,
   writableTmpDirAsHomeHook,
+  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rapidraw";
-  version = "1.3.2";
+  version = "1.6.4";
 
   src = fetchFromGitHub {
     owner = "CyberTimon";
     repo = "RapidRAW";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-j9Mpg3o90/PdKlSpJEePcnXZoO2BfnGtJEielM/5/uQ=";
+    hash = "sha256-OSIFBX52QOez2tn93XcSLP/oP9krPy/rIEBvhINkjS8=";
   };
 
-  cargoHash = "sha256-emwlK16NgeTYyQevWD4baHUxMP5xWJsKpQp/q5krAhQ=";
+  cargoHash = "sha256-B1W6buXovnvIddQWjBLw1uOgQnoZLtJp1dX4gOg7cAQ=";
 
   npmDeps = fetchNpmDeps {
     inherit (finalAttrs) src;
-    hash = "sha256-MULxH6gmHC58XdQe4ePvHcXP7/7fYNHgGHHltkODQ6w=";
+    hash = "sha256-P1YT5agK1hMVpe7pLXkWrK99g/uAA46ovF+mUe+xVhk=";
   };
 
   nativeBuildInputs = [
     pkg-config
     makeWrapper
     wrapGAppsHook4
-    nodejs_20
+    nodejs_24
     npmHooks.npmConfigHook
     cargo-tauri.hook
+    rustPlatform.bindgenHook
     writableTmpDirAsHomeHook
   ];
 
   buildInputs = [
-    nodejs_20
+    nodejs_24
     glib-networking
     openssl
-    webkitgtk_4_1
     gtk3
     glib
     gdk-pixbuf
-    libappindicator
     cairo
     pango
-    xorg.libX11
-    xorg.libXi
-    xorg.libXcursor
-    xorg.libXext
-    xorg.libXrandr
-    xorg.libXrender
-    xorg.libxcb
-    xorg.libXfixes
+    libx11
+    libxi
+    libxcursor
+    libxext
+    libxrandr
+    libxrender
+    libxcb
+    libxfixes
     libxkbcommon
     vulkan-loader
     libjpeg
@@ -86,10 +95,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
     libGL
     dbus
-    gvfs
     libheif
     onnxruntime
     wrapGAppsHook4
+    libgphoto2
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    webkitgtk_4_1
+    libappindicator
+    gvfs
   ];
 
   cargoRoot = "src-tauri";
@@ -101,41 +115,63 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     # Configure Tauri to use lowercase binary name
     substituteInPlace src-tauri/tauri.conf.json \
-      --replace '  "identifier": "com.rapidraw.app",' '  "identifier": "com.rapidraw.app", "mainBinaryName": "rapidraw",'
+      --replace-fail '  "identifier": "io.github.CyberTimon.RapidRAW",' '  "identifier": "io.github.CyberTimon.RapidRAW", "mainBinaryName": "rapidraw",'
+
+    # Disable downloading of ONNX runtime library this is correctly linked during postInstall
+    substituteInPlace src-tauri/build.rs \
+      --replace-fail 'if !is_valid' 'if false'
   '';
+
+  tauriBuildFlags = [
+    "--features"
+    "tethering"
+  ];
 
   dontWrapGApps = true;
 
-  # needs to be declared twice annoyingly
-  ORT_STRATEGY = "system";
+  env = {
+    ORT_STRATEGY = "system";
+  };
 
-  postInstall = ''
-    # Patch the .desktop file to set the Categories field
-    sed -i '/^Categories=/c\Categories=Graphics;Photography' "$out/share/applications/RapidRAW.desktop"
+  postInstall =
+    lib.optionalString stdenv.hostPlatform.isLinux ''
+      # Patch the .desktop file to set the Categories field
+      sed -i '/^Categories=/c\Categories=Graphics;Photography' "$out/share/applications/RapidRAW.desktop"
 
-    # Ensure the resources directory exists before linking
-    mkdir -p $out/lib/RapidRAW/resources
+      # Ensure the resources directory exists before linking
+      mkdir -p $out/lib/RapidRAW/resources
 
-    # link the .so file
-    ln -sf ${onnxruntime}/lib/libonnxruntime.so $out/lib/RapidRAW/resources/libonnxruntime.so
+      # link the .so file
+      ln -sf ${onnxruntime}/lib/libonnxruntime.so $out/lib/RapidRAW/resources/libonnxruntime.so
+    ''
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      # The app also dlopen()s libonnxruntime.dylib at a hardcoded path inside the bundle
+      mkdir -p "$out/Applications/RapidRAW.app/Contents/Resources/resources"
+      ln -sf ${onnxruntime}/lib/libonnxruntime.dylib "$out/Applications/RapidRAW.app/Contents/Resources/resources/libonnxruntime.dylib"
+    '';
 
-    # remove the .dylib file
-    rm -rf $out/lib/RapidRAW/resources/libonnxruntime.dylib
-  '';
+  postFixup =
+    lib.optionalString stdenv.hostPlatform.isLinux ''
+      wrapGApp $out/bin/rapidraw \
+        --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath finalAttrs.buildInputs} \
+        --set ORT_STRATEGY "system"
+    ''
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      wrapGApp "$out/Applications/RapidRAW.app/Contents/MacOS/rapidraw" \
+        --set ORT_STRATEGY "system"
+    '';
 
-  postFixup = ''
-    wrapGApp $out/bin/rapidraw \
-      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath finalAttrs.buildInputs} \
-      --set ORT_STRATEGY "system" \
-      --set ORT_DYLIB_PATH "${onnxruntime}/lib/libonnxruntime.so"
-  '';
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Blazingly-fast, non-destructive, and GPU-accelerated RAW image editor built with performance in mind";
     homepage = "https://github.com/CyberTimon/RapidRAW";
     license = lib.licenses.agpl3Only;
     mainProgram = "rapidraw";
-    maintainers = with lib.maintainers; [ taciturnaxolotl ];
+    maintainers = with lib.maintainers; [
+      philipdb
+      taciturnaxolotl
+    ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

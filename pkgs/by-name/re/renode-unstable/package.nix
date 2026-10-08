@@ -1,31 +1,35 @@
 {
+  dotnetCorePackages,
   fetchFromGitHub,
-  nix-update-script,
+  lib,
   renode,
+  writeShellScript,
 }:
-renode.overrideAttrs (old: rec {
-  pname = "renode-unstable";
-  version = "1.16.0-unstable-2025-08-08";
 
-  src = fetchFromGitHub {
-    owner = "renode";
-    repo = "renode";
-    rev = "194d90650a9337a05cd81e8855474773d23d4396";
-    hash = "sha256-oRtbjup5RKbVzKMTa0yiY1gGhDqUrQ4N3SgwQ7lm8Ho=";
-    fetchSubmodules = true;
-  };
+let
+  nugetDeps = map dotnetCorePackages.fetchNupkg (lib.importJSON ./deps.json);
+in
+renode.overrideAttrs (
+  finalAttrs: old: {
+    pname = "renode-unstable";
+    version = "1.17.0-unstable-2026-10-02";
 
-  prePatch = ''
-    substituteInPlace tools/building/createAssemblyInfo.sh \
-      --replace CURRENT_INFORMATIONAL_VERSION="`git rev-parse --short=8 HEAD`" \
-      CURRENT_INFORMATIONAL_VERSION="${builtins.substring 0 8 src.rev}"
-  '';
-
-  passthru = old.passthru // {
-    updateScript = nix-update-script {
-      extraArgs = [
-        "--version=branch"
-      ];
+    src = fetchFromGitHub {
+      owner = "renode";
+      repo = "renode";
+      rev = "b039ed10ea66198afd6f68f2ec5a041e76e5e1dc";
+      hash = "sha256-ico2g1YOPfM0wdKosUf1ul+u8JBA+N8qFHij57cmS34=";
+      fetchSubmodules = true;
     };
-  };
-})
+
+    buildInputs = lib.subtractLists old.passthru.nugetDeps old.buildInputs ++ nugetDeps;
+
+    passthru = old.passthru // {
+      inherit nugetDeps;
+      fetch-deps = writeShellScript "${finalAttrs.finalPackage.name}-fetch-deps" ''
+        exec ${old.passthru.fetch-deps} "''${1:-${toString ./deps.json}}"
+      '';
+      updateScript = ./update.sh;
+    };
+  }
+)

@@ -4,19 +4,21 @@
   fetchFromGitHub,
   fetchurl,
   installShellFiles,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
-buildGoModule rec {
+buildGoModule (finalAttrs: {
   pname = "cloudfoundry-cli";
-  version = "8.16.0";
+  version = "8.19.0";
 
   src = fetchFromGitHub {
     owner = "cloudfoundry";
     repo = "cli";
-    rev = "v${version}";
-    sha256 = "sha256-7ROrXGGzHTI83/SgBqcNJdlZlWzt8rAYdsNM2vgyDKA=";
+    rev = "v${finalAttrs.version}";
+    sha256 = "sha256-fSt3OyeXK6YAbKem/s+fvhm/BxTve65GSEk4htjzBAI=";
   };
-  vendorHash = "sha256-vWy93zOHh4kCQ/D4rKlbL0mcDbOStYOvC8G4bc6KRgg=";
+  vendorHash = "sha256-cDiYny1BiikrzLRkFmDQefOVTOvzbM86N1Uted3m9Mg=";
 
   subPackages = [ "." ];
 
@@ -32,8 +34,9 @@ buildGoModule rec {
   ldflags = [
     "-s"
     "-w"
-    "-X code.cloudfoundry.org/cli/version.binaryBuildDate=1970-01-01"
-    "-X code.cloudfoundry.org/cli/version.binaryVersion=${version}"
+    "-X code.cloudfoundry.org/cli/v8/version.binaryBuildDate=1970-01-01"
+    "-X code.cloudfoundry.org/cli/v8/version.binaryVersion=${finalAttrs.version}"
+    "-X code.cloudfoundry.org/cli/v8/version.binarySHA=${finalAttrs.src.rev}"
   ];
 
   postInstall = ''
@@ -41,11 +44,20 @@ buildGoModule rec {
     installShellCompletion --bash $bashCompletionScript
   '';
 
-  meta = with lib; {
+  doInstallCheck = true;
+
+  versionCheckKeepEnvironment = [ "HOME" ];
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  meta = {
     description = "Official command line client for Cloud Foundry";
     homepage = "https://github.com/cloudfoundry/cli";
-    maintainers = with maintainers; [ ris ];
+    maintainers = with lib.maintainers; [ ris ];
     mainProgram = "cf";
-    license = licenses.asl20;
+    license = lib.licenses.asl20;
   };
-}
+})

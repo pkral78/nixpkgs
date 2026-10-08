@@ -12,15 +12,15 @@
   mirage-crypto-rng,
 }:
 
-buildDunePackage rec {
+buildDunePackage (finalAttrs: {
   pname = "http-mirage-client";
-  version = "0.0.10";
+  version = "0.0.11";
 
-  minimalOCamlVersion = "4.08";
+  __darwinAllowLocalNetworking = true;
 
   src = fetchurl {
-    url = "https://github.com/roburio/http-mirage-client/releases/download/v${version}/http-mirage-client-${version}.tbz";
-    hash = "sha256-AXEIH1TIAayD4LkFv0yGD8OYvcdC/AJnGudGlkjcWLY=";
+    url = "https://github.com/robur-coop/http-mirage-client/releases/download/v${finalAttrs.version}/http-mirage-client-${finalAttrs.version}.tbz";
+    hash = "sha256-sNl/GvHATfLKymy5f91GUJkyjOgjpYIouuFntIzE+CM=";
   };
 
   propagatedBuildInputs = [
@@ -40,9 +40,9 @@ buildDunePackage rec {
 
   meta = {
     description = "HTTP client for MirageOS";
-    homepage = "https://github.com/roburio/http-mirage-client";
+    homepage = "https://github.com/robur-coop/http-mirage-client";
+    changelog = "https://github.com/robur-coop/http-mirage-client/blob/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
   };
-
-}
+})

@@ -22,6 +22,10 @@ stdenv.mkDerivation {
     hash = "sha256-9lZ7eBwmxZ33XNDJXQ2lbCcH5JyH0KoY1mj/g+2HOJs=";
   };
 
+  patches = [
+    ./cmake-minimum-required.patch
+  ];
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -55,11 +59,13 @@ stdenv.mkDerivation {
     hardcodeZeroVersion = true;
   };
 
-  meta = with lib; {
-    homepage = "http://cegui.org.uk/";
+  meta = {
+    # last successful hydra build on darwin was in 2025
+    broken = stdenv.hostPlatform.isDarwin;
+    homepage = "https://github.com/paroj/cegui";
     description = "C++ Library for creating GUIs";
     mainProgram = "CEGUISampleFramework-0.9999";
-    license = licenses.mit;
-    platforms = platforms.unix;
+    license = lib.licenses.mit;
+    platforms = lib.platforms.unix;
   };
 }

@@ -7,9 +7,9 @@
   fetchFromGitHub,
   pythonPackages,
   pkg-config,
-  systemd,
+  systemdLibs,
   hostname,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
   withDocker ? true,
   extraTags ? [ ],
   testers,
@@ -23,12 +23,14 @@ let
   owner = "DataDog";
   repo = "datadog-agent";
   goPackagePath = "github.com/${owner}/${repo}";
-  version = "7.70.2";
+  version = "7.75.0";
+  # TODO: remove when https://github.com/NixOS/nixpkgs/pull/571072 hits master
+  systemdLibs' = systemdLibs.override { withCompression = true; };
 
   src = fetchFromGitHub {
     inherit owner repo;
     tag = version;
-    hash = "sha256-yXtybHWrm+6kWW396FLlRZI0YVuThGuLfSYzoNXAEBU=";
+    hash = "sha256-oj4LFQiaEeSHcSx0Bar4vU7w/8gi0fgBGSAUjaD4SFc=";
   };
   rtloader = stdenv.mkDerivation {
     pname = "datadog-agent-rtloader";
@@ -49,7 +51,7 @@ buildGoModule rec {
 
   doCheck = false;
 
-  vendorHash = "sha256-iWOwhfSI7mLmDy6yewV0h9Y4pjYAV6Tz6TxsINOxYMg=";
+  vendorHash = "sha256-5lqWfhMXrYyZkP/MYH/Uvgu0VHaDmYMOmBOc5xExLi4=";
 
   subPackages = [
     "cmd/agent"
@@ -62,7 +64,7 @@ buildGoModule rec {
     pkg-config
     makeWrapper
   ];
-  buildInputs = [ rtloader ] ++ lib.optionals withSystemd [ systemd ];
+  buildInputs = [ rtloader ] ++ lib.optionals withSystemd [ systemdLibs' ];
 
   proxyVendor = true;
 
@@ -114,7 +116,7 @@ buildGoModule rec {
       --set PYTHONPATH "$out/${python.sitePackages}"''
   + lib.optionalString withSystemd " --prefix LD_LIBRARY_PATH : ${
      lib.makeLibraryPath [
-       (lib.getLib systemd)
+       (lib.getLib systemdLibs')
        rtloader
      ]
    }";
@@ -124,14 +126,14 @@ buildGoModule rec {
     command = "agent version";
   };
 
-  meta = with lib; {
+  meta = {
     description = ''
       Event collector for the DataDog analysis service
       -- v6 new golang implementation.
     '';
     homepage = "https://www.datadoghq.com";
-    license = licenses.bsd3;
-    maintainers = with maintainers; [
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [
       thoughtpolice
     ];
   };

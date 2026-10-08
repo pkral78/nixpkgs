@@ -4,7 +4,8 @@
   src,
   pkg-config,
   tcl,
-  libXft,
+  harfbuzz,
+  libxft,
   zip,
   zlib,
   patches ? [ ],
@@ -75,12 +76,17 @@ tcl.mkTclDerivation {
     # Only used to detect the presence of zlib. Could be replaced with a stub.
     zip
   ];
-  buildInputs = lib.optionals (lib.versionAtLeast tcl.version "9.0") [
-    zlib
-  ];
+  buildInputs =
+    lib.optionals (lib.versionAtLeast tcl.version "9.0") [
+      zlib
+    ]
+    ++ lib.optionals (lib.versionAtLeast tcl.version "9.1") [
+      # For --enable-bidi
+      harfbuzz
+    ];
 
   propagatedBuildInputs = [
-    libXft
+    libxft
   ];
 
   enableParallelBuilding = true;
@@ -95,12 +101,12 @@ tcl.mkTclDerivation {
     libdir = "lib/${libPrefix}";
   };
 
-  meta = with lib; {
+  meta = {
     description = "Widget toolkit that provides a library of basic elements for building a GUI in many different programming languages";
-    homepage = "https://www.tcl.tk/";
-    license = licenses.tcltk;
-    platforms = platforms.all;
-    maintainers = [ ];
-    broken = stdenv.hostPlatform.isDarwin && lib.elem (lib.versions.majorMinor tcl.version) [ "8.5" ];
+    homepage = "https://www.tcl-lang.org/";
+    license = lib.licenses.tcltk;
+    platforms = lib.platforms.all;
+    mainProgram = "wish";
+    maintainers = with lib.maintainers; [ fgaz ];
   };
 }

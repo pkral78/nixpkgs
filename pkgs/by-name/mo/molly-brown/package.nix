@@ -7,7 +7,10 @@
 
 buildGoModule {
   pname = "molly-brown";
-  version = "unstable-2023-02-10";
+  version = "0-unstable-2023-02-10";
+
+  strictDeps = true;
+  __structuredAttrs = true;
 
   src = fetchgit {
     url = "https://tildegit.org/solderpunk/molly-brown.git";
@@ -24,10 +27,10 @@ buildGoModule {
 
   passthru.tests.basic = nixosTests.molly-brown;
 
-  meta = with lib; {
+  meta = {
     description = "Full-featured Gemini server";
     mainProgram = "molly-brown";
     homepage = "https://tildegit.org/solderpunk/molly-brown";
-    license = licenses.bsd2;
+    license = lib.licenses.bsd2;
   };
 }

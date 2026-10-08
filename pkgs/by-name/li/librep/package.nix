@@ -49,6 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   strictDeps = true;
   enableParallelBuilding = true;
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+
   # ensure libsystem/ctype functions don't get duplicated when using clang
   configureFlags = lib.optionals stdenv.hostPlatform.isDarwin [ "CFLAGS=-std=gnu89" ];
 
@@ -58,11 +60,10 @@ stdenv.mkDerivation (finalAttrs: {
     versionCheckHook
   ];
   doInstallCheck = true;
-  versionCheckProgramArg = "--version";
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   meta = {
-    homepage = "http://sawfish.tuxfamily.org/";
+    homepage = "https://github.com/SawfishWM/librep";
     description = "Fast, lightweight, and versatile Lisp environment";
     longDescription = ''
       librep is a Lisp system for UNIX, comprising an interpreter, a byte-code

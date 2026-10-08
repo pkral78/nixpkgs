@@ -1,11 +1,6 @@
 import ./generic.nix {
-  version = "25.9.2.1-stable";
-  hash = "sha256-BygRxiDhhs91/UPWY7f3jAGyTtyAj98RdDXLwjs8Abo=";
+  version = "26.8.7.19-lts";
+  rev = "f29d27def7ee0adb10e7e2fff080ba204054dd4b";
+  hash = "sha256-IsMRloPsdFoDMmOh6lxFdvxEbuXV5XSU48kWFG5Sp/o=";
   lts = false;
-  nixUpdateExtraArgs = [
-    "--version-regex"
-    "^v?(.*-stable|.*-lts)$"
-    "--override-filename"
-    "pkgs/by-name/cl/clickhouse/package.nix"
-  ];
 }

@@ -10,6 +10,7 @@
   docCargoDeps ? null,
   patches ? [ ],
   knownVulnerabilities ? [ ],
+  updateScript ? null,
 }@args:
 
 assert lib.assertMsg (
@@ -21,7 +22,10 @@ assert lib.assertMsg (
 
 {
   stdenv,
+  closureInfo,
+  runCommand,
   meson,
+  bash,
   bison,
   boehmgc,
   boost,
@@ -33,8 +37,10 @@ assert lib.assertMsg (
   cargo,
   curl,
   cmake,
+  darwin,
   doxygen,
   editline,
+  fetchpatch2,
   flex,
   git,
   gtest,
@@ -50,12 +56,12 @@ assert lib.assertMsg (
   lsof,
   mercurial,
   mdbook,
-  mdbook-linkcheck,
   nlohmann_json,
   ninja,
   openssl,
   pkgsStatic,
   rustc,
+  rust-cbindgen,
   toml11,
   pegtl,
   buildPackages,
@@ -67,6 +73,7 @@ assert lib.assertMsg (
   removeReferencesTo,
   xz,
   yq,
+  zstd,
   nixosTests,
   rustPlatform,
   # Only used for versions before 2.92.
@@ -94,6 +101,7 @@ assert lib.assertMsg (
   libseccomp,
   pastaFod ? lib.meta.availableOn stdenv.hostPlatform passt,
   passt,
+  withPlugins ? lib.versionAtLeast version "2.95" && !enableStatic,
 
   confDir,
   stateDir,
@@ -106,6 +114,21 @@ let
   hasDtraceSupport = lib.versionAtLeast version "2.93";
   parseToYAML = lib.versionAtLeast version "2.93";
   usesCapnp = lib.versionAtLeast version "2.94";
+
+  mesonCrossFile =
+    deps:
+    runCommand "lix-cross-file.conf"
+      {
+        input = ''
+          [project options]
+          builtin-dep-closure = @deps@
+        '';
+        __structuredAttrs = true;
+      }
+      ''
+        printf "%s" "$input" > $out
+        substituteInPlace $out --replace-fail @deps@ "$(cat ${deps})"
+      '';
 in
 # gcc miscompiles coroutines at least until 13.2, possibly longer
 # do not remove this check unless you are sure you (or your users) will not report bugs to Lix upstream about GCC miscompilations.
@@ -115,7 +138,7 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "lix";
 
   version = "${version}${suffix}";
-  VERSION_SUFFIX = suffix;
+  env.VERSION_SUFFIX = suffix;
 
   inherit src patches;
 
@@ -138,6 +161,37 @@ stdenv.mkDerivation (finalAttrs: {
   ];
   __structuredAttrs = true;
 
+  # dep closure for builtin builders in meson array form for immediate use
+  builtinDeps =
+    if stdenv.hostPlatform.isStatic then
+      builtins.toFile "lix-static-dep-closure" "[]"
+    else
+      runCommand "lix-builtin-dep-closure"
+        {
+          closure = closureInfo {
+            # closureInfo does not work all that well for things like lowdown,
+            # where it finds only -out but not -lib. we'll take -out and -lib,
+            # ignoring -bin, -man, -dev, etc. and hope that'll be good enough.
+            rootPaths = lib.flatten (
+              map
+                (drv: [
+                  (drv.out or [ ])
+                  (drv.lib or [ ])
+                ])
+                (
+                  lib.subtractLists finalAttrs.disallowedReferences (
+                    finalAttrs.buildInputs ++ finalAttrs.propagatedBuildInputs
+                  )
+                )
+            );
+          };
+        }
+        ''
+          closure=($(cat $closure/store-paths))
+          closure="$(printf ", '%s'" "''${closure[@]}")"
+          printf "[%s]" "''${closure:2}" >$out
+        '';
+
   # We only include CMake so that Meson can locate toml11, which only ships CMake dependency metadata.
   dontUseCmakeConfigure = true;
 
@@ -150,7 +204,11 @@ stdenv.mkDerivation (finalAttrs: {
       ++ lib.optionals finalAttrs.doInstallCheck [
         p.aiohttp
         p.pytest
+        p.pytest-timeout
         p.pytest-xdist
+        p.pyxattr
+        p.tappy
+        p.ruff
       ]
       ++ lib.optionals usesCapnp [ p.pycapnp ]
     ))
@@ -171,6 +229,7 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals isLLVMOnly [
     rustc
+    rust-cbindgen
     cargo
     rustPlatform.cargoSetupHook
   ]
@@ -178,14 +237,17 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals enableDocumentation [
     (lib.getBin lowdown-unsandboxed)
     mdbook
-    mdbook-linkcheck
     doxygen
   ]
   ++ lib.optionals (hasDtraceSupport && withDtrace) [ systemtap-sdt ]
   ++ lib.optionals pastaFod [ passt ]
   ++ lib.optionals parseToYAML [ yq ]
   ++ lib.optionals usesCapnp [ capnproto ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ util-linuxMinimal ];
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ util-linuxMinimal ]
+  ++ lib.optionals (lib.versionAtLeast version "2.94") [ zstd ]
+  ++ lib.optionals (withPlugins && finalAttrs.doInstallCheck) [
+    curl
+  ];
 
   buildInputs = [
     boost
@@ -194,7 +256,6 @@ stdenv.mkDerivation (finalAttrs: {
     curl
     capnproto
     editline
-    libsodium
     openssl
     sqlite
     xz
@@ -224,13 +285,20 @@ stdenv.mkDerivation (finalAttrs: {
     # would be in a Cargo registry cache.
     MESON_PACKAGE_CACHE_DIR =
       if finalAttrs.cargoDeps != null then
-        finalAttrs.cargoDeps
+        "${finalAttrs.cargoDeps}/source-registry-0"
       else
         "lix: no `MESON_PACKAGE_CACHE_DIR`, set `cargoDeps`";
+
+    # Defense-in-depth: never inherit an executable stack from a dependency.
+    # It does happen: https://github.com/NixOS/nixpkgs/issues/567777.
+    # ELF only: Apple's ld64 rejects `-z`, and Mach-O stacks are already
+    # non-executable unless linked with `-allow_stack_execute`.
+    NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isElf "-z,noexecstack";
   };
 
   propagatedBuildInputs = [
     boehmgc
+    boost
     nlohmann_json
   ];
 
@@ -279,6 +347,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonBool "enable-embedded-sandbox-shell" (
       stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isStatic
     ))
+  ]
+  ++ lib.optionals (lib.versionAtLeast version "2.95") [
+    (lib.mesonBool "enable-contrib-plugins" withPlugins)
+  ]
+  ++ [
     (lib.mesonEnable "seccomp-sandboxing" withLibseccomp)
 
     (lib.mesonOption "store-dir" storeDir)
@@ -293,10 +366,45 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++
     lib.optionals
-      (stdenv.hostPlatform.isLinux && finalAttrs.doInstallCheck && lib.versionAtLeast version "2.94")
+      (
+        stdenv.hostPlatform.isLinux
+        && finalAttrs.doInstallCheck
+        && lib.versionAtLeast version "2.94"
+        && lib.versionOlder version "2.95"
+      )
       [
         (lib.mesonOption "build-test-shell" "${pkgsStatic.busybox}/bin")
-      ];
+      ]
+  ++
+    lib.optionals
+      (stdenv.hostPlatform.isLinux && finalAttrs.doInstallCheck && lib.versionAtLeast version "2.95")
+      [
+        (lib.mesonOption "build-test-env" (
+          lib.makeBinPath [
+            pkgsStatic.busybox
+            pkgsStatic.acl
+          ]
+        ))
+        (lib.mesonOption "build-test-shell" "${pkgsStatic.bash}/bin")
+      ]
+  ++
+    lib.optionals
+      (stdenv.hostPlatform.isDarwin && finalAttrs.doInstallCheck && lib.versionAtLeast version "2.95")
+      [
+        (lib.mesonOption "build-test-env" (
+          lib.makeBinPath [
+            darwin.file_cmds
+            darwin.shell_cmds
+            darwin.text_cmds
+          ]
+        ))
+        (lib.mesonOption "build-test-shell" "${bash}/bin")
+      ]
+  ++ lib.optionals (lib.versionAtLeast version "2.95") [
+    "--${
+      if stdenv.hostPlatform != stdenv.buildPlatform then "cross" else "native"
+    }-file=${mesonCrossFile finalAttrs.builtinDeps}"
+  ];
 
   ninjaFlags = [ "-v" ];
 
@@ -345,7 +453,8 @@ stdenv.mkDerivation (finalAttrs: {
     rapidcheck
   ];
 
-  doInstallCheck = true;
+  # Python splices are broken (https://github.com/NixOS/nixpkgs/issues/476822), causing build failure in `buildPackages.python3Packages.bcrypt`.
+  doInstallCheck = stdenv.buildPlatform == stdenv.hostPlatform;
   mesonInstallCheckFlags = [
     "--suite=installcheck"
     "--print-errorlogs"
@@ -361,8 +470,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   installCheckPhase = ''
     runHook preInstallCheck
-    flagsArray=($mesonInstallCheckFlags "''${mesonInstallCheckFlagsArray[@]}")
-    meson test --no-rebuild "''${flagsArray[@]}"
+
+    (
+      unset -v preCheck preCheckHooks postCheck postCheckHooks
+      mesonCheckFlags=("''${mesonInstallCheckFlags[@]}")
+      mesonCheckPhase
+    )
+
     runHook postInstallCheck
   '';
   hardeningDisable = [
@@ -373,7 +487,6 @@ stdenv.mkDerivation (finalAttrs: {
   # fortify breaks the build with lto and musl for some reason
   ++ lib.optional stdenv.hostPlatform.isMusl "fortify";
 
-  # hardeningEnable = lib.optionals (!stdenv.hostPlatform.isDarwin) [ "pie" ];
   separateDebugInfo = stdenv.hostPlatform.isLinux && !enableStatic;
   enableParallelBuilding = true;
 
@@ -382,6 +495,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     inherit aws-sdk-cpp boehmgc;
+    inherit updateScript;
     tests = {
       misc = nixosTests.nix-misc.default.passthru.override { nixPackage = finalAttrs.finalPackage; };
       installer = nixosTests.installer.simple.override { selectNixPackage = _: finalAttrs.finalPackage; };
@@ -403,6 +517,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://lix.systems";
     license = lib.licenses.lgpl21Plus;
     teams = [ lib.teams.lix ];
+    maintainers = [ lib.maintainers.tyceherrman ];
     platforms = lib.platforms.unix;
     outputsToInstall = [ "out" ] ++ lib.optional enableDocumentation "man";
     mainProgram = "nix";

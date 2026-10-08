@@ -1,51 +1,67 @@
 {
   lib,
-  fetchPypi,
-  buildPythonPackage,
-  fetchFromGitHub,
-  cryptography,
-  libnacl,
-  aiohttp,
   aiohttp-apispec,
-  pyopenssl,
-  pyasn1,
-  marshmallow,
-  typing-extensions,
-  packaging,
+  aiohttp,
   apispec,
+  buildPythonPackage,
+  cryptography,
+  fetchFromGitHub,
+  fetchPypi,
+  ipv8-rust-tunnels,
+  libnacl,
+  marshmallow,
+  packaging,
+  pyasn1,
+  pyopenssl,
+  pytestCheckHook,
+  setuptools,
+  typing-extensions,
 }:
 
-buildPythonPackage {
+buildPythonPackage (finalAttrs: {
   pname = "pyipv8";
-  version = "3.0.2197-unstable-2025-07-29";
-  format = "setuptools";
+  version = "3.2.1";
+  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tribler";
     repo = "py-ipv8";
-    rev = "db39b85f4c28880dee24d1b59d8eae8ca8b9c03d";
-    hash = "sha256-VIcBPzpK8Cdaz/dRp9QK/MtK41jm8rs/pxnLS716FNM=";
+    tag = finalAttrs.version;
+    hash = "sha256-TrtsdpXmqC4qcKLh/iwwsLEky3md8jBX78zrP6SEpaA=";
   };
 
-  propagatedBuildInputs = [
-    cryptography
-    libnacl
+  build-system = [ setuptools ];
+
+  dependencies = [
     aiohttp
     aiohttp-apispec
-    pyopenssl
-    pyasn1
-    marshmallow
-    typing-extensions
-    packaging
     apispec
+    cryptography
+    ipv8-rust-tunnels
+    libnacl
+    marshmallow
+    packaging
+    pyasn1
+    pyopenssl
+    typing-extensions
   ];
 
-  doCheck = false;
+  __darwinAllowLocalNetworking = true;
 
-  meta = with lib; {
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  disabledTestPaths = [
+    # No longer exposes the sockname attribute
+    "ipv8/test/REST/"
+  ];
+
+  pythonImportsCheck = [ "ipv8" ];
+
+  meta = {
     description = "Python implementation of Tribler's IPv8 p2p-networking layer";
     homepage = "https://github.com/Tribler/py-ipv8";
-    license = licenses.lgpl3Only;
-    maintainers = with maintainers; [ mkg20001 ];
+    changelog = "https://github.com/Tribler/py-ipv8/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.lgpl3Only;
+    maintainers = with lib.maintainers; [ mkg20001 ];
   };
-}
+})

@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  substitute,
   yarn-berry_4,
   nodejs,
   meson,
@@ -14,7 +15,8 @@
   writableTmpDirAsHomeHook,
   gjs,
   libadwaita,
-  nix-update-script,
+  writeShellScript,
+  nix-update,
 }:
 
 let
@@ -23,24 +25,45 @@ in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "learn6502";
-  version = "0.3.0";
+  version = "0.7.0";
 
   src = fetchFromGitHub {
     owner = "JumpLink";
     repo = "Learn6502";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-Aoj4Z9uraBEH3BW0hrhuV3Hu7cnRxvjbpzm4pUziWS4=";
+    hash = "sha256-b91b+H5avQDYknDaKUSPGG+Vq6sxSwuJgSiVzdqlbh8=";
+
+    # Remove when updating since upstream migrated to gjsify
+    # https://github.com/JumpLink/Learn6502/commit/1ae86c179aede8c5785aeda66db334a29d02a7c0
+    postFetch = ''
+      cd $out
+      patch -p1 < ${
+        (substitute {
+          src = ./yarn-fix.patch;
+          substitutions = [
+            "--replace-fail"
+            "YARN_LOCKFILE_VERSION_PLACEHOLDER"
+            yarn-berry_4.lockfileVersion
+          ];
+        })
+      }
+    '';
   };
+
+  patches = [
+    ./get-yarn-from-path.patch
+  ];
 
   missingHashes = ./missing-hashes.json;
 
   offlineCache = yarn-berry.fetchYarnBerryDeps {
     inherit (finalAttrs) src missingHashes;
-    hash = "sha256-0r+SRVx8b238SVm+XM4+uw7Ge3rFtsNwD/+uNfBA7eM=";
+    hash = "sha256-BIP2L6EQXKzpiYrA8qpqQEQ/NnjFrQSyHlmFg7vg1Xk=";
   };
 
   nativeBuildInputs = [
     nodejs
+    yarn-berry
     yarn-berry.yarnBerryConfigHook
     meson
     ninja
@@ -70,7 +93,18 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
-  passthru.updateScript = nix-update-script { };
+  passthru.updateScript = writeShellScript "update-learn6502" ''
+    ${lib.getExe nix-update} learn6502 || true
+    export HOME=$(mktemp -d)
+    src=$(nix build --no-link --print-out-paths .#learn6502.src)
+    WORKDIR=$(mktemp -d)
+    cp --recursive --no-preserve=mode $src/* $WORKDIR
+    missingHashes=$(nix eval --file . learn6502.missingHashes)
+    pushd $WORKDIR
+    ${lib.getExe yarn-berry.yarn-berry-fetcher} missing-hashes yarn.lock >$missingHashes
+    popd
+    ${lib.getExe nix-update} learn6502 --version skip
+  '';
 
   meta = {
     description = "Modern 6502 Assembly Learning Environment for GNOME";

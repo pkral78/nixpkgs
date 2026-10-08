@@ -1,7 +1,7 @@
 {
   lib,
   stdenv,
-  glibmm,
+  glibmm_2_4,
   pidgin,
   pkg-config,
   modemmanager,
@@ -27,16 +27,16 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [
-    glibmm
+    glibmm_2_4
     pidgin
     modemmanager
   ];
 
-  meta = with lib; {
+  meta = {
     homepage = "https://source.puri.sm/Librem5/purple-mm-sms";
     description = "Libpurple plugin for sending and receiving SMS via Modemmanager";
-    license = licenses.gpl3Plus;
-    platforms = platforms.linux;
+    license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.linux;
     maintainers = [ ];
   };
 }

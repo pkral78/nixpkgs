@@ -2,7 +2,6 @@
   lib,
   buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
   astropy,
   boto3,
   requests,
@@ -11,39 +10,43 @@
   html5lib,
   matplotlib,
   pillow,
+  pkg-resources-backport,
   pytest,
   pytest-astropy,
   pytest-dependency,
   pytest-rerunfailures,
+  pytest-timeout,
   pytestCheckHook,
   pyvo,
   astropy-helpers,
   setuptools,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "astroquery";
-  version = "0.4.10";
+  version = "0.4.11";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astropy";
     repo = "astroquery";
     tag = "v${version}";
-    hash = "sha256-5pNKV+XNfUQca7WoWboVphXffzyVIHCmfxwr4nBMaEk=";
+    hash = "sha256-BcdRBPnJfuW17p31xUhjBmP7Lv98CnmOTCO4aU0xpMM=";
   };
 
-  patches = [
-    # https://github.com/astropy/astroquery/pull/3311
-    (fetchpatch2 {
-      name = "setuptools-package-index.patch";
-      url = "https://github.com/astropy/astroquery/commit/9d43beb4b7bea424d73fff0b602ca90026155519.patch";
-      hash = "sha256-3QdOwP1rlWeScGxHT9ZVPmffE7S1XE0cbtnQ8T4bIYw=";
-    })
-  ];
+  postPatch = ''
+    substituteInPlace setup.cfg \
+      --replace-fail "auto_use = True" "auto_use = False"
+    filterwarnings_old=$(printf 'filterwarnings =\n    error')
+    filterwarnings_new=$(printf 'filterwarnings =\n    error\n    ignore:astropy.samp.*deprecated:Warning')
+    substituteInPlace setup.cfg \
+      --replace-fail "$filterwarnings_old" "$filterwarnings_new"
+  '';
 
   build-system = [
     astropy-helpers
+    pkg-resources-backport
     setuptools
   ];
 
@@ -56,14 +59,7 @@ buildPythonPackage rec {
     pyvo
   ];
 
-  # Disable automatic update of the astropy-helper module
-  postPatch = ''
-    substituteInPlace setup.cfg --replace "auto_use = True" "auto_use = False"
-  '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  checkInputs = [
+  nativeCheckInputs = [
     boto3
     matplotlib
     pillow
@@ -71,23 +67,26 @@ buildPythonPackage rec {
     pytest-astropy
     pytest-dependency
     pytest-rerunfailures
+    pytest-timeout
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
 
-  pytestFlags = [
-    # DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
-    "-Wignore::DeprecationWarning"
-  ];
-
-  # Tests must be run in the build directory. The tests create files
-  # in $HOME/.astropy so we need to set HOME to $TMPDIR.
+  # Tests must be run in the build directory.
   preCheck = ''
-    export HOME=$TMPDIR
     cd build/lib
   '';
+
+  pytestFlags = [
+    "--import-mode=importlib"
+    "-W"
+    "ignore::pytest.PytestRemovedIn10Warning"
+  ];
 
   pythonImportsCheck = [ "astroquery" ];
 
   meta = {
+    changelog = "https://github.com/astropy/astroquery/releases/tag/${src.tag}";
     description = "Functions and classes to access online data resources";
     homepage = "https://astroquery.readthedocs.io/";
     license = lib.licenses.bsd3;

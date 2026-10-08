@@ -2,7 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildGoModule,
+  buildGo127Module,
   installShellFiles,
   versionCheckHook,
   nix-update-script,
@@ -11,18 +11,20 @@
 let
   mainProgram = "pinact";
 in
-buildGoModule (finalAttrs: {
+# go.mod for this package regularly requires a newer version than buildGoModule uses. See https://github.com/NixOS/nixpkgs/pull/472064 for details.
+buildGo127Module (finalAttrs: {
   pname = "pinact";
-  version = "3.4.2";
+  version = "5.0.0";
+  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "suzuki-shunsuke";
     repo = "pinact";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-O+yLhvkF84uCrgb5MPvk8i/YJ4tLR7YQvBAYbpnxwEM=";
+    hash = "sha256-VmLQmZDFBweh8O6VHcDQsAc6Ojcriw0oQymO6SkAVpU=";
   };
 
-  vendorHash = "sha256-A9bMAGaNvCKfSozBwhrJLgQUrCLN78Og3eCmezsJ6c8=";
+  vendorHash = "sha256-mAlwYacDZruLw9hMr77z6MYNPME+iPntJROK6Yd84uI=";
 
   env.CGO_ENABLED = 0;
 

@@ -5,12 +5,12 @@
   fetchpatch,
   cmake,
   libGL,
-  libSM,
+  libsm,
   SDL,
   SDL_image,
   SDL_ttf,
   glew,
-  openalSoft,
+  openal-soft,
   ncurses,
   glib,
   gtk2,
@@ -34,11 +34,15 @@ let
   unfuck-releases = {
     "0.44.12" = {
       unfuckRelease = "0.44.12";
+      owner = "svenstaro";
+      rev = "0.44.12";
       hash = "sha256-f9vDe3Q3Vl2hFLCPSzYtqyv9rLKBKEnARZTu0MKaX88=";
     };
     "0.47.05" = {
       unfuckRelease = "0.47.05-final";
-      hash = "sha256-kBdzU6KDpODOBP9XHM7lQRIEWUGOj838vXF1FbSr0Xw=";
+      owner = "cizra";
+      rev = "29fddba2ad92039b95d8873b9b05bbded7111fd0";
+      hash = "sha256-ogeHYvyaJMhU3yXMAS0XwJ/H/15H9iXNusnmcbfPWOo=";
     };
   };
 
@@ -54,10 +58,8 @@ stdenv.mkDerivation {
   version = release.unfuckRelease;
 
   src = fetchFromGitHub {
-    owner = "svenstaro";
     repo = "dwarf_fortress_unfuck";
-    rev = release.unfuckRelease;
-    inherit (release) hash;
+    inherit (release) owner rev hash;
   };
 
   patches = lib.optionals (versionOlder release.unfuckRelease "0.47.05") [
@@ -66,11 +68,18 @@ stdenv.mkDerivation {
       url = "https://github.com/svenstaro/dwarf_fortress_unfuck/commit/6dcfe5ae869fddd51940c6c37a95f7bc639f4389.patch";
       hash = "sha256-b9eI3iR7dmFqCrktPyn6QJ9U2A/7LvfYRS+vE3BOaqk=";
     })
+    (fetchpatch {
+      name = "use-the-glew-cmake-target.patch";
+      url = "https://github.com/svenstaro/dwarf_fortress_unfuck/commit/abd2961836ace8cf6277ceff997b02704c6edd7a.patch";
+      hash = "sha256-2VS/Mvhl6oLoMcH4x3hX9RO0VrHha8hhkdKwN0ZfUTs=";
+    })
   ];
 
   postPatch = ''
-    # https://github.com/svenstaro/dwarf_fortress_unfuck/pull/27
-    substituteInPlace CMakeLists.txt --replace \''${GLEW_LIBRARIES} GLEW::glew
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
+
+    sed -i "1i #include <cstdint>" g_src/files.h
   '';
 
   cmakeFlags = [
@@ -83,12 +92,12 @@ stdenv.mkDerivation {
     pkg-config
   ];
   buildInputs = [
-    libSM
+    libsm
     SDL
     SDL_image
     SDL_ttf
     glew
-    openalSoft
+    openal-soft
     ncurses
     libsndfile
     zlib
@@ -125,6 +134,7 @@ stdenv.mkDerivation {
     platforms = platforms.linux;
     maintainers = with maintainers; [
       numinit
+      cizra
     ];
   };
 }

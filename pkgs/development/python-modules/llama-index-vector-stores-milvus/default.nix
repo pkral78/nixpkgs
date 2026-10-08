@@ -7,15 +7,15 @@
   pymilvus,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "llama-index-vector-stores-milvus";
-  version = "0.9.3";
+  version = "1.2.0";
   pyproject = true;
 
   src = fetchPypi {
     pname = "llama_index_vector_stores_milvus";
-    inherit version;
-    hash = "sha256-JiGsSKKlwV3efEkT5p3lXcEY7hCbVWRdCAX9X539Ke0=";
+    inherit (finalAttrs) version;
+    hash = "sha256-xwcAPLwRstC36b6dZzBDTNQS5xjKB/uG1Eka5CFLrBA=";
   };
 
   build-system = [ hatchling ];
@@ -36,4 +36,4 @@ buildPythonPackage rec {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
   };
-}
+})

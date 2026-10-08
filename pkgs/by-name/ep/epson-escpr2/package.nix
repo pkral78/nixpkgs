@@ -8,14 +8,16 @@
 
 stdenv.mkDerivation {
   pname = "epson-inkjet-printer-escpr2";
-  version = "1.2.35";
+  version = "1.2.42";
 
   src = fetchurl {
     # To find the most recent version go to
     # https://support.epson.net/linux/Printer/LSB_distribution_pages/en/escpr2.php
     # and retrieve the download link for source package for arm CPU for the tar.gz (the x86 link targets to rpm source files)
-    url = "https://download3.ebz.epson.net/dsc/f/03/00/17/28/09/4e8dc40219d4b52e414b608de92552af4fd46eca/epson-inkjet-printer-escpr2-1.2.35-1.tar.gz";
-    hash = "sha256-aYEuEION/C32/SnngreX/nqK/6Yzkuxf0k0HpferTYM=";
+    # or check https://download-center.epson.com/api/v1/modules/?device_id=XP-970%20Series&os=DEBARM32&region=US&language=en
+    curlOpts = "--user-agent ''";
+    url = "https://download-center.epson.com/f/module/4d70b84a-1686-4134-8ce0-4ac8a838f31c/epson-inkjet-printer-escpr2-1.2.42-1.tar.gz";
+    hash = "sha256-/gj4K6VPouXwS6p0Bc7dgF/j9Vl6YRVqH8pym1E/Tf4=";
   };
 
   buildInputs = [ cups ];
@@ -50,7 +52,6 @@ stdenv.mkDerivation {
     maintainers = with lib.maintainers; [
       ma9e
       ma27
-      shawn8901
     ];
     platforms = lib.platforms.linux;
   };

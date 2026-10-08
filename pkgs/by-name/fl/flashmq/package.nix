@@ -9,13 +9,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "flashmq";
-  version = "1.23.1";
+  version = "1.27.2";
 
   src = fetchFromGitHub {
     owner = "halfgaar";
     repo = "FlashMQ";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-to+BCn7/fa1YcjCudrOY0otzEkIx9ocSwkUnFGnjuxU=";
+    hash = "sha256-YaRHw43XGzJmyiQHKQGLxG4MDqad7YHAPG9I9PjhAFY=";
   };
 
   nativeBuildInputs = [
@@ -28,7 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase = ''
     runHook preInstall
 
-    install -Dm755 flashmq -t $out/bin
+    installBin flashmq
     installManPage $src/man/*.{1,5}
 
     runHook postInstall

@@ -2,32 +2,43 @@
   lib,
   python3,
   fetchFromGitHub,
+  substitute,
   zlib,
   nixosTests,
   postgresqlTestHook,
   postgresql,
   yarn-berry_4,
   nodejs,
-  autoconf,
-  automake,
-  libtool,
-  libpng,
-  nasm,
-  pkg-config,
   stdenv,
   server-mode ? true,
 }:
 
 let
   pname = "pgadmin";
-  version = "9.8";
-  yarnHash = "sha256-NvQlrDXn9sa4MpytFYPsC4bKO8Thx/MuqG8M6VIa2ig=";
+  version = "9.14";
+  yarnHash = "sha256-uixmtWC588JD6DfM9INeh6LV5L2S9lc+GFNW62FVm+4=";
 
   src = fetchFromGitHub {
     owner = "pgadmin-org";
     repo = "pgadmin4";
     rev = "REL-${lib.versions.major version}_${lib.versions.minor version}";
-    hash = "sha256-gnVrMuxWV7lAol1gyONbhtuUL4EEOfOPkRUM2esMgi0=";
+    hash = "sha256-ZUJEwTRKG23ztLKAp+hDHKeKxPc6VmC8gnJe4x85R44=";
+
+    # Remove when updating since upstream has updated Yarn
+    # https://github.com/pgadmin-org/pgadmin4/commit/aad2dfd7251f769ce73dd1bc3e17c76831a019ed#diff-b861012a5dd72b8a9f3281b7cf09f5a779c98569d040b1bbc1db50f1b15e7cceR183
+    postFetch = ''
+      cd $out/web
+      patch -p1 < ${
+        (substitute {
+          src = ./yarn-fix.patch;
+          substitutions = [
+            "--replace-fail"
+            "YARN_LOCKFILE_VERSION_PLACEHOLDER"
+            yarn-berry_4.lockfileVersion
+          ];
+        })
+      }
+    '';
   };
 
   # keep the scope, as it is used throughout the derivation and tests
@@ -58,7 +69,7 @@ pythonPackages.buildPythonApplication rec {
   };
 
   # from Dockerfile
-  CPPFLAGS = "-DPNG_ARM_NEON_OPT=0";
+  env.CPPFLAGS = "-DPNG_ARM_NEON_OPT=0";
 
   format = "setuptools";
 
@@ -67,6 +78,7 @@ pythonPackages.buildPythonApplication rec {
     ./expose-setup.py.patch
     # check for permission of /etc/pgadmin/config_system and don't fail
     ./check-system-config-dir.patch
+
   ];
 
   postPatch = ''
@@ -115,8 +127,8 @@ pythonPackages.buildPythonApplication rec {
     echo Building the web frontend...
     cd web
     (
-    export LD=$CC # https://github.com/imagemin/optipng-bin/issues/108
-    yarnBerryConfigHook
+      export LD=$CC # https://github.com/imagemin/optipng-bin/issues/108
+      yarnBerryConfigHook
     )
     yarn webpacker
     cp -r * ../pip-build/pgadmin4
@@ -217,8 +229,10 @@ pythonPackages.buildPythonApplication rec {
   ];
 
   # sandboxing issues on aarch64-darwin, see https://github.com/NixOS/nixpkgs/issues/198495
-  doCheck = !postgresqlTestHook.meta.broken;
+  doCheck = lib.meta.availableOn stdenv.buildPlatform postgresqlTestHook;
 
+  # for replication testing in regression tests for PostgreSql >= 17
+  env.postgresqlExtraSettings = "wal_level = logical";
   checkPhase = ''
     runHook preCheck
 
@@ -235,6 +249,18 @@ pythonPackages.buildPythonApplication rec {
     cp -v regression/test_config.json.in regression/test_config.json
     substituteInPlace regression/test_config.json --replace-fail "localhost" "$PGHOST"
     substituteInPlace regression/runtests.py --replace-fail "builtins.SERVER_MODE = None" "builtins.SERVER_MODE = False"
+
+    # test cases hardcode ports and host in subscription replication tests
+    for files in pgadmin/browser/server_groups/servers/databases/subscriptions/tests/17_plus/*
+    do
+      substituteInPlace $files --replace-quiet "5917" "5432"
+      substituteInPlace $files --replace-quiet "localhost" "$PGHOST"
+    done
+    for files in pgadmin/browser/server_groups/servers/databases/subscriptions/tests/18_plus/*
+    do
+      substituteInPlace $files --replace-quiet "5434" "5432"
+      substituteInPlace $files --replace-quiet "localhost" "$PGHOST"
+    done
 
     ## Browser test ##
     python regression/runtests.py --pkg browser --exclude ${skippedTests}

@@ -5,22 +5,22 @@
   mwparserfromhell,
   requests,
   packaging,
-  pythonOlder,
+  setuptools,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "pywikibot";
-  version = "10.4.0";
-  format = "setuptools";
-
-  disabled = pythonOlder "3.8";
+  version = "11.7.0";
+  pyproject = true;
 
   src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-ZpD/zTHUDR/owP9S7WTipZoGJuHdsORs+7w23u1Irxc=";
+    inherit (finalAttrs) pname version;
+    hash = "sha256-vX9MW1miCEPkbNVUCgPZKSL120bJ1hXOAJztVqHvaDs=";
   };
 
-  propagatedBuildInputs = [
+  build-system = [ setuptools ];
+
+  dependencies = [
     mwparserfromhell
     requests
     packaging
@@ -33,10 +33,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "Python MediaWiki bot framework";
-    mainProgram = "pwb";
     homepage = "https://www.mediawiki.org/wiki/Manual:Pywikibot";
     changelog = "https://doc.wikimedia.org/pywikibot/master/changelog.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomodachi94 ];
+    mainProgram = "pwb";
   };
-}
+})

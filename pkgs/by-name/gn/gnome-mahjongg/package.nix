@@ -9,7 +9,6 @@
   libadwaita,
   librsvg,
   gettext,
-  itstool,
   libxml2,
   meson,
   ninja,
@@ -20,11 +19,11 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gnome-mahjongg";
-  version = "48.1";
+  version = "51.0";
 
   src = fetchurl {
     url = "mirror://gnome/sources/gnome-mahjongg/${lib.versions.major finalAttrs.version}/gnome-mahjongg-${finalAttrs.version}.tar.xz";
-    hash = "sha256-3Ujg+BrKNL6tpGxdIhsyWRuO2B6dNhw6JY359rIiLIQ=";
+    hash = "sha256-g4moJK97Xq6S1snGLqn94VJ/iAwQ/lEkbTi+7DG4wog=";
   };
 
   nativeBuildInputs = [
@@ -34,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     desktop-file-utils
     pkg-config
     libxml2
-    itstool
     gettext
     wrapGAppsHook4
     glib # for glib-compile-schemas
@@ -47,19 +45,21 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
+  doCheck = true;
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gnome-mahjongg";
     };
   };
 
-  meta = with lib; {
+  meta = {
     homepage = "https://gitlab.gnome.org/GNOME/gnome-mahjongg";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-mahjongg/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     description = "Disassemble a pile of tiles by removing matching pairs";
     mainProgram = "gnome-mahjongg";
-    teams = [ teams.gnome ];
-    license = licenses.gpl2Plus;
-    platforms = platforms.unix;
+    teams = [ lib.teams.gnome ];
+    license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.unix;
   };
 })

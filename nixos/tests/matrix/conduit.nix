@@ -18,7 +18,7 @@ in
         virtualHosts.${name} = {
           enableACME = false;
           forceSSL = false;
-          enableSSL = false;
+          onlySSL = false;
 
           locations."/_matrix" = {
             proxyPass = "http://[::1]:6167";
@@ -77,7 +77,7 @@ in
                 # Close the client
                 await client.close()
 
-            asyncio.get_event_loop().run_until_complete(main())
+            asyncio.run(main())
           '')
         ];
       };

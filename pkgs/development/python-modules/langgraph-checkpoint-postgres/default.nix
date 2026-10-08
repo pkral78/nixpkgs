@@ -24,16 +24,17 @@
   gitUpdater,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "langgraph-checkpoint-postgres";
-  version = "2.0.23";
+  version = "3.1.2";
   pyproject = true;
+  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
     repo = "langgraph";
-    tag = "checkpointpostgres==${version}";
-    hash = "sha256-QAzT8T3bf3R3gwI/iWDYYDz0SxgLZsP61oMk72dYz4s=";
+    tag = "checkpointpostgres==${finalAttrs.version}";
+    hash = "sha256-7UJh+ObKOdU5QlGOlvF/8uHd+uOfiAjuGAkIVdEBLHQ=";
   };
 
   postgresqlTestSetupPost = ''
@@ -42,7 +43,7 @@ buildPythonPackage rec {
       --replace-fail "DEFAULT_POSTGRES_URI = \"postgres://postgres:postgres@localhost:5441/\"" "DEFAULT_POSTGRES_URI = \"postgres:///\""
   '';
 
-  sourceRoot = "${src.name}/libs/checkpoint-postgres";
+  sourceRoot = "${finalAttrs.src.name}/libs/checkpoint-postgres";
 
   build-system = [ hatchling ];
 
@@ -84,8 +85,14 @@ buildPythonPackage rec {
     "test_vector_search_with_filters"
     "test_vector_search_pagination"
     "test_vector_search_edge_cases"
+    "test_non_ascii"
     # Flaky under a parallel build (database in use)
     "test_store_ttl"
+  ];
+
+  disabledTestPaths = [
+    # Imports langgraph.checkpoint.conformance (not mature enough to package)
+    "tests/test_conformance_delta.py"
   ];
 
   pythonImportsCheck = [ "langgraph.checkpoint.postgres" ];
@@ -95,16 +102,17 @@ buildPythonPackage rec {
     skipBulkUpdate = true;
     updateScript = gitUpdater {
       rev-prefix = "checkpointpostgres==";
+      ignoredVersions = "a|b|dev|rc";
     };
   };
 
   meta = {
     description = "Library with a Postgres implementation of LangGraph checkpoint saver";
     homepage = "https://github.com/langchain-ai/langgraph/tree/main/libs/checkpoint-postgres";
-    changelog = "https://github.com/langchain-ai/langgraph/releases/tag/${src.tag}";
+    changelog = "https://github.com/langchain-ai/langgraph/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [
       sarahec
     ];
   };
-}
+})

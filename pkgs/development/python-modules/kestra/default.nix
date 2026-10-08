@@ -9,24 +9,24 @@
   pytestCheckHook,
   pytest-mock,
   requests-mock,
+  stdenv, # for meta.broken
 }:
-buildPythonPackage rec {
+
+buildPythonPackage (finalAttrs: {
   pname = "kestra";
-  version = "0.23.0";
+  version = "1.3.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kestra-io";
     repo = "libs";
-    tag = "v${version}";
-    hash = "sha256-WtwvOSgAcN+ly0CnkL0Y7lrO4UhSSiXmoAyGXP/hFtE=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-Z03wLcu0tDe0UJgY9bLX+ozACpgGBPg99W67m3MsStc=";
   };
 
-  sourceRoot = "${src.name}/python";
+  sourceRoot = "${finalAttrs.src.name}/python";
 
-  build-system = [
-    setuptools
-  ];
+  build-system = [ setuptools ];
 
   dependencies = [
     requests
@@ -34,9 +34,7 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  pythonImportsCheck = [
-    "kestra"
-  ];
+  pythonImportsCheck = [ "kestra" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -47,7 +45,10 @@ buildPythonPackage rec {
   meta = {
     description = "Infinitely scalable orchestration and scheduling platform, creating, running, scheduling, and monitoring millions of complex pipelines";
     homepage = "https://github.com/kestra-io/libs";
-    license = lib.licenses.apsl20;
+    changelog = "https://github.com/kestra-io/libs/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ DataHearth ];
+    # last successful hydra build on darwin was in 2025
+    broken = stdenv.hostPlatform.isDarwin;
   };
-}
+})

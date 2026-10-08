@@ -7,6 +7,7 @@
   cmake,
   just,
   cosmic-randr,
+  dav1d,
   libinput,
   linux-pam,
   udev,
@@ -15,26 +16,45 @@
   nix-update-script,
   nixosTests,
   orca,
+  withLogind ? true,
+  withSystemd ? true,
+  withUpower ? true,
+  withNetworkManager ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cosmic-greeter";
-  version = "1.0.0-beta.1.1";
+  version = "1.9.1";
 
   # nixpkgs-update: no auto update
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-greeter";
     tag = "epoch-${finalAttrs.version}";
-    hash = "sha256-rMZ+UbHarnvPaVAI5XeBfLduWEZHthguRSKLv3d/Eo0=";
+    hash = "sha256-XKktgBfv6oWOiEPUOkNDTEZruROxGZelDZiCwmP9DAc=";
   };
 
-  cargoHash = "sha256-qioWGfg+cMaRNX6H6IWdcAU2py7oq9eNaxzKWw0H4R4=";
+  postPatch = ''
+    substituteInPlace src/greeter.rs --replace-fail '/usr/bin/env' '${lib.getExe' coreutils "env"}'
+    substituteInPlace src/greeter.rs --replace-fail '/usr/bin/orca' '${lib.getExe orca}'
+  '';
 
-  env.VERGEN_GIT_COMMIT_DATE = "2025-09-16";
+  cargoHash = "sha256-/yIwqJXQD8mZwWwSI2gcYklnVjy/47Dl5O8mPEKPqTA=";
+
+  buildNoDefaultFeatures = true;
+
+  cargoBuildFlags = [ "--workspace" ];
+
+  buildFeatures =
+    lib.optionals withLogind [ "logind" ]
+    ++ lib.optionals withSystemd [ "systemd" ]
+    ++ lib.optionals withUpower [ "upower" ]
+    ++ lib.optionals withNetworkManager [ "networkmanager" ];
+
+  separateDebugInfo = true;
+  __structuredAttrs = true;
+
   env.VERGEN_GIT_SHA = finalAttrs.src.tag;
-
-  cargoBuildFlags = [ "--all" ];
 
   nativeBuildInputs = [
     rustPlatform.bindgenHook
@@ -45,6 +65,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   buildInputs = [
     cosmic-randr
+    dav1d
     libinput
     linux-pam
     udev
@@ -63,11 +84,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
-  postPatch = ''
-    substituteInPlace src/greeter.rs --replace-fail '/usr/bin/env' '${lib.getExe' coreutils "env"}'
-    substituteInPlace src/greeter.rs --replace-fail '/usr/bin/orca' '${lib.getExe orca}'
-  '';
-
   preFixup = ''
     libcosmicAppWrapperArgs+=(
       --prefix PATH : ${lib.makeBinPath [ cosmic-randr ]}
@@ -85,10 +101,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
         cosmic-autologin-noxwayland
         ;
     };
+
     updateScript = nix-update-script {
       extraArgs = [
-        "--version"
-        "unstable"
         "--version-regex"
         "epoch-(.*)"
       ];

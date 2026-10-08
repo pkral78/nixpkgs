@@ -46,7 +46,6 @@ let
         name = "kernel-${linuxPackages.kernel.version}";
         meta = with pkgs.lib.maintainers; {
           maintainers = [
-            nequissimus
             atemu
             ma27
           ];
@@ -55,6 +54,14 @@ let
         nodes.machine =
           { config, ... }:
           {
+            # we could/would do something like below, but linuxPackages comes from outside
+            # the machine closure, so an overlay doesn't apply to the kernelPackages.
+            # nixpkgs.overlays = [
+            #   (final: prev: {
+            #     kernelPackagesExtensions = prev.kernelPackagesExtensions ++ [ helloWorldExtension ];
+            #   })
+            # ]
+
             boot.kernelPackages = linuxPackages;
 
             boot.extraModulePackages = [ config.boot.kernelPackages.hello-world ];
@@ -72,13 +79,6 @@ let
     ) args);
   kernels = patchedPkgs.linuxKernel.vanillaPackages // {
     inherit (patchedPkgs.linuxKernel.packages)
-      linux_6_12_hardened
-      linux_rt_5_4
-      linux_rt_5_10
-      linux_rt_5_15
-      linux_rt_6_1
-      linux_rt_6_6
-      linux_libre
 
       linux_testing
       ;
@@ -93,6 +93,6 @@ mapAttrs (_: lP: testsForLinuxPackages lP) kernels
     # Useful for development testing of all Kernel configs without building full Kernel
     configfiles = mapAttrs (_: lP: lP.kernel.configfile) kernels;
 
-    testsForKernel = kernel: testsForLinuxPackages (pkgs.linuxPackagesFor kernel);
+    testsForKernel = kernel: testsForLinuxPackages (patchedPkgs.linuxPackagesFor kernel);
   };
 }

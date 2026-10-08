@@ -23,18 +23,23 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "gfal2";
-  version = "2.23.2";
+  version = "2.23.5";
 
   src = fetchFromGitHub {
     owner = "cern-fts";
     repo = "gfal2";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-gyEmz0sNHyxjvJA/3uSzLW42PQ3UVKx6nptNYl/3ExM=";
+    hash = "sha256-Dt6xA7U4aPKFZmO2iAiYM99w5ZIZNQJ+JXzuVItIlBM=";
   };
+
+  patches = [
+    # gcc 16: C++20 drops aggregate init for structs with a defaulted ctor
+    ./fix-tape-endpoint-info-aggregate.patch
+  ];
 
   passthru.enablePluginStatus = {
     # TODO: Change back to `true` once dcap is fixed on Darwin.
-    dcap = !dcap.meta.broken;
+    dcap = !stdenv.hostPlatform.isDarwin;
     file = true;
     gridftp = false;
     # davix-copy's dependency gsoap is currently only available on Linux.
@@ -161,7 +166,7 @@ stdenv.mkDerivation (finalAttrs: {
     gtest
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Multi-protocol data management library by CERN";
     longDescription = ''
       GFAL (Grid File Access Library )
@@ -171,9 +176,9 @@ stdenv.mkDerivation (finalAttrs: {
       behind a simple common POSIX API.
     '';
     homepage = "https://github.com/cern-fts/gfal2";
-    license = licenses.asl20;
-    platforms = platforms.all;
-    maintainers = with maintainers; [ ShamrockLee ];
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.all;
+    maintainers = with lib.maintainers; [ ShamrockLee ];
     mainProgram = "gfal2";
   };
 })

@@ -33,20 +33,20 @@
   python3Packages,
   readline,
   sqlite,
-  wxGTK32,
+  wxwidgets_3_2,
   zlib,
   zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "grass";
-  version = "8.4.1";
+  version = "8.5.0";
 
   src = fetchFromGitHub {
     owner = "OSGeo";
     repo = "grass";
     rev = finalAttrs.version;
-    hash = "sha256-q1jOimQi+24I1ZBf6Z0cvAyXcBFBpT5aWSNeG6n6y0k=";
+    hash = "sha256-rQnJrL4ol5yb/egxlpzzyS3JovNq/irIhmJoxZI8uSg=";
   };
 
   nativeBuildInputs = [
@@ -85,7 +85,7 @@ stdenv.mkDerivation (finalAttrs: {
     proj
     readline
     sqlite
-    wxGTK32
+    wxwidgets_3_2
     zlib
     zstd
   ]
@@ -94,6 +94,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
 
   strictDeps = true;
+
+  # GCC 16 defaults to -std=gnu++20, under which autoconf's C++11 conformance probe fails to compile
+  # and falls back to CXX="g++ -std=gnu++11". That is too old for PDAL's headers, which needs C++17
+  # so configure's PDAL link test fails with "Unable to locate suitable (>=1.7.1) PDAL library".
+  env.CXXFLAGS = "-std=gnu++17";
 
   configureFlags = [
     "--with-blas"
@@ -158,13 +163,13 @@ stdenv.mkDerivation (finalAttrs: {
     grass = callPackage ./tests.nix { grass = finalAttrs.finalPackage; };
   };
 
-  meta = with lib; {
+  meta = {
     description = "GIS software suite used for geospatial data management and analysis, image processing, graphics and maps production, spatial modeling, and visualization";
     homepage = "https://grass.osgeo.org/";
-    license = licenses.gpl2Plus;
-    maintainers = with maintainers; [ mpickering ];
-    teams = [ teams.geospatial ];
-    platforms = platforms.all;
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ mpickering ];
+    teams = [ lib.teams.geospatial ];
+    platforms = lib.platforms.all;
     mainProgram = "grass";
   };
 })

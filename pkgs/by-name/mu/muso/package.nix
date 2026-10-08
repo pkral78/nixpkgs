@@ -9,7 +9,9 @@
 
 rustPlatform.buildRustPackage {
   pname = "muso";
-  version = "unstable-2021-09-02";
+  version = "2.0.0-unstable-2021-09-02";
+
+  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "quebin31";
@@ -35,12 +37,12 @@ rustPlatform.buildRustPackage {
 
   cargoHash = "sha256-L0ZQoz9J5Hxg98puk1RbKuybLboIoOsy5qqGnvEPi1U=";
 
-  meta = with lib; {
+  meta = {
     broken = stdenv.hostPlatform.isDarwin;
     description = "Automatic music sorter (based on ID3 tags)";
     mainProgram = "muso";
     homepage = "https://github.com/quebin31/muso";
-    license = with licenses; [ gpl3Plus ];
-    maintainers = with maintainers; [ crertel ];
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ crertel ];
   };
 }

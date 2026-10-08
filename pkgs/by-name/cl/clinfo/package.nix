@@ -4,17 +4,21 @@
   fetchFromGitHub,
   ocl-icd,
   opencl-headers,
+  versionCheckHook,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "clinfo";
-  version = "3.0.25.02.14";
+  version = "3.1.26.09.26";
+
+  strictDeps = true;
+  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Oblomov";
     repo = "clinfo";
-    rev = version;
-    sha256 = "sha256-UkkrRpmY5vZtTeEqPNYfxAGaJDoTSrNUG9N1Bknozow=";
+    tag = finalAttrs.version;
+    hash = "sha256-5lM/6ULfw0xwXOZU2Kvc2h1oY7JBCvbAFuVn8mRvRX8=";
   };
 
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
@@ -24,15 +28,18 @@ stdenv.mkDerivation rec {
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
-  meta = with lib; {
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  doInstallCheck = true;
+
+  meta = {
     description = "Print all known information about all available OpenCL platforms and devices in the system";
     homepage = "https://github.com/Oblomov/clinfo";
-    license = licenses.cc0;
-    maintainers = with maintainers; [
+    license = lib.licenses.cc0;
+    maintainers = with lib.maintainers; [
       athas
       r-burns
     ];
-    platforms = platforms.unix;
+    platforms = lib.platforms.unix;
     mainProgram = "clinfo";
   };
-}
+})

@@ -9,19 +9,24 @@
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mcat-unwrapped";
-  version = "0.4.4";
+  version = "0.6.5";
 
   src = fetchFromGitHub {
     owner = "Skardyy";
     repo = "mcat";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-URAgoarWC+GGCF+nUGqhmDmh1PX2/Ry5U8e8HrHFGHk=";
+    hash = "sha256-Y5XNyyl7gDVV6RGfejahYO7Mse26rJ+yOpnp/YJ4G98=";
   };
 
-  cargoHash = "sha256-c3OJURz6eObjIC6AHUP6l/a5zYFV0QZ3VIxShFCcm4U=";
+  cargoHash = "sha256-FmdLDiYfPE40tjEfspF2rygUQPkRW/HZ0t0RLn2UaSA=";
 
   nativeBuildInputs = [
     installShellFiles
+  ];
+
+  checkFlags = [
+    # Requires network access: the test embeds a remote URL in the SVG.
+    "--skip=stdin_svg_output_is_image"
   ];
 
   postInstall =

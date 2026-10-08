@@ -3,6 +3,7 @@
   rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  libredirect,
   bzip2,
   zstd,
   stdenv,
@@ -10,27 +11,30 @@
   nix-update-script,
   testers,
   matrix-tuwunel,
-  enableBlurhashing ? true,
   # upstream tuwunel enables jemalloc by default, so we follow suit
   enableJemalloc ? true,
-  rust-jemalloc-sys,
   enableLiburing ? stdenv.hostPlatform.isLinux,
+  enableLdap ? true,
   liburing,
   nixosTests,
+  writeTextFile,
+  rustc-unwrapped,
+  cacert,
 }:
 let
-  rust-jemalloc-sys' = rust-jemalloc-sys.override {
-    unprefixed = !stdenv.hostPlatform.isDarwin;
-  };
   # tuwunel uses a modified version of rocksdb.  The following overrides take a lot from the
   # official flake:
   # https://github.com/matrix-construct/tuwunel/blob/main/flake.nix#L54
   rocksdb' =
     (rocksdb.override {
       inherit enableLiburing;
-      # rocksdb does not support prefixed jemalloc, which is required on darwin
-      enableJemalloc = enableJemalloc && !stdenv.hostPlatform.isDarwin;
-      jemalloc = rust-jemalloc-sys';
+
+      # RocksDB's C++ allocations reach jemalloc by symbol interposition
+      # from the unprefixed allocator the Rust build links, so it needs
+      # none of its own. A second jemalloc here would serve only the
+      # opt-in nodump allocator and malloc-stats, out of a separate heap,
+      # and tuwunel uses neither.
+      enableJemalloc = false;
     }).overrideAttrs
       (
         final: old: {
@@ -40,8 +44,8 @@ let
             # The commit on the rocksdb fork, tuwunel-changes branch referenced by the upstream
             # tuwunel flake.lock:
             # https://github.com/matrix-construct/tuwunel/blob/main/flake.lock#L557C17-L557C57
-            rev = "cf7f65d0b377af019661c240f9165b3ef60640c3";
-            hash = "sha256-ZSjvAZBfZkJrBIpw8ANZMbJVb8AeuogvuAipGVE4Qe4=";
+            rev = "d8a89161c6a53e79d61694289d2b78be36e6ca12";
+            hash = "sha256-rNSA2RalASKbbXNQi86eEmIUC8W5YELKUOy0vhEn6Rc=";
           };
           version = "tuwunel-changes";
           patches = [ ];
@@ -85,27 +89,38 @@ let
 in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "matrix-tuwunel";
-  version = "1.4.2";
+  version = "1.9.3";
 
   src = fetchFromGitHub {
     owner = "matrix-construct";
     repo = "tuwunel";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-h7a8nbKZ6cK6SoAGwORc6+D+jJxQOut7y5KzHfBbqDE=";
+    hash = "sha256-29X+iSfCLo7hMvaCC/gw2zWfavC7lp3HEqTCpcBh2a0=";
   };
 
-  cargoHash = "sha256-RjoO5eiAXYhC8Tg5UNqCpBsFVN1I+0UhchslAmhm0Qo=";
+  # Integration tests require networking. Only run the unit tests.
+  cargoTestFlags = [
+    "--lib"
+    "--bins"
+  ];
+
+  cargoHash = "sha256-Oy8ymSbUNuNL8oDfnlNuZ8dUepiofE08By6hG3uLtBg=";
 
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
   ];
 
+  patches = [
+    # reduce closure size by not storing a reference to rustc-unwrapped
+    # alternative to https://github.com/NixOS/nixpkgs/pull/462394
+    ./dont-record-compilation-flags.patch
+  ];
+
   buildInputs = [
     bzip2
     zstd
   ]
-  ++ lib.optional enableJemalloc rust-jemalloc-sys'
   ++ lib.optional enableLiburing liburing;
 
   env = {
@@ -117,7 +132,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildNoDefaultFeatures = true;
   # See https://github.com/matrix-construct/tuwunel/blob/main/src/main/Cargo.toml
   # for available features.
-  # We enable all default features except jemalloc, blurhashing, and io_uring, which
+  # We enable all default features except jemalloc and io_uring, which
   # we guard behind our own (default-enabled) flags.
   buildFeatures = [
     "brotli_compression"
@@ -130,12 +145,40 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "url_preview"
     "zstd_compression"
   ]
-  ++ lib.optional enableBlurhashing "blurhashing"
-  ++ lib.optional enableJemalloc [
+  ++ lib.optionals enableJemalloc [
     "jemalloc"
     "jemalloc_conf"
   ]
-  ++ lib.optional enableLiburing "io_uring";
+  ++ lib.optional enableLiburing "io_uring"
+  ++ lib.optional enableLdap "ldap";
+
+  nativeCheckInputs = [
+    libredirect.hook
+    cacert
+  ];
+
+  # Make sure tuwunel doesn't try to write to arbitrary
+  # directories or have DNS timeouts during `cargo test`.
+  preCheck =
+    let
+      fakeResolvConf = writeTextFile {
+        name = "resolv.conf";
+        text = ''
+          nameserver 0.0.0.0
+        '';
+      };
+    in
+    ''
+      export NIX_REDIRECTS="/etc/resolv.conf=${fakeResolvConf}"
+      export TUWUNEL_DATABASE_PATH="$(mktemp -d)/smoketest.db"
+    '';
+
+  # The check phase reaches /etc/resolv.conf through libredirect, which works
+  # by LD_PRELOAD and is therefore inert in a statically linked binary. A
+  # static build would run the tests with no resolver configuration at all and
+  # fail before reaching them, so it packages without checking; the unit and
+  # integ jobs cover that code on the dynamic path.
+  doCheck = !stdenv.hostPlatform.isStatic;
 
   passthru = {
     rocksdb = rocksdb'; # make used rocksdb version available (e.g., for backup scripts)
@@ -151,6 +194,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     };
   };
 
+  disallowedReferences = [ rustc-unwrapped ];
+
   meta = {
     description = "Matrix homeserver written in Rust, official successor to conduwuit";
     homepage = "https://github.com/matrix-construct/tuwunel";
@@ -160,5 +205,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       scvalex
     ];
     mainProgram = "tuwunel";
+    broken = stdenv.hostPlatform.isDarwin; # macos build fails with a rocksdb linker error
   };
 })

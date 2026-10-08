@@ -33,16 +33,16 @@
   fetchurl,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "plopp";
-  version = "25.10.0";
+  version = "26.9.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scipp";
     repo = "plopp";
-    tag = version;
-    hash = "sha256-b9f08Wf6SGNb2rTnOqZhsSvRcfg1T+JXItZa67q2vtM=";
+    tag = finalAttrs.version;
+    hash = "sha256-yl3GhHKtz2QItKIDOfR8xAtzeoOVPC9Ve9xnbBv2d48=";
   };
 
   build-system = [
@@ -114,4 +114,4 @@ buildPythonPackage rec {
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ doronbehar ];
   };
-}
+})

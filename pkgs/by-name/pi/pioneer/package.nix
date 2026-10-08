@@ -11,30 +11,26 @@
   libGL,
   libGLU,
   libpng,
-  libsigcxx,
+  libsigcxx_2_0,
   libvorbis,
-  libX11,
+  libx11,
   lua5_2,
   libgbm,
+  openal-soft,
   SDL2,
   SDL2_image,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "pioneer";
-  version = "20250501";
+  version = "20260907";
 
   src = fetchFromGitHub {
     owner = "pioneerspacesim";
     repo = "pioneer";
-    rev = version;
-    hash = "sha256-bQ1JGndHbBM28SuAUybo9msC/nBXu6el1UY41BKJN5A=";
+    rev = finalAttrs.version;
+    hash = "sha256-2r8D2TbbxCiBN6CmBTT64C1Dc+/NhcZfSW7W1BfxUSE=";
   };
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace 'string(TIMESTAMP PROJECT_VERSION "%Y%m%d")' 'set(PROJECT_VERSION ${version})'
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -48,11 +44,12 @@ stdenv.mkDerivation rec {
     libGL
     libGLU
     libpng
-    libsigcxx
+    libsigcxx_2_0
     libvorbis
-    libX11
+    libx11
     lua5_2
     libgbm
+    openal-soft
     SDL2
     SDL2_image
   ];
@@ -67,10 +64,10 @@ stdenv.mkDerivation rec {
     "build-data"
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Space adventure game set in the Milky Way galaxy at the turn of the 31st century";
     homepage = "https://pioneerspacesim.net";
-    license = with licenses; [
+    license = with lib.licenses; [
       gpl3Only
       cc-by-sa-30
     ];
@@ -79,4 +76,4 @@ stdenv.mkDerivation rec {
       "i686-linux"
     ];
   };
-}
+})

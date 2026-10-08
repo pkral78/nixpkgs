@@ -13,25 +13,24 @@ in
 python.pkgs.toPythonModule (
   python.pkgs.buildPythonApplication rec {
     pname = "searxng";
-    version = "0-unstable-2025-10-13";
+    version = "0-unstable-2026-10-02";
     pyproject = true;
 
     src = fetchFromGitHub {
       owner = "searxng";
       repo = "searxng";
-      rev = "c34bb612847ce4584f65077b104164993bfa88c5";
-      hash = "sha256-vs64ue9bI86kCrOUdy8Kddd2GTIYmveyy1XunEqPAtw=";
+      rev = "19ffbcd30686e4008392e93de164200510dfb9d8";
+      hash = "sha256-iYItwi8cZvJLpnNW3VXQtTNwZMe3DKtAYe4F/VFbjhw=";
     };
 
     nativeBuildInputs = with python.pkgs; [ pythonRelaxDepsHook ];
 
-    # upstream pins every dependency
     pythonRelaxDeps = true;
 
     preBuild =
       let
         versionString = lib.concatStringsSep "." (
-          builtins.tail (lib.splitString "-" (lib.removePrefix "0-" version))
+          map (lib.removePrefix "0") (builtins.tail (lib.splitString "-" (lib.removePrefix "0-" version)))
         );
         commitAbbrev = builtins.substring 0 8 src.rev;
       in
@@ -49,34 +48,26 @@ python.pkgs.toPythonModule (
 
     build-system = with python.pkgs; [ setuptools ];
 
-    dependencies =
-      with python.pkgs;
-      [
-        babel
-        brotli
-        certifi
-        cryptography
-        fasttext-predict
-        flask
-        flask-babel
-        httpx
-        httpx-socks
-        isodate
-        jinja2
-        lxml
-        markdown-it-py
-        msgspec
-        pygments
-        python-dateutil
-        pyyaml
-        setproctitle
-        typer-slim
-        uvloop
-        valkey
-        whitenoise
-      ]
-      ++ httpx.optional-dependencies.http2
-      ++ httpx-socks.optional-dependencies.asyncio;
+    dependencies = with python.pkgs; [
+      babel
+      certifi
+      cloudscraper
+      curl-cffi
+      flask
+      flask-babel
+      isodate
+      jinja2
+      lxml
+      markdown-it-py
+      msgspec
+      pygments
+      python-dateutil
+      pyyaml
+      typer
+      typing-extensions
+      valkey
+      whitenoise
+    ];
 
     # tests try to connect to network
     doCheck = false;
@@ -97,12 +88,12 @@ python.pkgs.toPythonModule (
       updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
     };
 
-    meta = with lib; {
+    meta = {
       homepage = "https://github.com/searxng/searxng";
       description = "Fork of Searx, a privacy-respecting, hackable metasearch engine";
-      license = licenses.agpl3Plus;
+      license = lib.licenses.agpl3Plus;
       mainProgram = "searxng-run";
-      maintainers = with maintainers; [
+      maintainers = with lib.maintainers; [
         SuperSandro2000
         _999eagle
       ];

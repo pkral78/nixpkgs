@@ -12,21 +12,16 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-generate";
-  version = "0.23.5";
+  version = "0.25.0";
 
   src = fetchFromGitHub {
     owner = "cargo-generate";
     repo = "cargo-generate";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-h6WsTXPlJYoMZ6QDR99LQr5uV0ij8NC02ZEVhg/U+qc=";
+    hash = "sha256-x0UkYgYJ1xe6ensm3yU5SEW+nnxHmnN+CbGCJXth8WQ=";
   };
 
-  postPatch = ''
-    substituteInPlace src/hooks/system_mod.rs \
-      --replace-fail "/bin/cat" "${lib.getExe' coreutils "cat"}"
-  '';
-
-  cargoHash = "sha256-pZm7bsMIOQF/wSwFH5kFXN5mG/H1cKz5hyM2DeNmUQ8=";
+  cargoHash = "sha256-cXPks2uTUVnVyBXP9JT5Xm87pFkCvPHQy86R7vd2/zU=";
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -61,7 +56,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=hooks_and_rhai::it_fails_when_a_system_command_returns_non_zero_exit_code"
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "--skip=git::utils::should_canonicalize"
+    "--skip=utils::tests::should_canonicalize"
   ];
 
   env = {
@@ -78,7 +73,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       mit
     ];
     maintainers = with lib.maintainers; [
-      figsoda
       turbomack
       matthiasbeyer
     ];

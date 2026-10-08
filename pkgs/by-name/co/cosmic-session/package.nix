@@ -6,35 +6,49 @@
   just,
   dbus,
   stdenv,
-  xdg-desktop-portal-cosmic,
   nixosTests,
+  nix-update-script,
+  withLogind ? true,
+  withSystemd ? true,
+  withAutostart ? false,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cosmic-session";
-  version = "1.0.0-beta.1.1";
+  version = "1.9.0";
 
   # nixpkgs-update: no auto update
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-session";
     tag = "epoch-${finalAttrs.version}";
-    hash = "sha256-P3xXYd80P+DR1vVE0zZC+v4ARsGhRrG9N9LdP2BEfDA=";
+    hash = "sha256-Evl2GxjZZqGCNSfmbmC22+QNRBBl7in0sjmeAqC5cjg=";
   };
-
-  cargoHash = "sha256-bo46A7hS1U0cOsa/T4oMTKUTjxVCaGuFdN2qCjVHxhg=";
 
   postPatch = ''
     substituteInPlace data/start-cosmic \
-      --replace-fail '/usr/bin/cosmic-session' "${placeholder "out"}/bin/cosmic-session" \
+      --replace-fail '/usr/bin/cosmic-session' "$out/bin/cosmic-session" \
       --replace-fail '/usr/bin/dbus-run-session' "${lib.getBin dbus}/bin/dbus-run-session"
     substituteInPlace data/cosmic.desktop \
-      --replace-fail '/usr/bin/start-cosmic' "${placeholder "out"}/bin/start-cosmic"
+      --replace-fail '/usr/bin/start-cosmic' "$out/bin/start-cosmic"
   '';
 
-  buildInputs = [ bash ];
+  cargoHash = "sha256-IoSLvxpc/1X1a6cDl4ZpoUpxHM7bsH3v2BU6wiQROhM=";
+
+  separateDebugInfo = true;
+  __structuredAttrs = true;
+
+  env.ORCA = "orca"; # get orca from $PATH
+
   nativeBuildInputs = [ just ];
 
+  buildInputs = [ bash ];
+
+  buildNoDefaultFeatures = true;
+  buildFeatures =
+    lib.optional withLogind "logind"
+    ++ lib.optional withSystemd "systemd"
+    ++ lib.optional withAutostart "autostart";
   dontUseJustBuild = true;
 
   justFlags = [
@@ -49,11 +63,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
-  env = {
-    XDP_COSMIC = "${xdg-desktop-portal-cosmic}/libexec/xdg-desktop-portal-cosmic";
-    ORCA = "orca"; # get orca from $PATH
-  };
-
   passthru = {
     providedSessions = [ "cosmic" ];
     tests = {
@@ -63,6 +72,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
         cosmic-noxwayland
         cosmic-autologin-noxwayland
         ;
+    };
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--version-regex"
+        "epoch-(.*)"
+      ];
     };
   };
 

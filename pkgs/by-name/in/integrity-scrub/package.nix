@@ -6,18 +6,18 @@
   nix-update-script,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "integrity-scrub";
-  version = "0.6.5";
+  version = "0.6.6";
 
   src = fetchFromGitHub {
     owner = "illdefined";
     repo = "integrity-scrub";
-    tag = version;
-    hash = "sha256-oWS6HxdZ8tGeIRGpfHHkNhNdepBjhhdgTjKmxElNPbk=";
+    tag = finalAttrs.version;
+    hash = "sha256-OLO64R9AYpHSkIwk2arka5EEzCWusZPWsBhy5HEDIQI=";
   };
 
-  cargoHash = "sha256-3LC3eZNmHG6OFIvQzmvs4BCSX0CVpwaYhZM2H2YoY4M=";
+  cargoHash = "sha256-sS4z5NImUdk0EnQ+BGPofFZtXZsomfUXXbHNDmVqAos=";
 
   nativeInstallCheckInputs = [ versionCheckHook ];
 
@@ -32,7 +32,8 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/illdefined/integrity-scrub";
     description = "Scrub dm-integrity devices";
     license = lib.licenses.cc0;
-    maintainers = with lib.maintainers; [ mvs ];
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "integrity-scrub";
   };
-}
+})

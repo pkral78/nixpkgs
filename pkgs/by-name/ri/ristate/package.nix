@@ -3,6 +3,7 @@
   rustPlatform,
   fetchFromGitLab,
   nix-update-script,
+  stdenv, # for meta.broken
 }:
 
 rustPlatform.buildRustPackage {
@@ -20,11 +21,13 @@ rustPlatform.buildRustPackage {
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
-  meta = with lib; {
+  meta = {
     description = "River-status client written in Rust";
     homepage = "https://gitlab.com/snakedye/ristate";
-    license = licenses.mit;
-    maintainers = with maintainers; [ kranzes ];
+    license = lib.licenses.mit;
+    maintainers = [ ];
     mainProgram = "ristate";
+    # last successful hydra build on darwin was in 2025
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

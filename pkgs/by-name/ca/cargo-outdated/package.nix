@@ -3,37 +3,42 @@
   rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  libgit2,
   openssl,
 }:
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-outdated";
-  version = "0.17.0";
+  version = "0.19.0";
 
   src = fetchFromGitHub {
     owner = "kbknapp";
     repo = "cargo-outdated";
-    rev = "v${version}";
-    hash = "sha256-ey11ANSflWGnCsn6M9GupgC4DE5mWww6vw5pK0CFdLo=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-V4zNFi/ZU98egCElU/dDLQZm/8f6oyvbeQYn7JFraDs=";
   };
 
-  cargoHash = "sha256-PYlVXGfitsjEGiw07L5b+L8pfxvtkHshIjTXeuPUTdk=";
+  cargoHash = "sha256-51UjhAC2boNgW5kc7WxZOxcnXirw1E07CjLRcj/GEOM=";
+
+  env.LIBGIT2_NO_VENDOR = 1;
 
   nativeBuildInputs = [ pkg-config ];
 
-  buildInputs = [ openssl ];
+  buildInputs = [
+    libgit2
+    openssl
+  ];
 
   meta = {
     description = "Cargo subcommand for displaying when Rust dependencies are out of date";
     mainProgram = "cargo-outdated";
     homepage = "https://github.com/kbknapp/cargo-outdated";
-    changelog = "https://github.com/kbknapp/cargo-outdated/blob/v${version}/CHANGELOG.md";
+    changelog = "https://github.com/kbknapp/cargo-outdated/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
     maintainers = with lib.maintainers; [
-      ivan
       matthiasbeyer
     ];
   };
-}
+})

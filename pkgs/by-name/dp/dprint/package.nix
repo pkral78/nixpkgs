@@ -12,7 +12,7 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "dprint";
-  version = "0.50.2";
+  version = "0.60.1";
 
   # Prefer repository rather than crate here
   #   - They have Cargo.lock in the repository
@@ -21,16 +21,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "dprint";
     repo = "dprint";
     tag = finalAttrs.version;
-    hash = "sha256-pBiMJ+S23J5W+nldW6WpqnvkODcQsEwM2IzDhe6TUlM=";
+    hash = "sha256-frvCKrRWH2m1DhYf26LflyL5npG0xkcW9s9+Ji4Nl1Q=";
   };
 
-  cargoHash = "sha256-doaZlr5B9XhOaEawLGgM3yWJjgJ5f6TLUiqb+Ze+v0I=";
+  cargoHash = "sha256-wPN+gsanyM57BK9KYkRoFN3tf8ZboIaYf+pJxK2CW40=";
 
   nativeBuildInputs = [ installShellFiles ];
 
   # Avoiding "Undefined symbols" such as "___unw_remove_find_dynamic_unwind_sections" since dprint 0.50.1
   # Adding "libunwind" in buildInputs did not resolve it.
   env.RUSTFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-C link-args=-Wl,-undefined,dynamic_lookup";
+
+  # Avoiding utils::url::test::* failures in the Darwin sandbox
+  __darwinAllowLocalNetworking = true;
 
   cargoBuildFlags = [
     "--package=dprint"
@@ -75,11 +78,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
   doInstallCheck = true;
   versionCheckProgram = "${placeholder "out"}/bin/dprint";
-  versionCheckProgramArg = "--version";
   versionCheckKeepEnvironment = [ "HOME" ];
 
   passthru = {
-    updateScript = nix-update-script { };
+    updateScript = nix-update-script {
+      # Follow upstream's release policy. Git tags are not enough for this package:
+      # https://github.com/dprint/dprint/issues/1113
+      extraArgs = [ "--use-github-releases" ];
+    };
   };
 
   meta = {
@@ -93,7 +99,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://dprint.dev";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [
-      khushraj
       kachick
       phanirithvij
     ];

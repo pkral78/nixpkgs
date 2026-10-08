@@ -6,24 +6,26 @@
   nodejs,
 }:
 
-(buildNpmPackage.override { inherit nodejs; }) rec {
+buildNpmPackage rec {
   pname = "node-gyp";
-  version = "11.5.0";
+  version = "13.1.0";
 
   src = fetchFromGitHub {
     owner = "nodejs";
     repo = "node-gyp";
     tag = "v${version}";
-    hash = "sha256-IymzSi9bQhtBX8AjtYAjHs0dN+5scywJuATz5IclSJs=";
+    hash = "sha256-+6mFr1K42E3rTpcKW51D3FTvhCmutfK1BSnEePQ902Y=";
   };
 
-  npmDepsHash = "sha256-C8/pQ26gHToC0yq/6V385Uo1cM8SknoQ2h7u7i3Gy/Q=";
+  npmDepsHash = "sha256-OqLtv5XnY16Ln9fDkJY1teRAs9NYnv9XoVZTYLLpFu8=";
 
   postPatch = ''
     ln -s ${./package-lock.json} package-lock.json
     substituteInPlace gyp/pylib/gyp/**.py \
       --replace-quiet sys.platform '"${stdenv.targetPlatform.parsed.kernel.name}"'
   '';
+
+  inherit nodejs;
 
   dontNpmBuild = true;
 

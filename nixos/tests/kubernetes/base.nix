@@ -18,9 +18,7 @@ let
     }:
     let
       masterName = head (
-        filter (machineName: any (role: role == "master") machines.${machineName}.roles) (
-          attrNames machines
-        )
+        filter (machineName: elem "master" machines.${machineName}.roles) (attrNames machines)
       );
       master = machines.${masterName};
       extraHosts = ''
@@ -86,7 +84,7 @@ let
               # https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
               featureGates = {
                 AllowParsingUserUIDFromCertAuth = true;
-                ClusterTrustBundle = false;
+                ContextualLogging = false;
               };
               masterAddress = "${masterName}.${config.networking.domain}";
             };

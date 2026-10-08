@@ -8,7 +8,7 @@
       # These tests need a little more juice
       virtualisation = {
         cores = 2;
-        memorySize = 2048;
+        memorySize = 4096;
         diskSize = 4096;
       };
 
@@ -17,14 +17,15 @@
       services.immich = {
         enable = true;
         environment.IMMICH_LOG_LEVEL = "verbose";
-        settings.backup.database = {
-          enabled = true;
-          cronExpression = "invalid";
-        };
-        secretSettings = {
-          backup.database.cronExpression = "${pkgs.writeText "cron" "0 02 * * *"}";
+        host = ""; # all interfaces (example from module option)
+        settings = {
+          backup.database = {
+            enabled = true;
+            # Test loading secrets from files:
+            cronExpression._secret = "${pkgs.writeText "cron" "0 02 * * *"}";
+          };
           # thanks to LoadCredential files only readable by root should work
-          notifications.smtp.transport.password = "/etc/shadow";
+          notifications.smtp.transport.password._secret = "/etc/shadow";
         };
       };
 
@@ -45,6 +46,9 @@
     machine.wait_for_open_port(2283) # Server
     machine.wait_for_open_port(3003) # Machine learning
     machine.succeed("curl --fail http://localhost:2283/")
+
+    with subtest("verify listening to any IP (i.e. v4 & v6)"):
+      machine.succeed("ss -tln | grep -F '*:2283'")
 
     machine.succeed("""
       curl -f --json '{ "email": "test@example.com", "name": "Admin", "password": "admin" }' http://localhost:2283/api/auth/admin-sign-up

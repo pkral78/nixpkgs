@@ -8,18 +8,18 @@
   nix-update-script,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rip2";
-  version = "0.9.5";
+  version = "0.9.7";
 
   src = fetchFromGitHub {
     owner = "MilesCranmer";
     repo = "rip2";
-    rev = "v${version}";
-    hash = "sha256-vYkJlmzysUcX+jULGSs4Omu2RjUs4ZO4blN/zlzDcqc=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-vs0t1Ye0M5GwJ0ayzRMutGKHtF806roMdRrW8O8AprQ=";
   };
 
-  cargoHash = "sha256-+8o4PFcJ/jMoMzfEA96tJ8wuH1CTqxnDwvFuegmPcEY=";
+  cargoHash = "sha256-MrXwrxsczSJ2m0Em5/2NRXtkrWKBqXonvOY5L56o/xc=";
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -49,4 +49,4 @@ rustPlatform.buildRustPackage rec {
     ];
     mainProgram = "rip";
   };
-}
+})

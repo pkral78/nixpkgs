@@ -12,12 +12,12 @@
   nixosTests,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "pahole";
-  version = "1.30";
+  version = "1.32";
   src = fetchzip {
-    url = "https://git.kernel.org/pub/scm/devel/pahole/pahole.git/snapshot/pahole-${version}.tar.gz";
-    hash = "sha256-JF4KnI05uOlPuunJuetX/fX3ZRT6TDXdjCNG9/ufkgI=";
+    url = "https://git.kernel.org/pub/scm/devel/pahole/pahole.git/snapshot/pahole-${finalAttrs.version}.tar.gz";
+    hash = "sha256-+vydbVzkM+VUROo3Zo+XJeJMkvwtwEIS/4GgxmqvAZE=";
   };
 
   nativeBuildInputs = [
@@ -44,15 +44,17 @@ stdenv.mkDerivation rec {
     inherit (nixosTests) bpf;
   };
 
-  meta = with lib; {
+  meta = {
     homepage = "https://git.kernel.org/pub/scm/devel/pahole/pahole.git/";
     description = "Shows, manipulates, and pretty-prints debugging information in DWARF, CTF, and BTF formats";
-    license = licenses.gpl2Only;
+    license = lib.licenses.gpl2Only;
 
-    platforms = platforms.linux;
-    maintainers = with maintainers; [
+    platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [
       bosu
       martinetd
     ];
+
+    mainProgram = "pahole";
   };
-}
+})

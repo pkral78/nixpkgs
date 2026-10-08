@@ -118,6 +118,8 @@ in
       configFile = lib.mkOption {
         type = lib.types.package;
         readOnly = true;
+        default = dnsmasqConf;
+        defaultText = lib.literalExpression "Path of dnsmasq config file";
         description = ''
           Path to the configuration file of dnsmasq.
         '';
@@ -137,8 +139,6 @@ in
         conf-file = lib.mkDefault (lib.optional cfg.resolveLocalQueries "/etc/dnsmasq-conf.conf");
         resolv-file = lib.mkDefault (lib.optional cfg.resolveLocalQueries "/etc/dnsmasq-resolv.conf");
       };
-
-      configFile = dnsmasqConf;
     };
 
     networking.nameservers = lib.optional cfg.resolveLocalQueries "127.0.0.1";
@@ -175,7 +175,6 @@ in
       wantedBy = [ "multi-user.target" ];
       path = [ dnsmasq ];
       preStart = ''
-        mkdir -m 755 -p ${stateDir}
         touch ${stateDir}/dnsmasq.leases
         chown -R dnsmasq ${stateDir}
         ${lib.optionalString cfg.resolveLocalQueries "touch /etc/dnsmasq-{conf,resolv}.conf"}
@@ -190,6 +189,8 @@ in
         ProtectSystem = true;
         ProtectHome = true;
         Restart = if cfg.alwaysKeepRunning then "always" else "on-failure";
+        StateDirectory = [ (baseNameOf stateDir) ];
+        StateDirectoryMode = "0755";
       };
       restartTriggers = [ config.environment.etc.hosts.source ];
     };

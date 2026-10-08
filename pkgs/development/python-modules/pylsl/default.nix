@@ -12,14 +12,14 @@
 
 buildPythonPackage rec {
   pname = "pylsl";
-  version = "1.17.6";
+  version = "1.18.5";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "labstreaminglayer";
     repo = "pylsl";
     tag = "v${version}";
-    hash = "sha256-PEeTG+bQNEce9j0obDoaTYXMGp0MRUibbWVXM1IvGGY=";
+    hash = "sha256-Mul6t1Bz3F1Efsu3wSXOQvFz9hPYQcXI3i9xd7GOGJk=";
   };
 
   postPatch = ''
@@ -42,10 +42,10 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "pylsl" ];
 
-  meta = with lib; {
+  meta = {
     description = "Python bindings (pylsl) for liblsl";
     homepage = "https://github.com/labstreaminglayer/pylsl";
-    license = licenses.mit;
-    maintainers = with maintainers; [ abcsds ];
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ abcsds ];
   };
 }

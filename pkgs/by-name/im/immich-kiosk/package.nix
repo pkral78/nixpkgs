@@ -1,67 +1,63 @@
 {
   lib,
-  buildGoModule,
+  buildGo127Module,
   fetchFromGitHub,
   nodejs,
-  pnpm_9,
+  fetchNpmDeps,
+  npmHooks,
+  go-task,
 }:
 
-buildGoModule rec {
+buildGo127Module rec {
   pname = "immich-kiosk";
-  version = "0.25.0";
+  version = "0.44.2";
 
   src = fetchFromGitHub {
     owner = "damongolding";
     repo = "immich-kiosk";
     tag = "v${version}";
-    hash = "sha256-p/DP0rTO+1CVtREAIcP43mTd5zeeQaYRM2BlfqCfUm4=";
+    hash = "sha256-E1emLQzXPRdhsQeoOjyVBZODXiSFbxVII2CWsdtrEw0=";
   };
 
-  # Remove pnpm-workspace.yaml as it causes monorepo detection issues
-  # Delete vendor directory to regenerate it consistently across platforms
   postPatch = ''
-    rm -f frontend/pnpm-workspace.yaml
+    # Delete vendor directory to regenerate it consistently across platforms
     rm -rf vendor
+    # immich-kiosk bumps go at a faster cadence than nixpkgs
+    sed -i -E 's/^go 1\.27\.[0-9]+$/go 1.27/' go.mod
   '';
-  vendorHash = "sha256-kVyAGBOTgfvddsGlT4/wCnK9YYuks0OplUE3Z124z1k=";
+  vendorHash = "sha256-2N5tk4xEW45cBQbdrGAdFJ9ovLBSCP1wx9z9R5OGQVQ=";
+  proxyVendor = true;
 
-  pnpmDeps = pnpm_9.fetchDeps {
-    inherit pname version src;
+  npmDeps = fetchNpmDeps {
+    inherit src;
     sourceRoot = "${src.name}/frontend";
-    hash = "sha256-Gqd63bsipy/zpY75krSsQeaMsTpbNg8w0VIu7JYyv/k=";
-    fetcherVersion = 2;
-    postPatch = ''
-      rm -f pnpm-workspace.yaml
-    '';
+    hash = "sha256-eKKguY1nlStG86Iap4aSz2hi0LgXkInp8YDGyypYmlI=";
   };
-
   # Frontend is in a subdirectory
-  pnpmRoot = "frontend";
+  npmRoot = "frontend";
 
   nativeBuildInputs = [
     nodejs
-    pnpm_9.configHook
+    go-task
+    npmHooks.npmConfigHook
   ];
 
   # Generate templ templates during vendor hash calculation
-  # Don't run pnpm in this phase - filter out pnpm.configHook
+  # Don't run npm in this phase - filter out npmConfigHook
   overrideModAttrs = oldAttrs: {
-    nativeBuildInputs = builtins.filter (drv: drv != pnpm_9.configHook) (
+    nativeBuildInputs = builtins.filter (drv: drv != npmHooks.npmConfigHook) (
       oldAttrs.nativeBuildInputs or [ ]
     );
     preBuild = ''
-      go run github.com/a-h/templ/cmd/templ generate
+      go tool templ generate
     '';
   };
 
   # Generate templ templates and build frontend assets before Go build
   # Frontend assets are embedded into the binary via go:embed
   preBuild = ''
-    go run github.com/a-h/templ/cmd/templ generate
-
-    pushd frontend
-    pnpm build
-    popd
+    go tool templ generate
+    task frontend
   '';
 
   ldflags = [
@@ -86,7 +82,10 @@ buildGoModule rec {
     homepage = "https://github.com/damongolding/immich-kiosk";
     changelog = "https://github.com/damongolding/immich-kiosk/releases/tag/v${version}";
     license = lib.licenses.agpl3Only;
-    maintainers = with lib.maintainers; [ tlvince ];
+    maintainers = with lib.maintainers; [
+      tlvince
+      esch
+    ];
     mainProgram = "immich-kiosk";
   };
 }

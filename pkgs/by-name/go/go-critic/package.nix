@@ -9,16 +9,16 @@
 
 buildGoModule (finalAttrs: {
   pname = "go-critic";
-  version = "0.14.0";
+  version = "0.15.0";
 
   src = fetchFromGitHub {
     owner = "go-critic";
     repo = "go-critic";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-dTUjcGULG/47FogLQbFkge66v5/V6WbJDx5eJiSPQOs=";
+    hash = "sha256-fR5wWZyBJ0pnKsWkgvFUOqzZ5L+8AgdcGNMbpj+nhyQ=";
   };
 
-  vendorHash = "sha256-3iLJiwW/VgmWpK5sGYkIyz7V2XGnsNcCd7kwz7ctRX4=";
+  vendorHash = "sha256-o7je2efcEr6nQV+u/zlzVLS1+Pozx2sPCbCZIT5NIIM=";
 
   subPackages = [
     "cmd/gocritic"
@@ -44,6 +44,6 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/go-critic/go-critic/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     mainProgram = "gocritic";
-    maintainers = with lib.maintainers; [ katexochen ];
+    maintainers = [ ];
   };
 })

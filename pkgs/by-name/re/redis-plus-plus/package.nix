@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchpatch2,
   cmake,
   hiredis,
   enableShared ? !stdenv.hostPlatform.isStatic,
@@ -11,19 +12,26 @@
 # You must build at one type of library
 assert enableShared || enableStatic;
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "redis-plus-plus";
   version = "1.3.15";
 
   src = fetchFromGitHub {
     owner = "sewenew";
     repo = "redis-plus-plus";
-    rev = version;
+    rev = finalAttrs.version;
     sha256 = "sha256-0q+pQ2tS04RYKsikTG5QMuTPW3f6+fFIPuJZVf/aIw0=";
   };
 
   patches = [
     ./0001-Fix-pkg-config-paths.patch
+
+    # https://github.com/sewenew/redis-plus-plus/issues/678
+    (fetchpatch2 {
+      name = "walk-around-gcc-16-bug.patch";
+      url = "https://github.com/sewenew/redis-plus-plus/commit/4b4cd0dc2931e96842ef05e165673b8679e32f48.patch?full_index=1";
+      hash = "sha256-neZj/J9nRg3Ft/+wQcRzvTjwm41odNnEfHnrs8/KiL4=";
+    })
   ];
 
   nativeBuildInputs = [ cmake ];
@@ -39,11 +47,11 @@ stdenv.mkDerivation rec {
     "-DREDIS_PLUS_PLUS_BUILD_STATIC=OFF"
   ];
 
-  meta = with lib; {
+  meta = {
     homepage = "https://github.com/sewenew/redis-plus-plus";
     description = "Redis client written in C++";
-    license = licenses.asl20;
-    platforms = platforms.unix;
-    maintainers = with maintainers; [ wheelsandmetal ];
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.unix;
+    maintainers = with lib.maintainers; [ wheelsandmetal ];
   };
-}
+})

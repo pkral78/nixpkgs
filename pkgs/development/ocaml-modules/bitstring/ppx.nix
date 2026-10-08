@@ -1,35 +1,24 @@
 {
   lib,
   buildDunePackage,
-  fetchpatch,
-  ocaml,
   bitstring,
   ppxlib,
   ounit,
 }:
 
-if lib.versionOlder ppxlib.version "0.18.0" then
-  throw "ppx_bitstring is not available with ppxlib-${ppxlib.version}"
-else
+buildDunePackage {
+  pname = "ppx_bitstring";
+  inherit (bitstring) version src;
 
-  buildDunePackage {
-    pname = "ppx_bitstring";
-    inherit (bitstring) version src;
+  buildInputs = [
+    bitstring
+    ppxlib
+  ];
 
-    patches = lib.optional (lib.versionAtLeast ppxlib.version "0.36") (fetchpatch {
-      url = "https://github.com/xguerin/bitstring/commit/b42d4924cbb5ec5fd5309e6807852b63f456f35d.patch";
-      hash = "sha256-wtpSnGOzIUTmB3LhyHGopecy7F/5SYFOwaR6eReV+6g=";
-    });
+  doCheck = true;
+  checkInputs = [ ounit ];
 
-    buildInputs = [
-      bitstring
-      ppxlib
-    ];
-
-    doCheck = lib.versionAtLeast ocaml.version "4.08";
-    checkInputs = [ ounit ];
-
-    meta = bitstring.meta // {
-      description = "Bitstrings and bitstring matching for OCaml - PPX extension";
-    };
-  }
+  meta = bitstring.meta // {
+    description = "Bitstrings and bitstring matching for OCaml - PPX extension";
+  };
+}

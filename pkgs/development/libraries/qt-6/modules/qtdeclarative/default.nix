@@ -10,6 +10,7 @@
   lib,
   pkgsBuildBuild,
   replaceVars,
+  fetchpatch,
 }:
 
 qtModule {
@@ -29,26 +30,26 @@ qtModule {
   ];
 
   patches = [
-    # invalidates qml caches created from nix applications at different
-    # store paths and disallows saving caches of bare qml files in the store.
-    (replaceVars ./invalidate-caches-from-mismatched-store-paths.patch {
+    # don't cache bytecode of bare qml files in the store, as that never gets cleaned up
+    (replaceVars ./dont-cache-nix-store-paths.patch {
       nixStore = builtins.storeDir;
-      nixStoreLength = toString ((builtins.stringLength builtins.storeDir) + 1); # trailing /
     })
     # add version specific QML import path
     ./use-versioned-import-path.patch
-  ];
 
-  preConfigure =
-    let
-      storePrefixLen = toString ((builtins.stringLength builtins.storeDir) + 1);
-    in
-    ''
-      # "NIX:" is reserved for saved qmlc files in patch 0001, "QTDHASH:" takes the place
-      # of the old tag, which is otherwise the qt version, invalidating caches from other
-      # qtdeclarative store paths.
-      echo "QTDHASH:''${out:${storePrefixLen}:32}" > .tag
-    '';
+    # revert codesigning change on Darwin that doesn't work with our signing tools
+    (fetchpatch {
+      url = "https://github.com/qt/qtdeclarative/commit/a7084abd9778b955d80e7419e82f6f7b92f7978d.diff";
+      hash = "sha256-ESy35OlmsvI4yFQ/rFT8oelOUBCwCmlcbQJvwcTrCig=";
+      revert = true;
+    })
+
+    # backport fix recommended by KDE
+    (fetchpatch {
+      url = "https://codereview.qt-project.org/changes/qt%2Fqtdeclarative~768697/revisions/4/patch?download&raw";
+      hash = "sha256-HiHAWbLr2MaZpw+yaA+JIveYory5cWkL2ZNf3zveYX4=";
+    })
+  ];
 
   cmakeFlags = [
     "-DQt6ShaderToolsTools_DIR=${pkgsBuildBuild.qt6.qtshadertools}/lib/cmake/Qt6ShaderTools"

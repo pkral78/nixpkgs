@@ -2,39 +2,36 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  bashNonInteractive,
   openssl,
   windows,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "srt";
-  version = "1.5.4";
+  version = "1.5.6";
 
   src = fetchFromGitHub {
     owner = "Haivision";
     repo = "srt";
-    rev = "v${version}";
-    sha256 = "sha256-NLy9GuP4OT/kKAIIDXSHtsmaBzXRuFohFM/aM+46cao=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-fdgj6URuMaem+ZVy7D8Hnf2Ev1HindevdvX0xyxCL4M=";
   };
 
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
+    bashNonInteractive
     openssl
   ]
   ++ lib.optionals stdenv.hostPlatform.isMinGW [
     windows.pthreads
   ];
 
+  strictDeps = true;
+
   patches = [
-    # Fix the build with CMake 4.
-    (fetchpatch {
-      name = "srt-fix-cmake-4.patch";
-      url = "https://github.com/Haivision/srt/commit/0def1b1a1094fc57752f241250e9a1aed71bbffd.patch";
-      hash = "sha256-dnBGNut+I9trkQzr81Wo36O2Pt7d2gsjA1buJBegPMM=";
-    })
   ]
   ++ lib.optionals stdenv.hostPlatform.isMinGW [
     ./no-msvc-compat-headers.patch
@@ -52,11 +49,13 @@ stdenv.mkDerivation rec {
     "-UCMAKE_INSTALL_LIBDIR"
   ];
 
-  meta = with lib; {
+  __structuredAttrs = true;
+
+  meta = {
     description = "Secure, Reliable, Transport";
     homepage = "https://github.com/Haivision/srt";
-    license = licenses.mpl20;
-    maintainers = with maintainers; [ nh2 ];
-    platforms = platforms.all;
+    license = lib.licenses.mpl20;
+    maintainers = with lib.maintainers; [ nh2 ];
+    platforms = lib.platforms.all;
   };
-}
+})

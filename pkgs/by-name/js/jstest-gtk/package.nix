@@ -5,8 +5,8 @@
   cmake,
   pkg-config,
   gtkmm3,
-  libsigcxx,
-  xorg,
+  libsigcxx_2_0,
+  libx11,
 }:
 
 stdenv.mkDerivation {
@@ -26,11 +26,11 @@ stdenv.mkDerivation {
   ];
   buildInputs = [
     gtkmm3
-    libsigcxx
-    xorg.libX11
+    libsigcxx_2_0
+    libx11
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Simple joystick tester based on Gtk+";
     longDescription = ''
       It provides you with a list of attached joysticks, a way to display which
@@ -38,9 +38,9 @@ stdenv.mkDerivation {
       to calibrate your joystick.
     '';
     homepage = "https://github.com/Grumbel/jstest-gtk";
-    license = licenses.gpl3Plus;
-    maintainers = with maintainers; [ wucke13 ];
-    platforms = platforms.linux;
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ wucke13 ];
+    platforms = lib.platforms.linux;
     mainProgram = "jstest-gtk";
   };
 }

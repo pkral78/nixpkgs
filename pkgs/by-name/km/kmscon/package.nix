@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchpatch2,
   meson,
   libtsm,
   systemdLibs,
@@ -9,28 +10,40 @@
   libdrm,
   libGLU,
   libGL,
+  freetype,
+  fontconfig,
+  zlib,
   pango,
-  pixman,
   pkg-config,
   docbook_xsl,
+  docbook_xml_dtd_42,
+  python3,
+  ncurses,
   libxslt,
   libgbm,
+  seatd,
+  dbus,
   ninja,
   check,
+  bash,
+  inotify-tools,
   buildPackages,
+  nix-update-script,
+  nixosTests,
 }:
-stdenv.mkDerivation {
+stdenv.mkDerivation (finalAttrs: {
   pname = "kmscon";
-  version = "9.0.0-unstable-2025-01-09";
+  version = "10.0.4";
 
   src = fetchFromGitHub {
-    owner = "Aetf";
+    owner = "kmscon";
     repo = "kmscon";
-    rev = "a81941f4464e6f9cee75bfb8a1db88c253ede33d";
-    sha256 = "sha256-l7Prt7CsYi4VCnp9xktvqqNT+4djSdO2GvP1JdxhNSI=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-F4XI924K4YxREEjqP0XLeFcvaW/9v5Iyuy9n75c9Osc=";
   };
 
   strictDeps = true;
+  __structuredAttrs = true;
 
   depsBuildBuild = [
     buildPackages.stdenv.cc
@@ -42,11 +55,17 @@ stdenv.mkDerivation {
     libdrm
     libtsm
     libxkbcommon
+    freetype
+    fontconfig
+    zlib
     pango
-    pixman
     systemdLibs
     libgbm
+    seatd
+    dbus
     check
+    # Needed for autoPatchShebangs when strictDeps = true
+    bash
   ];
 
   nativeBuildInputs = [
@@ -55,24 +74,57 @@ stdenv.mkDerivation {
     docbook_xsl
     pkg-config
     libxslt # xsltproc
+    docbook_xml_dtd_42
+    python3
+    ncurses
+    zlib
   ];
 
-  env.NIX_CFLAGS_COMPILE =
-    lib.optionalString stdenv.cc.isGNU "-O "
-    + "-Wno-error=maybe-uninitialized -Wno-error=unused-result -Wno-error=implicit-function-declaration";
+  outputs = [
+    "out"
+    "man"
+  ];
 
-  enableParallelBuilding = true;
-
+  # remove when next release is out
   patches = [
-    ./sandbox.patch # Generate system units where they should be (nix store) instead of /etc/systemd/system
+    (fetchpatch2 {
+      url = "https://github.com/kmscon/kmscon/commit/153db63d679df719a99dd36505f9c2f55d9c59f6.patch?full_index=1";
+      hash = "sha256-aAH+drUZnj1wrKcdsphqacmqRRnZAKEwCNLwA2vSTmg=";
+    })
   ];
 
-  meta = with lib; {
+  mesonFlags = [ (lib.mesonEnable "libseat" true) ];
+
+  env = {
+    PKG_CONFIG_SYSTEMD_SYSTEMDSYSTEMUNITDIR = "${placeholder "out"}/lib/systemd/system";
+    DESTDIR = "/";
+  };
+
+  postPatch = ''
+    patchShebangs scripts/terminfo
+  '';
+
+  postFixup = ''
+    substituteInPlace $out/bin/kmscon-launch-gui \
+      --replace-fail "inotifywait" "${lib.getExe' inotify-tools "inotifywait"}"
+  '';
+
+  passthru = {
+    tests.kmscon = nixosTests.kmscon;
+    updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
+  };
+
+  meta = {
     description = "KMS/DRM based System Console";
     mainProgram = "kmscon";
     homepage = "https://www.freedesktop.org/wiki/Software/kmscon/";
-    license = licenses.mit;
-    maintainers = [ ];
-    platforms = platforms.linux;
+    changelog = "https://github.com/kmscon/kmscon/releases/tag/v${finalAttrs.version}";
+    license = with lib.licenses; [
+      mit
+      lgpl21Plus
+      ofl
+    ];
+    maintainers = with lib.maintainers; [ ccicnce113424 ];
+    platforms = lib.platforms.linux;
   };
-}
+})

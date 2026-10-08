@@ -34,9 +34,17 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ gmp ];
 
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-  buildFlags = lib.optionals stdenv.hostPlatform.isDarwin [
-    "CCFLAGS2=-lgmp -lc -lm"
-    "CCFLAGS=-UUSE_SSE"
+  buildFlags = [
+    "CCFLAGS1=${
+      if stdenv.hostPlatform.avx512Support then
+        "-DUSE_AVX512 -mavx512f"
+      else if stdenv.hostPlatform.avx2Support then
+        "-DUSE_AVX -mavx2"
+      else if stdenv.hostPlatform.avxSupport then
+        "-DUSE_AVX -mavx"
+      else
+        "-DUSE_SSE"
+    }"
   ];
   installFlags = [ "INSTALL_DIR=$(out)" ];
 
@@ -49,5 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
     homepage = "http://www.mathe2.uni-bayreuth.de/stoll/programs/";
+    # last successful hydra build on darwin was in 2025
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })
