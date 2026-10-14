@@ -7,12 +7,12 @@
   dbus,
   dri-pkgconfig-stub,
   libepoxy,
-  fontutil,
+  font-util,
   libGL,
-  libX11,
-  libXau,
-  libXdmcp,
-  libXfont2,
+  libx11,
+  libxau,
+  libxdmcp,
+  libxfont_2,
   libdrm,
   libgcrypt,
   libmd,
@@ -29,10 +29,10 @@
   openssl,
   pixman,
   pkg-config,
-  systemd,
-  xcbutil,
-  xcbutilwm,
-  xcbutilimage,
+  systemdLibs,
+  libxcb-util,
+  libxcb-wm,
+  libxcb-image,
   xkbcomp,
   xkeyboard_config,
   xorgproto,
@@ -63,12 +63,12 @@ stdenv.mkDerivation (finalPackages: rec {
     dbus
     dri-pkgconfig-stub
     libepoxy
-    fontutil
+    font-util
     libGL
-    libX11
-    libXau
-    libXdmcp
-    libXfont2
+    libx11
+    libxau
+    libxdmcp
+    libxfont_2
     libdrm
     libgcrypt
     libmd
@@ -82,10 +82,10 @@ stdenv.mkDerivation (finalPackages: rec {
     nettle
     openssl
     pixman
-    systemd
-    xcbutil
-    xcbutilwm
-    xcbutilimage
+    systemdLibs
+    libxcb-util
+    libxcb-wm
+    libxcb-image
     xkbcomp
     xkeyboard_config
     xorgproto
@@ -122,7 +122,7 @@ stdenv.mkDerivation (finalPackages: rec {
       arcan-shmif to map Xlib/Xcb/X clients to a running arcan instance. It
       allows running an X session as a window under Arcan.
     '';
-    license = with lib.licenses; [ mit ];
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

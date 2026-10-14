@@ -1,6 +1,7 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   pkg-config,
   runCommand,
   writeText,
@@ -8,7 +9,6 @@
   withNvenc ? false,
   atk,
   cairo,
-  cudatoolkit,
   cudaPackages,
   ffmpeg,
   gdk-pixbuf,
@@ -18,11 +18,11 @@
   gst_all_1,
   gtk3,
   libappindicator,
-  libfakeXinerama,
+  libfakexinerama,
   librsvg,
   libvpx,
   libwebp,
-  systemd,
+  systemdLibs,
   lz4,
   nv-codec-headers-10,
   nvidia_x11 ? null,
@@ -54,8 +54,8 @@
   libx11,
   xorgproto,
   libxkbfile,
-  xorgserver,
-  xxHash,
+  xorg-server,
+  xxhash,
   clang,
   withHtml ? true,
   xpra-html5,
@@ -76,9 +76,9 @@ let
 
   xorgModulePaths = writeText "module-paths" ''
     Section "Files"
-      ModulePath "${xorgserver}/lib/xorg/modules"
-      ModulePath "${xorgserver}/lib/xorg/modules/extensions"
-      ModulePath "${xorgserver}/lib/xorg/modules/drivers"
+      ModulePath "${xorg-server}/lib/xorg/modules"
+      ModulePath "${xorg-server}/lib/xorg/modules/extensions"
+      ModulePath "${xorg-server}/lib/xorg/modules/drivers"
       ModulePath "${xf86videodummy}/lib/xorg/modules/drivers"
     EndSection
   '';
@@ -104,14 +104,14 @@ let
 in
 effectiveBuildPythonApplication rec {
   pname = "xpra";
-  version = "6.3.6";
+  version = "6.5.4";
   format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Xpra-org";
     repo = "xpra";
     tag = "v${version}";
-    hash = "sha256-kXe/Pyjzf6CxYtsYP15hgYnj+qricrlXGqi/G3uQMFM=";
+    hash = "sha256-TXqnheJjq3WZZffbEPjS5/u/02OlJkDJ9IqyCabYr1E=";
   };
 
   patches = [
@@ -120,23 +120,29 @@ effectiveBuildPythonApplication rec {
   ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
-    substituteInPlace xpra/platform/posix/features.py \
+    substituteInPlace xpra/scripts/config.py \
       --replace-fail "/usr/bin/xdg-open" "${xdg-utils}/bin/xdg-open"
 
     patchShebangs --build fs/bin/build_cuda_kernels.py
   '';
 
-  INCLUDE_DIRS = "${pam}/include";
+  env = {
+    # error: 'import_cairo' defined but not used
+    NIX_CFLAGS_COMPILE = "-Wno-error=unused-function";
+
+    INCLUDE_DIRS = "${pam}/include";
+  };
 
   nativeBuildInputs = [
     clang
+    cython
     gobject-introspection
     pkg-config
     wrapGAppsHook3
     pandoc
     udevCheckHook
   ]
-  ++ lib.optional withNvenc cudatoolkit;
+  ++ lib.optionals withNvenc [ cudaPackages.cudatoolkit ];
 
   buildInputs = [
     libx11
@@ -153,7 +159,6 @@ effectiveBuildPythonApplication rec {
   ]
   ++ (with gst_all_1; [
     gst-libav
-    gst-vaapi
     gst-plugins-ugly
     gst-plugins-bad
     gst-plugins-base
@@ -163,7 +168,6 @@ effectiveBuildPythonApplication rec {
   ++ [
     atk.out
     cairo
-    cython
     ffmpeg
     gdk-pixbuf
     glib
@@ -180,10 +184,10 @@ effectiveBuildPythonApplication rec {
     libavif
     openh264
     libyuv
-    xxHash
-    systemd
+    xxhash
+    systemdLibs
   ]
-  ++ lib.optional withNvenc [
+  ++ lib.optionals withNvenc [
     nvencHeaders
     nvjpegHeaders
   ];
@@ -224,9 +228,6 @@ effectiveBuildPythonApplication rec {
       ]
     );
 
-  # error: 'import_cairo' defined but not used
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=unused-function";
-
   setupPyBuildFlags = [
     "--with-Xdummy"
     "--without-Xdummy_wrapper"
@@ -236,7 +237,7 @@ effectiveBuildPythonApplication rec {
     "--with-pam"
     "--with-vsock"
   ]
-  ++ lib.optional withNvenc [
+  ++ lib.optionals withNvenc [
     "--with-nvenc"
     "--with-nvjpeg_encoder"
   ];
@@ -250,11 +251,11 @@ effectiveBuildPythonApplication rec {
       --set XPRA_COMMAND "$out/bin/xpra"
       --set XPRA_XKB_CONFIG_ROOT "${xkeyboard-config}/share/X11/xkb"
       --set XORG_CONFIG_PREFIX ""
-      --prefix LD_LIBRARY_PATH : ${libfakeXinerama}/lib
+      --prefix LD_LIBRARY_PATH : ${libfakexinerama}/lib
       --prefix PATH : ${
         lib.makeBinPath [
           getopt
-          xorgserver
+          xorg-server
           xauth
           which
           util-linux
@@ -289,21 +290,18 @@ effectiveBuildPythonApplication rec {
 
   passthru = {
     inherit xf86videodummy;
-    updateScript = ./update.sh;
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://xpra.org/";
-    downloadPage = "https://xpra.org/src/";
+    homepage = "https://github.com/Xpra-org/xpra";
     description = "Persistent remote applications for X";
     changelog = "https://github.com/Xpra-org/xpra/releases/tag/v${version}";
     platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [
-      offline
       numinit
       mvnetbiz
-      lucasew
     ];
   };
 }

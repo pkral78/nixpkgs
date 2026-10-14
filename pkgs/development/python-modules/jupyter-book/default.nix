@@ -26,19 +26,20 @@
 
 buildPythonPackage (finalAttrs: {
   pname = "jupyter-book";
-  version = "2.1.1";
+  version = "2.1.7";
   pyproject = true;
+  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jupyter-book";
     repo = "jupyter-book";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-TpscnIywWNBd3eGMe8QDV1bqbTs1z2FbGJqAh/BCOg8=";
+    hash = "sha256-8jOPjF9tFwXmq5iWGW3V8qif7UdPPrDZW4cVjtSdbYY=";
   };
 
   npmDeps = fetchNpmDeps {
     inherit (finalAttrs) src;
-    hash = "sha256-y2vZG64+ZtjANZgResUTVIoibK8GQIgKildpvTJypq4=";
+    hash = "sha256-xbDn7jDDd/nWKVvx2R6uJIaWQMSOktCeKv2EBkkzhTY=";
   };
 
   build-system = [

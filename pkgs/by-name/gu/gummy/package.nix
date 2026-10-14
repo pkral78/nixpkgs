@@ -4,15 +4,15 @@
   fetchFromCodeberg,
   testers,
   cmake,
-  libX11,
-  libXext,
+  libx11,
+  libxext,
   sdbus-cpp,
   udev,
-  xcbutilimage,
+  libxcb-image,
   coreutils,
   cli11,
   ddcutil,
-  fmt,
+  fmt_11,
   nlohmann_json,
   spdlog,
   udevCheckHook,
@@ -38,14 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     cli11
     ddcutil
-    fmt
-    libX11
-    libXext
+    fmt_11
+    libx11
+    libxext
     nlohmann_json
     sdbus-cpp
-    spdlog
+    (spdlog.override { fmt = fmt_11; })
     udev
-    xcbutilimage
+    libxcb-image
   ];
 
   cmakeFlags = [

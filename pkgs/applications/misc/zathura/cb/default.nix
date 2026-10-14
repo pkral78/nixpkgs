@@ -7,22 +7,24 @@
   pkg-config,
   zathura_core,
   girara,
+  gtk4,
   gettext,
   libarchive,
   desktop-file-utils,
   appstream,
   appstream-glib,
+  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "zathura-cb";
-  version = "0.1.12";
+  version = "2026.07.18";
 
   src = fetchFromGitHub {
     owner = "pwmt";
     repo = "zathura-cb";
     tag = finalAttrs.version;
-    hash = "sha256-Dj398aUQBxOrH5XOC5u/vNkEQ6pa05/EDB5m0EAGAxo=";
+    hash = "sha256-zZ5iqSSzZqhMI1VfQI9ChV2b6cDMM2UnVXrvxjD55zg=";
   };
 
   nativeBuildInputs = [
@@ -36,12 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [
+    gtk4
     libarchive
     zathura_core
     girara
   ];
 
   env.PKG_CONFIG_ZATHURA_PLUGINDIR = "lib/zathura";
+
+  passthru.updateScript = gitUpdater { };
 
   meta = {
     homepage = "https://pwmt.org/projects/zathura-cb/";
@@ -51,6 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
     '';
     license = lib.licenses.zlib;
     platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ jlesquembre ];
+    maintainers = with lib.maintainers; [
+      jlesquembre
+      mithicspirit
+    ];
   };
 })

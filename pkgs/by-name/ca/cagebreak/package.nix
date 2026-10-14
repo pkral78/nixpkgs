@@ -8,7 +8,7 @@
   libevdev,
   libinput,
   libxkbcommon,
-  xcbutilwm,
+  libxcb-wm,
   makeWrapper,
   meson,
   ninja,
@@ -17,7 +17,7 @@
   pixman,
   pkg-config,
   scdoc,
-  systemd,
+  systemdLibs,
   wayland,
   wayland-protocols,
   wayland-scanner,
@@ -53,10 +53,10 @@ stdenv.mkDerivation (finalAttrs: {
     libevdev
     libinput
     libxkbcommon
-    xcbutilwm
+    libxcb-wm
     pango
     pixman
-    systemd
+    systemdLibs
     wayland
     wayland-protocols
     wlroots_0_19

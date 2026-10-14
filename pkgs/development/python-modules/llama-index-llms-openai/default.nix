@@ -9,19 +9,14 @@
 
 buildPythonPackage (finalAttrs: {
   pname = "llama-index-llms-openai";
-  version = "0.6.15";
+  version = "0.7.10";
   pyproject = true;
 
   src = fetchPypi {
     pname = "llama_index_llms_openai";
     inherit (finalAttrs) version;
-    hash = "sha256-W9BZ6kRBLpJ3Q6mLseW4Sy4ZS7OW75WVJ/w6isgLAl0=";
+    hash = "sha256-qo2r8I6guXQPydrpZ38FBJJUvl6Sl5SohmkuryaXPe8=";
   };
-
-  pythonRemoveDeps = [
-    # Circular dependency
-    "llama-index-agent-openai"
-  ];
 
   build-system = [ hatchling ];
 

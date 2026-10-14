@@ -14,17 +14,19 @@
   callPackage,
   nixosTests,
   librsvg,
+  nix-update-script,
+  fetchurl,
 }:
 
 let
-  version = "251130-b3068414c";
+  version = "260919-28c46a116";
   pname = "photoprism";
 
   src = fetchFromGitHub {
     owner = "photoprism";
     repo = "photoprism";
-    rev = version;
-    hash = "sha256-8yg5CtvBtSKRaOUj9f+Db7rruXIVuF2cR50vZ+WUU6A=";
+    tag = version;
+    hash = "sha256-+3zLhHTpNlDoYYD1ljDii/BhzP+72y+SCec7pa/1VNs=";
   };
 
   backend = callPackage ./backend.nix { inherit src version; };
@@ -34,8 +36,36 @@ let
     { name, hash }:
     fetchzip {
       inherit hash;
-      url = "https://dl.photoprism.app/tensorflow/${name}.zip";
+      extension = "zip";
+      url = "https://dl.photoprism.app/tensorflow/${name}.zip?${version}";
       stripRoot = false;
+    };
+
+  fetchOnnxModel =
+    { name, hash }:
+    {
+      inherit name;
+      file = fetchurl {
+        inherit hash;
+        url = "https://dl.photoprism.app/onnx/models/${name}?${version}";
+      };
+    };
+
+  # NB: needs to be a derivation with a src attribute so the update script
+  # can ensure that these hashes remain up to date
+  wrapModelForUpdate =
+    src:
+    stdenv.mkDerivation {
+      inherit pname version src;
+
+      dontUnpack = true;
+      dontBuild = true;
+
+      installPhase = ''
+        mkdir $out
+      '';
+
+      passthru.updateScript = nix-update-script { };
     };
 
   facenet = fetchModel {
@@ -53,10 +83,20 @@ let
     hash = "sha256-zy/HcmgaHOY7FfJUY6I/yjjsMPHR2Ote9ppwqemBlfg=";
   };
 
+  sface = fetchOnnxModel {
+    name = "face_recognition_sface_2021dec.onnx";
+    hash = "sha256-C6n7+gG1JwyWYnxO94TahZkx4C8EQZyCnoNIQIfDTnk=";
+  };
+
+  yunet = fetchOnnxModel {
+    name = "face_detection_yunet_2026may.onnx";
+    hash = "sha256-66/OTjwRjWVUY0vlwnqzM7TAR6mow/rx18+TEBwi8PA=";
+  };
+
   assets_path = "$out/share/photoprism";
 in
 stdenv.mkDerivation (finalAttrs: {
-  inherit pname version;
+  inherit pname version src;
 
   nativeBuildInputs = [
     makeWrapper
@@ -85,7 +125,7 @@ stdenv.mkDerivation (finalAttrs: {
     # install frontend
     ln -s ${frontend}/assets/* ${assets_path}
     rm ${assets_path}/models
-    mkdir -p ${assets_path}/models
+    mkdir -p ${assets_path}/models/{sface,yunet}
     ln -s ${frontend}/assets/models/* ${assets_path}/models/
 
     # install tensorflow models
@@ -93,17 +133,54 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${nsfw}/nsfw ${assets_path}/models/
     ln -s ${facenet}/facenet ${assets_path}/models/
 
+    # install onnx models
+    ln -s ${sface.file} ${assets_path}/models/sface/${sface.name}
+    ln -s ${yunet.file} ${assets_path}/models/yunet/${yunet.name}
+
     runHook postInstall
   '';
 
-  passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
-  passthru.tests.photoprism = nixosTests.photoprism;
+  passthru = {
+    inherit backend frontend;
+
+    facenet = wrapModelForUpdate facenet;
+    nasnet = wrapModelForUpdate nasnet;
+    nsfw = wrapModelForUpdate nsfw;
+    sface = wrapModelForUpdate sface.file;
+    yunet = wrapModelForUpdate yunet.file;
+
+    tests = {
+      version = testers.testVersion { package = finalAttrs.finalPackage; };
+      photoprism = nixosTests.photoprism;
+    };
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--subpackage"
+        "backend"
+        "--subpackage"
+        "frontend"
+        "--subpackage"
+        "facenet"
+        "--subpackage"
+        "nasnet"
+        "--subpackage"
+        "nsfw"
+        "--subpackage"
+        "sface"
+        "--subpackage"
+        "yunet"
+      ];
+    };
+  };
 
   meta = {
     homepage = "https://photoprism.app";
     description = "Personal Photo Management powered by Go and Google TensorFlow";
     license = lib.licenses.agpl3Only;
-    maintainers = with lib.maintainers; [ benesim ];
+    maintainers = with lib.maintainers; [
+      ipetkov
+    ];
     mainProgram = "photoprism";
   };
 })

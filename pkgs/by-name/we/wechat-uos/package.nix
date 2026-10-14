@@ -28,10 +28,10 @@
   atkmm,
   libdrm,
   libxkbcommon,
-  xcbutilwm,
-  xcbutilimage,
-  xcbutilkeysyms,
-  xcbutilrenderutil,
+  libxcb-wm,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
   libgbm,
   alsa-lib,
   wayland,
@@ -51,7 +51,7 @@
   libexif,
   ffmpeg,
   pulseaudio,
-  systemd,
+  systemdLibs,
   libuuid,
   expat,
   bzip2,
@@ -84,10 +84,10 @@ let
     stdenv.cc.libc
     pango
     zlib
-    xcbutilwm
-    xcbutilimage
-    xcbutilkeysyms
-    xcbutilrenderutil
+    libxcb-wm
+    libxcb-image
+    libxcb-keysyms
+    libxcb-render-util
     libx11
     libxt
     libxext
@@ -133,7 +133,7 @@ let
     libdrm
     libgbm
     vulkan-loader
-    systemd
+    systemdLibs
     wayland
     pulseaudio
     qt6.qt5compat
@@ -149,7 +149,10 @@ let
       version = sources.version;
       src = fetchurl (
         {
-          curlOpts = "-A apt";
+          curlOptsList = [
+            "-H"
+            "User-Agent: Debian APT-HTTP/1.3 (2.2.4)"
+          ];
         }
         // (sources.${stdenv.hostPlatform.system}
           or (throw "Unsupported system: ${stdenv.hostPlatform.system}")

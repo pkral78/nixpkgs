@@ -7,20 +7,21 @@
   pkg-config,
   perl,
   openssl,
+  curl,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "release-plz";
-  version = "0.3.154";
+  version = "0.3.169";
 
   src = fetchFromGitHub {
-    owner = "MarcoIeni";
+    owner = "release-plz";
     repo = "release-plz";
-    rev = "release-plz-v${version}";
-    hash = "sha256-sg5i7JwDkhvEBYZtm6USCDDWWnI97IIKeXHhpDP3V/o=";
+    rev = "release-plz-v${finalAttrs.version}";
+    hash = "sha256-QdYyZ+nYsRSVXXVKirXfsiLkUjlFgDxWbK8p5SBDp8A=";
   };
 
-  cargoHash = "sha256-O+JdsbpxDsdEAFdkvxXCNkjIAPaJvVKkbP8FXK542yo=";
+  cargoHash = "sha256-PltsUwipTeS+uE+GaUUOyEWMrWPT5UN/0TRkzRqXvsQ=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -28,7 +29,7 @@ rustPlatform.buildRustPackage rec {
     perl
   ];
 
-  buildInputs = [ openssl ];
+  buildInputs = [ openssl ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ curl ];
 
   buildAndTestSubdir = "crates/release_plz";
 
@@ -36,16 +37,16 @@ rustPlatform.buildRustPackage rec {
   doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd ${meta.mainProgram} \
-      --bash <($out/bin/${meta.mainProgram} generate-completions bash) \
-      --fish <($out/bin/${meta.mainProgram} generate-completions fish) \
-      --zsh <($out/bin/${meta.mainProgram} generate-completions zsh)
+    installShellCompletion --cmd ${finalAttrs.meta.mainProgram} \
+      --bash <($out/bin/${finalAttrs.meta.mainProgram} generate-completions bash) \
+      --fish <($out/bin/${finalAttrs.meta.mainProgram} generate-completions fish) \
+      --zsh <($out/bin/${finalAttrs.meta.mainProgram} generate-completions zsh)
   '';
 
   meta = {
     description = "Publish Rust crates from CI with a Release PR";
     homepage = "https://release-plz.ieni.dev";
-    changelog = "https://github.com/MarcoIeni/release-plz/blob/release-plz-v${version}/CHANGELOG.md";
+    changelog = "https://github.com/release-plz/release-plz/blob/release-plz-v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [
       asl20
       mit
@@ -55,6 +56,5 @@ rustPlatform.buildRustPackage rec {
       chrjabs
     ];
     mainProgram = "release-plz";
-    broken = stdenv.hostPlatform.isDarwin;
   };
-}
+})

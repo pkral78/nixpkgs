@@ -3,6 +3,7 @@
   stdenv,
   callPackage,
   fetchFromGitHub,
+  turingplus,
   bootstrap ? callPackage ./bootstrap.nix { },
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -59,17 +60,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  meta = with lib; {
+  # Try to compile Turing+ itself using the Nix-built version of the compiler.
+  # Note that `turingplus.override` has to be used since `finalPackage.override`
+  # does not exist
+  passthru.tests.bootstrap = turingplus.override {
+    bootstrap = finalAttrs.finalPackage;
+  };
+
+  meta = {
     description = "Extended version of the Turing programming language with concurrency and systems programming features";
     mainProgram = "tpc";
     platforms = [
       "x86_64-linux"
-      "x86_64-darwin"
     ];
     homepage = "https://github.com/CordyJ/Open-TuringPlus";
     downloadPage = "https://github.com/CordyJ/Open-TuringPlus/releases";
     changelog = "https://github.com/CordyJ/Open-TuringPlus/releases/tag/v${finalAttrs.version}";
-    license = licenses.mit;
-    maintainers = with maintainers; [ MysteryBlokHed ];
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ MysteryBlokHed ];
   };
 })

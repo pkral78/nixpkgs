@@ -7,16 +7,16 @@
   jq,
   expat,
   jsoncpp,
-  libX11,
-  libXdmcp,
-  libXrandr,
+  libx11,
+  libxdmcp,
+  libxrandr,
   libffi,
   libxcb,
   pkg-config,
   wayland,
   which,
-  xcbutilkeysyms,
-  xcbutilwm,
+  libxcb-keysyms,
+  libxcb-wm,
   valijson,
   vulkan-headers,
   vulkan-loader,
@@ -27,13 +27,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "vulkan-tools-lunarg";
-  version = "1.4.335.0";
+  version = "1.4.357.0";
 
   src = fetchFromGitHub {
     owner = "LunarG";
     repo = "VulkanTools";
     rev = "vulkan-sdk-${finalAttrs.version}";
-    hash = "sha256-2DUxlGH9Yco64Y74QByVniWXiYYy+e4MfyN4S+E6KKA=";
+    hash = "sha256-7nrEXdt0c02D2Z270W45YBwbfzsTwt854tKx+HlTHYA=";
   };
 
   nativeBuildInputs = [
@@ -48,9 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     expat
     jsoncpp
-    libX11
-    libXdmcp
-    libXrandr
+    libx11
+    libxdmcp
+    libxrandr
     libffi
     libxcb
     valijson
@@ -58,10 +58,9 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
     vulkan-utility-libraries
     wayland
-    xcbutilkeysyms
-    xcbutilwm
+    libxcb-keysyms
+    libxcb-wm
     qt6.qtbase
-    qt6.qtwayland
   ];
 
   cmakeFlags = [

@@ -6,6 +6,7 @@
   buildPythonPackage,
   fetchFromGitHub,
   jmespath,
+  modbus-connection,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -14,28 +15,29 @@
 
 buildPythonPackage (finalAttrs: {
   pname = "pysma";
-  version = "1.1.0";
+  version = "1.1.9";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kellerza";
     repo = "pysma";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-fRYpWr3eny9Ore2uQhPgVDSb+M1KYy1cy9bE2+Em3xU=";
+    hash = "sha256-7KothJZkq2pZGDEvGoCoOvXUnVRMDihL3GXazIKI+cI=";
   };
 
   postPatch = ''
     substituteInPlace pyproject.toml \
-      --replace-fail "uv-build>=0.9,<0.10" uv-build
+      --replace-fail "uv-build>=0.9,<0.11" uv-build
   '';
 
   build-system = [ uv-build ];
 
   dependencies = [
     aiohttp
-    attrs
     jmespath
-  ];
+    modbus-connection
+  ]
+  ++ modbus-connection.optional-dependencies.tmodbus;
 
   nativeCheckInputs = [
     aioresponses

@@ -5,8 +5,6 @@
   hatchling,
   lib,
   manifestoo-core,
-  pythonOlder,
-  tomli,
 }:
 buildPythonPackage rec {
   pname = "hatch-odoo";
@@ -17,7 +15,7 @@ buildPythonPackage rec {
     owner = "acsone";
     repo = "hatch-odoo";
     tag = version;
-    sha256 = "sha256-I3jaiG0Xu8B34q30p7zTs+FeBXUQiPKTAJLSVxE9gYE=";
+    hash = "sha256-I3jaiG0Xu8B34q30p7zTs+FeBXUQiPKTAJLSVxE9gYE=";
   };
 
   buildInputs = [ hatch-vcs ];
@@ -25,9 +23,6 @@ buildPythonPackage rec {
   propagatedBuildInputs = [
     hatchling
     manifestoo-core
-  ]
-  ++ lib.optionals (pythonOlder "3.11") [
-    tomli
   ];
 
   meta = {

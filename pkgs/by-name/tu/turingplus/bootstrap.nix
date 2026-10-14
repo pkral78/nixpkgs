@@ -13,10 +13,6 @@ let
       url = "https://github.com/CordyJ/Open-TuringPlus/releases/download/v6.2.1/opentplus-62-linux64.tar.gz";
       sha256 = "sha256-FoOlOcRWpStg4aerjr+FmcXXnwYftrqG1j4iZJ+4AzE=";
     };
-    "x86_64-darwin" = {
-      url = "https://github.com/CordyJ/Open-TuringPlus/releases/download/v6.2.1/opentplus-62-macos64.tar.gz";
-      sha256 = "sha256-8o1hIA74JPqZyjWfg4leC99z1+YMVhwFGME5qBf/BP0=";
-    };
   };
 
   redirects = [
@@ -76,18 +72,17 @@ stdenv.mkDerivation (finalAttrs: {
         --set NIX_ENFORCE_PURITY 0
     '';
 
-  meta = with lib; {
+  meta = {
     description = "Extended version of the Turing programming language with concurrency and systems programming features";
     mainProgram = "tpc";
     platforms = [
       "x86_64-linux"
-      "x86_64-darwin"
     ];
     homepage = "https://github.com/CordyJ/Open-TuringPlus";
     downloadPage = "https://github.com/CordyJ/Open-TuringPlus/releases";
     changelog = "https://github.com/CordyJ/Open-TuringPlus/releases/tag/v${finalAttrs.version}";
-    license = licenses.mit;
-    sourceProvenance = with sourceTypes; [ binaryNativeCode ];
-    maintainers = with maintainers; [ MysteryBlokHed ];
+    license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ MysteryBlokHed ];
   };
 })
